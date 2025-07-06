@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="BaseSauceResource" load_steps=2 format=3 uid="uid://cy61vdq7siofu"]
+
+[ext_resource type="Script" uid="uid://cv0efftypvupm" path="res://Resources/base_sauce_resource.gd" id="1_veefq"]
+
+[resource]
+script = ExtResource("1_veefq")
+sauce_name = "Sriracha"
+damage = 10.0
+fire_rate = 0.8
+projectile_speed = 280.0
+range = 60.0
+projectile_count = 1
+spread_angle = 0.0
+sauce_color = Color(0.8, 0.2, 0.0666667, 1)
+description = "The rooster's revenge. Small squeeze, big explosion. Boom goes the dinner table."
+special_effect_type = 5
+effect_chance = 0.5
+effect_duration = 0.0
+effect_intensity = 1.2
+synergy_tags = Array[String](["fire", "explosive"])
+metadata/_custom_type_script = "uid://cv0efftypvupm"

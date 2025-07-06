@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="BaseSauceResource" load_steps=2 format=3 uid="uid://jtagy4genh6r"]
+
+[ext_resource type="Script" uid="uid://cv0efftypvupm" path="res://Resources/base_sauce_resource.gd" id="1_qhn8s"]
+
+[resource]
+script = ExtResource("1_qhn8s")
+sauce_name = "Worcestershire"
+damage = 11.0
+fire_rate = 1.2
+projectile_speed = 400.0
+range = 65.0
+projectile_count = 1
+spread_angle = 0.0
+sauce_color = Color(0.4, 0.2, 0.0666667, 1)
+description = "Nobody can spell it, nobody can dodge it. Jumps from enemy to enemy like gossip at a family dinner."
+special_effect_type = 4
+effect_chance = 0.4
+effect_duration = 0.0
+effect_intensity = 3.0
+synergy_tags = Array[String](["chain"])
+metadata/_custom_type_script = "uid://cv0efftypvupm"

@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="BaseSauceResource" load_steps=2 format=3 uid="uid://wy8bbkbco4qb"]
+
+[ext_resource type="Script" uid="uid://cv0efftypvupm" path="res://Resources/base_sauce_resource.gd" id="1_yysyh"]
+
+[resource]
+script = ExtResource("1_yysyh")
+sauce_name = "Quantum Queso"
+damage = 8.0
+fire_rate = 0.9
+projectile_speed = 100.0
+range = 120.0
+projectile_count = 1
+spread_angle = 0.0
+sauce_color = Color(0.701961, 0.298039, 0.901961, 1)
+description = "Schrödinger's condiment. It both hits and misses until observed."
+special_effect_type = 21
+effect_chance = 1.0
+effect_duration = 0.0
+effect_intensity = 3.0
+synergy_tags = Array[String](["quantum", "unstable", "probability"])
+metadata/_custom_type_script = "uid://cv0efftypvupm"

@@ -43,4 +43,5 @@ enum SpecialEffectType {
 	GROWTH,         # Damage increases over distance
 	RICOCHET,       # Bounces between enemies
 	MARK,           # Mark enemies for bonus damage
+	QUANTUM
 }

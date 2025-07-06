@@ -23,4 +23,3 @@ func update_visuals(p_sauce_data = null):
 	name_label.text = sauce_data.sauce_name
 	description_label.text = sauce_data.description
 	icon_texture.modulate = sauce_data.sauce_color
-	

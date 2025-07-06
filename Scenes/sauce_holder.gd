@@ -10,7 +10,7 @@ func _ready():
 		if sauce_bottle:
 			var item_data = ItemData.new()
 			add_child(item_data.create_bottle(InventoryManager.equipped[i]))
-	
+
 	_position_weapons()
 
 func _on_sauce_selected(sauce: BaseSauceResource):
@@ -40,11 +40,11 @@ func _on_sauce_moved(from_data: SlotData, to_data: SlotData):
 	#if to_data.sauce_bottle:
 		#var item_data = ItemData.new()
 		#add_child(item_data.create_bottle(to_data.sauce_bottle))
-		
-	
-	
+
+
+
 	_position_weapons()
-	
+
 
 func _position_weapons():
 	var weapons = get_children()

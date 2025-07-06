@@ -4,7 +4,10 @@ var all_sauces = {
 	"ketchup": preload("res://Resources/ketchup.tres"),
 	"bbq": preload("res://Resources/bbq_sauce.tres"),
 	"hot_sauce": preload("res://Resources/hot_sauce.tres"),
-	"ranch": preload("res://Resources/ranch.tres")
+	"ranch": preload("res://Resources/ranch.tres"),
+	"mustard": preload("res://Resources/mustard.tres"),
+	"sriracha": preload("res://Resources/sriracha.tres"),
+	"worcestershire": preload("res://Resources/worcestershire.tres")
 }
 
 func get_sauce(name: String):

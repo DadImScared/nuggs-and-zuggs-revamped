@@ -10,14 +10,14 @@ func _ready() -> void:
 	close_button.pressed.connect(_on_close_inventory)
 	for i in InventoryManager.max_equipped_size:
 		create_slot("equipped", i)
-	
+
 	for i in InventoryManager.max_inventory:
 		create_slot("inventory", i)
 
 func _on_close_inventory():
 	get_tree().paused = false
 	queue_free()
-	
+
 func create_slot(slot_type, slot_index):
 		var inventory_slot = INVENTORY_SLOT.instantiate()
 		inventory_slot.slot_type = slot_type
@@ -26,4 +26,3 @@ func create_slot(slot_type, slot_index):
 			equipped_container.add_child(inventory_slot)
 		else:
 			storage_container.add_child(inventory_slot)
-		

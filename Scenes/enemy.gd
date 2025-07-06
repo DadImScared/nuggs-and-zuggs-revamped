@@ -42,11 +42,11 @@ func _process(delta):
 
 func process_status_effects(delta: float):
 	var effects_to_remove = []
-	
+
 	for effect_name in active_effects.keys():
 		var effect = active_effects[effect_name]
 		effect.timer += delta
-		
+
 		# Apply continuous effects
 		match effect_name:
 			"burn":
@@ -59,11 +59,11 @@ func process_status_effects(delta: float):
 					take_damage(effect.intensity * 3.0)
 					effect.timer = 0.0
 					#create_poison_visual()
-		
+
 		# Remove expired effects
 		if effect.timer >= effect.duration:
 			effects_to_remove.append(effect_name)
-	
+
 	# Clean up expired effects
 	for effect_name in effects_to_remove:
 		remove_status_effect(effect_name)
@@ -74,7 +74,7 @@ func apply_status_effect(effect_name: String, duration: float, intensity: float)
 		"intensity": intensity,
 		"timer": 0.0
 	}
-	
+
 	# Apply immediate effects
 	match effect_name:
 		"slow":
@@ -93,14 +93,14 @@ func apply_status_effect(effect_name: String, duration: float, intensity: float)
 
 func remove_status_effect(effect_name: String):
 	active_effects.erase(effect_name)
-	
+
 	# Remove effect consequences
 	match effect_name:
 		"slow", "freeze", "sticky":
 			move_speed = original_speed
 		"burn", "poison":
 			pass # Visual effects will fade naturally
-	
+
 	if active_effects.is_empty():
 		sprite.modulate = Color(0.981, 0, 0.106)
 
@@ -116,18 +116,21 @@ func setup_health_bar():
 	#health_bar_container.position = Vector2(-25, -40)
 
 func scale_to_player_level():
+	if PlayerStats.level < 2:
+		max_health = base_health  # Set max_health even for level 1
+		return
 	var base_scale = 1.0 + (PlayerStats.level - 1)
-	var health_scale = base_scale * 0.15
+	var health_scale = base_scale * 1.1
 	var speed_scale = base_scale * 0.02
 	var xp_scale = base_scale * 0.10
 	var damage_scale = base_scale * 0.4
-	
+
 	health = base_health + (base_health * health_scale)
 	max_health = health
 	move_speed = base_speed + (base_speed * speed_scale)
 	xp_on_kill = base_xp_reward + (base_xp_reward * xp_scale)
 	damage = base_damage + (base_damage * damage_scale)
-	
+
 
 func _physics_process(delta: float) -> void:
 	var direction = global_position.direction_to(player.global_position)

@@ -27,7 +27,7 @@ func update_xp_display(current_xp: int, max_xp: int):
 	if xp_bar:
 		xp_bar.max_value = max_xp
 		xp_bar.value = current_xp
-	
+
 	if xp_label:
 		xp_label.text = str(current_xp) + "/" + str(max_xp)
 
@@ -37,4 +37,3 @@ func _on_level_up(level: int):
 	menu_ui.add_child(level_up_menu)
 	if current_level:
 		current_level.text = "%d" % level
-		

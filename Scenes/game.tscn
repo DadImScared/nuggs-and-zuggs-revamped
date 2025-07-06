@@ -85,7 +85,7 @@ offset_bottom = 38.0
 [node name="MenuUI" type="CanvasLayer" parent="UIManager"]
 layer = 128
 
-[node name="Timer" type="Timer" parent="." groups=["enemies"]]
+[node name="Timer" type="Timer" parent="."]
 wait_time = 0.663
 autostart = true
 

@@ -19,13 +19,13 @@ func _ready():
 		sauce_bottle = InventoryManager.equipped.get(slot_index)
 	else:
 		sauce_bottle = InventoryManager.storage.get(slot_index)
-	
+
 	update_visual()
 
 func get_drag_data(at_position):
 	if sauce_bottle == null:
 		return null
-	
+
 	set_drag_preview(create_drag_preview())
 	return SlotData.new(self, sauce_bottle, slot_type, slot_index)
 
@@ -33,7 +33,7 @@ func can_drop_data(at_position, data):
 #	only allow movement from equipped to inventory and back
 	if slot_type == "equipped":
 		return data["slot_type"] == "inventory"
-	
+
 	if slot_type == "inventory":
 		return data["slot_type"] == "equipped"
 	return data is SlotData and slot_type == "inventory"
@@ -44,8 +44,8 @@ func drop_data(at_position, data):
 	sauce_bottle = data["sauce_bottle"]
 	data["slot"].update_visual()
 	update_visual()
-	
-	
+
+
 
 func create_drag_preview():
 	var _drag_preview = DRAG_PREVIEW_SCENE.instantiate()

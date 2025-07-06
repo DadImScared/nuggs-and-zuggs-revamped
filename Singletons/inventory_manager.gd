@@ -6,7 +6,12 @@ var storage: Array = [
 	#preload("res://Resources/ketchup.tres")
 ]
 var equipped: Array = [
-	preload("res://Resources/ranch.tres"),
+	preload("res://Resources/quantom_queso.tres")
+	#preload("res://Resources/balsamic_vinegar.tres")
+	#preload("res://Resources/worcestershire.tres")
+	#preload("res://Resources/sriracha.tres")
+	#preload("res://Resources/mustard.tres")
+	#preload("res://Resources/ranch.tres"),
 	#preload("res://Resources/bbq_sauce.tres"),
 	#preload("res://Resources/ketchup.tres"),
 	#preload("res://Resources/hot_sauce.tres")

@@ -9,7 +9,7 @@ extends Area2D
 var enemies_in_range = []
 var current_target = null
 var update_timer = 0.0
-var update_interval = 0.1 
+var update_interval = 0.1
 const SAUCE = preload("res://Scenes/sauce_projectile.tscn")
 
 func _ready() -> void:
@@ -33,7 +33,7 @@ func _physics_process(delta: float) -> void:
 		#update_closest_target()
 		if enemies_in_range.size() > 1:  # Only recalculate if multiple enemies
 			update_closest_target()
-	
+
 	# Always face the current target
 	if current_target and is_instance_valid(current_target):
 		#print("face")
@@ -53,7 +53,7 @@ func _on_body_exited(body):
 func shoot():
 	if not current_target:
 		return
-	
+
 	var new_sauce = SAUCE.instantiate()
 	get_tree().current_scene.add_child(new_sauce)
 	new_sauce.scale = scale
@@ -69,16 +69,16 @@ func update_closest_target():
 	if enemies_in_range.size() == 0:
 		current_target = null
 		return
-	
+
 	var closest = enemies_in_range[0]
 	var closest_dist = global_position.distance_to(closest.global_position)
-	
+
 	for enemy in enemies_in_range:
 		var dist = global_position.distance_to(enemy.global_position)
 		if dist < closest_dist:
 			closest_dist = dist
 			closest = enemy
-	
+
 	current_target = closest
 	#look_at(current_target.global_position)
 
@@ -90,7 +90,7 @@ func setup_shoot_timer():
 	if not shoot_timer:
 		shoot_timer = Timer.new()
 		add_child(shoot_timer)
-	
+
 	# Configure timer based on fire rate
 	shoot_timer.wait_time = 1.0 / sauce_data.fire_rate
 	shoot_timer.timeout.connect(_on_shoot_timer_timeout)

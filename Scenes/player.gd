@@ -7,7 +7,7 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 	#if sauce_holder:
 		#sauce_holder.global_position = global_position
-	
+
 func _on_mob_died(xp_amount: int):
 	PlayerStats.gain_xp(xp_amount)
 
