@@ -1,0 +1,92 @@
+[gd_scene load_steps=6 format=3 uid="uid://bhbxsh4rrxaqo"]
+
+[ext_resource type="PackedScene" uid="uid://dw66kcl6em5ar" path="res://Scenes/enemy.tscn" id="1_3dryh"]
+[ext_resource type="PackedScene" uid="uid://pauhynd1wg0o" path="res://Scenes/player.tscn" id="1_ebmjs"]
+[ext_resource type="Script" uid="uid://cqfhbqouv0ruy" path="res://Scenes/game.gd" id="1_wowpa"]
+[ext_resource type="Script" uid="uid://b1s0j3i4fxcac" path="res://Scenes/UI/ui_manager.gd" id="2_wrm1d"]
+
+[sub_resource type="Curve2D" id="Curve2D_i6g32"]
+_data = {
+"points": PackedVector2Array(0, 0, 0, 0, -179, -128, 0, 0, 0, 0, 167, -122, 0, 0, 0, 0, 178, 118, 0, 0, 0, 0, -180, 120, 0, 0, 0, 0, -179, -128)
+}
+point_count = 5
+
+[node name="Game" type="Node2D"]
+script = ExtResource("1_wowpa")
+
+[node name="Enemy" parent="." instance=ExtResource("1_3dryh")]
+position = Vector2(943, 335)
+
+[node name="Player" parent="." instance=ExtResource("1_ebmjs")]
+top_level = true
+z_index = 19
+position = Vector2(997, 337)
+
+[node name="Path2D" type="Path2D" parent="Player"]
+curve = SubResource("Curve2D_i6g32")
+
+[node name="PathFollow2D" type="PathFollow2D" parent="Player/Path2D"]
+unique_name_in_owner = true
+position = Vector2(-179, -128)
+rotation = 0.0173393
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+layer = -1
+
+[node name="ColorRect" type="ColorRect" parent="CanvasLayer"]
+z_index = -15
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+metadata/_edit_lock_ = true
+
+[node name="UIManager" type="Control" parent="."]
+process_mode = 3
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("2_wrm1d")
+
+[node name="GameUI" type="CanvasLayer" parent="UIManager"]
+layer = 4
+
+[node name="InventoryButton" type="Button" parent="UIManager/GameUI"]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -41.0
+offset_top = 10.0
+offset_right = 42.0
+offset_bottom = 41.0
+grow_horizontal = 2
+text = "Inventory"
+
+[node name="XPBar" type="ProgressBar" parent="UIManager/GameUI"]
+offset_left = 408.0
+offset_top = 14.0
+offset_right = 858.0
+offset_bottom = 41.0
+show_percentage = false
+
+[node name="XPText" type="Label" parent="UIManager/GameUI"]
+offset_left = 615.0
+offset_top = 17.0
+offset_right = 655.0
+offset_bottom = 40.0
+
+[node name="Level" type="Label" parent="UIManager/GameUI"]
+modulate = Color(0.351563, 0.351563, 0.351563, 1)
+offset_left = 865.0
+offset_top = 15.0
+offset_right = 905.0
+offset_bottom = 38.0
+
+[node name="MenuUI" type="CanvasLayer" parent="UIManager"]
+layer = 128
+
+[node name="Timer" type="Timer" parent="." groups=["enemies"]]
+wait_time = 0.663
+autostart = true
+
+[connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]

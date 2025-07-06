@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://byy46yjfi8nve"]
+
+[ext_resource type="Script" uid="uid://brlynuul1ah43" path="res://Scenes/sauce_holder.gd" id="1_xap2s"]
+
+[node name="SauceHolder" type="Node2D"]
+process_mode = 3
+script = ExtResource("1_xap2s")

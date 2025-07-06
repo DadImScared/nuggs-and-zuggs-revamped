@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="BaseSauceResource" load_steps=2 format=3 uid="uid://ds2wn6fp3y74f"]
+
+[ext_resource type="Script" uid="uid://cv0efftypvupm" path="res://Resources/base_sauce_resource.gd" id="1_ts335"]
+
+[resource]
+script = ExtResource("1_ts335")
+sauce_name = "Ranch"
+damage = 10.0
+fire_rate = 0.7
+projectile_speed = 300.0
+range = 700.0
+projectile_count = 1
+spread_angle = 0.0
+sauce_color = Color(0.299906, 0.540376, 0.848627, 1)
+description = "Cool ranch, cooler enemies. Slows them down like a midwest winter."
+special_effect_type = 2
+effect_chance = 0.5
+effect_duration = 3.0
+effect_intensity = 1.0
+synergy_tags = Array[String](["cold", "slow", "freezing"])
+metadata/_custom_type_script = "uid://cv0efftypvupm"

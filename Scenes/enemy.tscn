@@ -1,0 +1,48 @@
+[gd_scene load_steps=4 format=3 uid="uid://dw66kcl6em5ar"]
+
+[ext_resource type="Script" uid="uid://hdg5wn66ekk3" path="res://Scenes/enemy.gd" id="1_hghv2"]
+
+[sub_resource type="CanvasTexture" id="CanvasTexture_ne65n"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_hghv2"]
+size = Vector2(0.977995, 0.977995)
+
+[node name="Enemy" type="CharacterBody2D" groups=["enemies"]]
+scale = Vector2(2.825, 2.825)
+collision_layer = 2
+collision_mask = 2
+script = ExtResource("1_hghv2")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+modulate = Color(0.980984, 0, 0.106305, 1)
+texture = SubResource("CanvasTexture_ne65n")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(1.77636e-15, 1.77636e-15)
+shape = SubResource("RectangleShape2D_hghv2")
+
+[node name="HealthBarContainer" type="Control" parent="."]
+visible = false
+modulate = Color(0.956863, 0, 0, 1)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="HealthBar" type="ProgressBar" parent="HealthBarContainer"]
+modulate = Color(0.641687, 0.257449, 0.520081, 1)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -1.06195
+offset_top = 0.707965
+offset_right = 29.938
+offset_bottom = -25.292
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(0.03, 0.03)
+value = 32.6
+show_percentage = false

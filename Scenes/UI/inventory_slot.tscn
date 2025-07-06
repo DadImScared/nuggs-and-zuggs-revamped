@@ -1,0 +1,22 @@
+[gd_scene load_steps=2 format=3 uid="uid://byl468qghtf68"]
+
+[ext_resource type="Script" uid="uid://u7qtfciqryyc" path="res://Scenes/UI/inventory_slot.gd" id="1_brh76"]
+
+[node name="InventorySlot" type="AspectRatioContainer"]
+custom_minimum_size = Vector2(64, 64)
+offset_right = 40.0
+offset_bottom = 40.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("1_brh76")
+
+[node name="SlotFrame" type="Control" parent="."]
+layout_mode = 2
+
+[node name="ColorRect" type="ColorRect" parent="SlotFrame"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2

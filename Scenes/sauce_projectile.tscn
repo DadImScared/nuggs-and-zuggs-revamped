@@ -1,0 +1,21 @@
+[gd_scene load_steps=4 format=3 uid="uid://cera2areas50a"]
+
+[ext_resource type="Script" uid="uid://bsocahowonyj4" path="res://Scenes/sauce_projectile.gd" id="1_0ykkt"]
+
+[sub_resource type="CanvasTexture" id="CanvasTexture_2tn5f"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_0ykkt"]
+size = Vector2(1, 1)
+
+[node name="SauceProjectile" type="Area2D"]
+collision_layer = 0
+collision_mask = 2
+script = ExtResource("1_0ykkt")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = SubResource("CanvasTexture_2tn5f")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_0ykkt")
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]

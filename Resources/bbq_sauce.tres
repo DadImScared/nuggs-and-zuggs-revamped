@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="BaseSauceResource" load_steps=2 format=3 uid="uid://buhtvui7vb1bp"]
+
+[ext_resource type="Script" uid="uid://cv0efftypvupm" path="res://Resources/base_sauce_resource.gd" id="1_kn02r"]
+
+[resource]
+script = ExtResource("1_kn02r")
+sauce_name = "BBQ Sauce"
+damage = 15.0
+fire_rate = 1.0
+projectile_speed = 300.0
+range = 400.0
+projectile_count = 1
+spread_angle = 0.0
+sauce_color = Color(0.693104, 0.365603, 0.335061, 1)
+description = "Grandpa’s secret recipe…
+ but he won’t say whose grandpa."
+metadata/_custom_type_script = "uid://cv0efftypvupm"
