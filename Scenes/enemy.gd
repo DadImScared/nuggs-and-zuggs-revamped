@@ -6,6 +6,9 @@ signal died(xp_amount: int)
 @onready var sprite = $Sprite2D
 @onready var health_bar = $HealthBarContainer/HealthBar
 
+var external_velocity_override: bool = false
+var external_velocity: Vector2 = Vector2.ZERO
+
 var health_bar_timer = 0.0
 var health_bar_duration = 3.0
 
@@ -133,9 +136,21 @@ func scale_to_player_level():
 
 
 func _physics_process(delta: float) -> void:
-	var direction = global_position.direction_to(player.global_position)
-	velocity = direction * move_speed
+	if external_velocity_override:
+		# Use external velocity (tornado, knockback, etc.)
+		velocity = external_velocity
+		external_velocity_override = false  # Reset for next frame
+	else:
+		# Normal movement toward player
+		var direction = global_position.direction_to(player.global_position)
+		velocity = direction * move_speed
+
 	move_and_slide()
+
+func apply_external_velocity(new_velocity: Vector2):
+	"""Apply external velocity from tornado, knockback, magnetism, etc."""
+	external_velocity = new_velocity
+	external_velocity_override = true
 
 func take_damage(damage: int):
 	health -= damage

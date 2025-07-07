@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="BaseSauceResource" load_steps=2 format=3 uid="uid://w8fsl1f7dj7x"]
+
+[ext_resource type="Script" uid="uid://cv0efftypvupm" path="res://Resources/base_sauce_resource.gd" id="1_jomtf"]
+
+[resource]
+script = ExtResource("1_jomtf")
+sauce_name = "Mesozoic Miracle Whip"
+damage = 4.0
+fire_rate = 2.2
+projectile_speed = 180.0
+range = 75.0
+projectile_count = 1
+spread_angle = 0.0
+sauce_color = Color(0.964578, 0.877409, 0, 1)
+description = "Not mayo, but don't tell anyone. Creates tiny tornadoes because it's that whipped up about being authentic."
+special_effect_type = 22
+effect_chance = 0.8
+effect_duration = 1.0
+effect_intensity = 1.3
+synergy_tags = Array[String](["wind", "aoe"])
+metadata/_custom_type_script = "uid://cv0efftypvupm"

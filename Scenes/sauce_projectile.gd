@@ -236,6 +236,8 @@ func apply_special_effects(enemy: Node2D):
 		return
 
 	match sauce_resource.special_effect_type:
+		BaseSauceResource.SpecialEffectType.TORNADO:
+			apply_tornado_effect(enemy)
 		BaseSauceResource.SpecialEffectType.QUANTUM:
 			apply_quantum_effect(enemy)
 		BaseSauceResource.SpecialEffectType.BURN:
@@ -420,6 +422,86 @@ func apply_lightning_effect(enemy: Node2D):
 
 		#create_lightning_visual(current_target.global_position, next_target.global_position)
 		current_target = next_target
+
+func apply_tornado_effect(enemy: Node2D):
+	if randf() > sauce_resource.effect_chance:
+		return  # Tornado didn't trigger
+
+	create_tornado(enemy.global_position, sauce_resource.effect_duration, sauce_resource.effect_intensity)
+
+func create_tornado(position: Vector2, duration: float, intensity: float):
+	# Create the tornado node
+	var tornado = Area2D.new()
+	tornado.global_position = position
+	tornado.collision_layer = 0
+	tornado.collision_mask = 2  # Same as projectiles - detect enemies
+
+	# Add collision shape
+	var collision = CollisionShape2D.new()
+	var shape = CircleShape2D.new()
+	shape.radius = 12.0 * intensity  # Small tornado
+	collision.shape = shape
+	tornado.add_child(collision)
+
+	# Add visual effect
+	var visual = create_tornado_visual(intensity)
+	tornado.add_child(visual)
+
+	# Set up the tornado behavior
+	tornado.set_script(preload("res://Scenes/tornado_effect.gd"))
+	tornado.setup(duration, intensity, get_scaled_damage() * 0.3)  # 30% of projectile damage per pull
+
+	# Defer adding to scene to avoid physics conflicts
+	call_deferred("_add_tornado_to_scene", tornado, duration)
+
+func _add_tornado_to_scene(tornado: Area2D, duration: float):
+	# Add to scene
+	get_tree().current_scene.add_child(tornado)
+
+	# Clean up after duration
+	get_tree().create_timer(duration).timeout.connect(
+		func():
+			if is_instance_valid(tornado):
+				tornado.queue_free()
+	)
+
+
+func create_tornado_visual(intensity: float) -> Node2D:
+
+	var visual_container = Node2D.new()
+
+	for i in range(12):
+		var line = Line2D.new()
+		line.width = 4.0
+		line.default_color = sauce_resource.sauce_color
+		line.default_color.a = 0.6
+
+		var angle_offset = i * PI / 6.0
+		var radius = 12.0 * intensity
+		for j in range(8):
+			var angle = angle_offset + j * 0.6
+			var point_radius = radius * (1.0 - j / 8.0)
+			var point = Vector2(cos(angle) * point_radius, sin(angle) * point_radius)
+			line.add_point(point)
+
+		visual_container.add_child(line)
+
+		var tween = create_tween()
+		tween.set_loops()
+		tween.tween_method(
+			func(angle: float): line.rotation = angle,
+			0.0, TAU, 0.5
+		)
+
+	var center_circle = Line2D.new()
+	center_circle.width = 3.0
+	center_circle.default_color = sauce_resource.sauce_color
+	for i in range(17):
+		var angle = i * TAU / 16.0
+		center_circle.add_point(Vector2(cos(angle) * 5, sin(angle) * 5))
+	visual_container.add_child(center_circle)
+
+	return visual_container
 
 func apply_chaos_effect(enemy: Node2D):
 	var chaos_effects = [

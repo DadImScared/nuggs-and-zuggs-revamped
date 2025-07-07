@@ -8,6 +8,7 @@
 size = Vector2(0.977995, 0.977995)
 
 [node name="Enemy" type="CharacterBody2D" groups=["enemies"]]
+z_index = 15
 scale = Vector2(2.825, 2.825)
 collision_layer = 2
 collision_mask = 2
