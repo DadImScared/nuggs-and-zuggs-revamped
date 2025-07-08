@@ -8,7 +8,8 @@ var all_sauces = {
 	"mustard": preload("res://Resources/mustard.tres"),
 	"sriracha": preload("res://Resources/sriracha.tres"),
 	"worcestershire": preload("res://Resources/worcestershire.tres"),
-	"mesozoic_mayo": preload("res://Resources/mesozoic_miracle_whip.tres")
+	"mesozoic_mayo": preload("res://Resources/mesozoic_miracle_whip.tres"),
+	"prehistoric_pesto": preload("res://Resources/prehistoric_pesto.tres")
 }
 
 func get_sauce(name: String):

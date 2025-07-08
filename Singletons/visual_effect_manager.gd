@@ -1,5 +1,25 @@
 extends Node
 
+func create_infection_spread_visual(start_pos: Vector2, end_pos: Vector2, color: Color):
+	var line = Line2D.new()
+	line.add_point(start_pos)
+	line.add_point(end_pos)
+	line.width = 2.0
+	line.default_color = color
+	line.default_color.a = 0.6
+
+	# Make it look organic/virus-like with a wavy middle point
+	var mid_point = (start_pos + end_pos) / 2.0
+	var perpendicular = (end_pos - start_pos).rotated(PI/2).normalized() * 15
+	line.add_point(mid_point + perpendicular, 1)  # Insert wavy point in middle
+
+	var scene = get_tree().current_scene
+	scene.add_child(line)
+
+	var tween = scene.create_tween()
+	tween.tween_property(line, "modulate:a", 0.0, 0.4)
+	tween.tween_callback(line.queue_free)
+
 func create_chain_visual(start_pos: Vector2, end_pos: Vector2, color: Color):
 	var line = Line2D.new()
 	line.add_point(start_pos)

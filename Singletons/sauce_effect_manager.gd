@@ -11,6 +11,8 @@ func apply_effect(projectile: Area2D, enemy: Node2D, sauce_resource: BaseSauceRe
 	match sauce_resource.special_effect_type:
 		BaseSauceResource.SpecialEffectType.TORNADO:
 			_apply_tornado_effect(projectile, enemy, sauce_resource)
+		BaseSauceResource.SpecialEffectType.INFECT:
+			_apply_infect_effect(enemy, sauce_resource)
 		BaseSauceResource.SpecialEffectType.BURN:
 			_apply_burn_effect(enemy, sauce_resource)
 		BaseSauceResource.SpecialEffectType.SLOW:
@@ -50,6 +52,13 @@ func _apply_tornado_effect(projectile: Area2D, enemy: Node2D, sauce_resource: Ba
 		projectile.get_scaled_damage() * 0.3,  # 30% of projectile damage per pull
 		sauce_resource.sauce_color
 	)
+
+func _apply_infect_effect(enemy: Node2D, sauce_resource: BaseSauceResource):
+	if enemy.has_method("apply_status_effect"):
+		enemy.apply_status_effect("infect", sauce_resource.effect_duration, sauce_resource.effect_intensity)
+		# Store the sauce color for visual effects
+		if "infect" in enemy.active_effects:
+			enemy.active_effects["infect"]["color"] = sauce_resource.sauce_color
 
 # Status effect applications
 func _apply_burn_effect(enemy: Node2D, sauce_resource: BaseSauceResource):

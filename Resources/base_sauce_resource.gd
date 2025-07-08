@@ -8,7 +8,7 @@ extends Resource
 @export var damage: float = 10.0
 @export var fire_rate: float = 1.0 # shots per second
 @export var projectile_speed: float = 300.0
-@export var range: float = 700.0
+@export var range: float = 60.0
 @export var projectile_count: int = 1
 @export var spread_angle: float = 0.0 # in degrees
 @export var sauce_color: Color = Color.RED
@@ -44,5 +44,6 @@ enum SpecialEffectType {
 	RICOCHET,       # Bounces between enemies
 	MARK,           # Mark enemies for bonus damage
 	QUANTUM,
-	TORNADO
+	TORNADO,
+	INFECT
 }

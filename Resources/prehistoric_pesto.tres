@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="BaseSauceResource" load_steps=2 format=3 uid="uid://baun623iuyeum"]
+
+[ext_resource type="Script" uid="uid://cv0efftypvupm" path="res://Resources/base_sauce_resource.gd" id="1_lxyol"]
+
+[resource]
+script = ExtResource("1_lxyol")
+sauce_name = "Prehistoric Pesto"
+damage = 7.0
+fire_rate = 1.6
+projectile_speed = 320.0
+range = 80.0
+projectile_count = 1
+spread_angle = 0.0
+sauce_color = Color(0.133333, 0.545098, 0.133333, 1)
+description = "Made from herbs that survived the meteor. Spreads faster than gossip at a PTA meeting."
+special_effect_type = 23
+effect_chance = 0.8
+effect_duration = 4.0
+effect_intensity = 2.0
+synergy_tags = Array[String](["spread"])
+metadata/_custom_type_script = "uid://cv0efftypvupm"

@@ -62,6 +62,12 @@ func process_status_effects(delta: float):
 					take_damage(effect.intensity * 3.0)
 					effect.timer = 0.0
 					#create_poison_visual()
+			"infect":
+				# Handle infection tick timer
+				effect.tick_timer = effect.get("tick_timer", 0.0) + delta
+				if effect.tick_timer >= 0.5:
+					effect.tick_timer = 0.0
+					take_damage(effect.intensity * 2.0)
 
 		# Remove expired effects
 		if effect.timer >= effect.duration:
@@ -93,6 +99,9 @@ func apply_status_effect(effect_name: String, duration: float, intensity: float)
 			sprite.modulate = Color(1.2, 0.8, 0.8) # Red tint
 		"poison":
 			sprite.modulate = Color(0.8, 1.0, 0.8) # Green tint
+		"infect":
+			active_effects[effect_name]["tick_timer"] = 0.0  # Add tick timer for infection
+			sprite.modulate = Color(0.8, 1.2, 0.8)
 
 func remove_status_effect(effect_name: String):
 	active_effects.erase(effect_name)
@@ -147,6 +156,65 @@ func _physics_process(delta: float) -> void:
 
 	move_and_slide()
 
+func spread_infection_on_death():
+	var infection_radius = 60.0  # Spread radius
+	var nearby_enemies = get_nearby_enemies_for_infection(infection_radius)
+	var infection_effect = active_effects["infect"]
+
+	for nearby_enemy in nearby_enemies:
+		if nearby_enemy != self and nearby_enemy.has_method("apply_status_effect"):
+			# Don't reinfect already infected enemies
+			if not ("infect" in nearby_enemy.active_effects):
+				nearby_enemy.apply_status_effect(
+					"infect",
+					infection_effect.duration,
+					infection_effect.intensity
+				)
+				# Add the color after applying the effect
+				if "color" in infection_effect:
+					nearby_enemy.active_effects["infect"]["color"] = infection_effect.color
+
+				# Create visual connection
+				var color = infection_effect.get("color", Color.GREEN)
+				VisualEffectManager.create_infection_spread_visual(
+					global_position,
+					nearby_enemy.global_position,
+					color
+				)
+
+func get_nearby_enemies_for_infection(radius: float) -> Array[Node2D]:
+	var enemies: Array[Node2D] = []
+	var bodies = get_tree().get_nodes_in_group("enemies")
+
+	for body in bodies:
+		if body != self and body.global_position.distance_to(global_position) <= radius:
+			enemies.append(body)
+
+	return enemies
+
+func create_infection_particles():
+	# Small burst of particles when infection damages
+	if not ("infect" in active_effects):
+		return
+
+	var infection_effect = active_effects["infect"]
+	var color = infection_effect.get("color", Color.GREEN)
+
+	for i in range(3):
+		var particle = ColorRect.new()  # Using ColorRect instead of Sprite2D for simplicity
+		particle.size = Vector2(2, 2)
+		particle.color = color
+		particle.position = global_position
+		get_parent().add_child(particle)
+
+		var direction = Vector2.from_angle(randf() * TAU)
+		var distance = randf_range(10, 25)
+
+		var tween = create_tween()
+		tween.parallel().tween_property(particle, "position", particle.position + direction * distance, 0.8)
+		tween.parallel().tween_property(particle, "modulate:a", 0.0, 0.8)
+		tween.tween_callback(particle.queue_free)
+
 func apply_external_velocity(new_velocity: Vector2):
 	"""Apply external velocity from tornado, knockback, magnetism, etc."""
 	external_velocity = new_velocity
@@ -157,6 +225,9 @@ func take_damage(damage: int):
 	health_bar.value = health
 	health_bar_container.visible = true
 	health_bar_timer = health_bar_duration
+
 	if health <= 0:
+		if "infect" in active_effects:
+			spread_infection_on_death()
 		queue_free()
 		emit_signal("died", xp_on_kill)
