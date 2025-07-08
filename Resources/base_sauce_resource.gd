@@ -21,6 +21,13 @@ extends Resource
 @export var effect_intensity: float = 1.0
 @export var synergy_tags: Array[String] = [] # For synergy system
 
+# Level scaling - how much each stat improves per level
+@export var damage_per_level: float = 2.0
+@export var fire_rate_per_level: float = 0.1
+@export var range_per_level: float = 5.0
+@export var effect_chance_per_level: float = 0.02
+@export var effect_intensity_per_level: float = 0.05
+
 enum SpecialEffectType {
 	NONE,
 	BURN,           # Fire damage over time
@@ -47,3 +54,25 @@ enum SpecialEffectType {
 	TORNADO,
 	INFECT
 }
+
+# Get current stats with level modifiers applied
+func get_current_damage(level: int = 1) -> float:
+	return damage + (damage_per_level * (level - 1))
+
+func get_current_fire_rate(level: int = 1) -> float:
+	return fire_rate + (fire_rate_per_level * (level - 1))
+
+func get_current_range(level: int = 1) -> float:
+	return range + (range_per_level * (level - 1))
+
+func get_current_effect_chance(level: int = 1) -> float:
+	return min(1.0, effect_chance + (effect_chance_per_level * (level - 1)))
+
+func get_current_effect_intensity(level: int = 1) -> float:
+	return effect_intensity + (effect_intensity_per_level * (level - 1))
+
+func get_current_projectile_speed(level: int = 1) -> float:
+	return projectile_speed # Could add scaling later if needed
+
+func get_current_projectile_count(level: int = 1) -> int:
+	return projectile_count # Could add scaling later if needed

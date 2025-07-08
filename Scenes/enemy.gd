@@ -1,6 +1,6 @@
 extends CharacterBody2D
 
-signal died(xp_amount: int)
+signal died(xp_amount: int, damage_sources: Dictionary)
 @onready var player = get_node("/root/Game/Player")
 @onready var health_bar_container = $HealthBarContainer
 @onready var sprite = $Sprite2D
@@ -22,6 +22,10 @@ var damage = 5
 var xp_on_kill = 5
 var move_speed = 18.0
 var health = 30
+
+# Damage tracking for XP distribution
+var damage_sources: Dictionary = {} # bottle_id -> damage_dealt
+var total_damage_taken: float = 0.0
 
 var active_effects = {}
 var original_speed: float
@@ -54,20 +58,23 @@ func process_status_effects(delta: float):
 		match effect_name:
 			"burn":
 				if effect.timer >= 1.0: # Damage every second
-					take_damage(effect.intensity * 5.0)
+					var burn_damage = effect.intensity * 5.0
+					var source_id = effect.get("source_bottle_id", "unknown")
+					take_damage_from_source(burn_damage, source_id)
 					effect.timer = 0.0
-					#create_burn_visual()
 			"poison":
 				if effect.timer >= 0.5: # Damage every half second
-					take_damage(effect.intensity * 3.0)
+					var poison_damage = effect.intensity * 3.0
+					var source_id = effect.get("source_bottle_id", "unknown")
+					take_damage_from_source(poison_damage, source_id)
 					effect.timer = 0.0
-					#create_poison_visual()
 			"infect":
-				# Handle infection tick timer
 				effect.tick_timer = effect.get("tick_timer", 0.0) + delta
 				if effect.tick_timer >= 0.5:
 					effect.tick_timer = 0.0
-					take_damage(effect.intensity * 2.0)
+					var infect_damage = effect.intensity * 2.0
+					var source_id = effect.get("source_bottle_id", "unknown")
+					take_damage_from_source(infect_damage, source_id)
 
 		# Remove expired effects
 		if effect.timer >= effect.duration:
@@ -77,11 +84,13 @@ func process_status_effects(delta: float):
 	for effect_name in effects_to_remove:
 		remove_status_effect(effect_name)
 
-func apply_status_effect(effect_name: String, duration: float, intensity: float):
+func apply_status_effect(effect_name: String, duration: float, intensity: float, source_bottle_id: String = "unknown"):
+	print("source bottle id ", source_bottle_id, "effect name", effect_name)
 	active_effects[effect_name] = {
 		"duration": duration,
 		"intensity": intensity,
-		"timer": 0.0
+		"timer": 0.0,
+		"source_bottle_id": source_bottle_id
 	}
 
 	# Apply immediate effects
@@ -100,7 +109,7 @@ func apply_status_effect(effect_name: String, duration: float, intensity: float)
 		"poison":
 			sprite.modulate = Color(0.8, 1.0, 0.8) # Green tint
 		"infect":
-			active_effects[effect_name]["tick_timer"] = 0.0  # Add tick timer for infection
+			active_effects[effect_name]["tick_timer"] = 0.0
 			sprite.modulate = Color(0.8, 1.2, 0.8)
 
 func remove_status_effect(effect_name: String):
@@ -119,17 +128,10 @@ func remove_status_effect(effect_name: String):
 func setup_health_bar():
 	health_bar.max_value = max_health
 	health_bar.value = health
-	var style = StyleBoxFlat.new()
-	style.bg_color = Color.RED
-	#health_bar.add_theme_stylebox_override("fill", style)
-	var bg_style = StyleBoxFlat.new()
-	bg_style.bg_color = Color.BLACK
-	#health_bar.add_theme_stylebox_override("background", bg_style)
-	#health_bar_container.position = Vector2(-25, -40)
 
 func scale_to_player_level():
 	if PlayerStats.level < 2:
-		max_health = base_health  # Set max_health even for level 1
+		max_health = base_health
 		return
 	var base_scale = 1.0 + (PlayerStats.level - 1)
 	var health_scale = base_scale * 1.1
@@ -143,38 +145,34 @@ func scale_to_player_level():
 	xp_on_kill = base_xp_reward + (base_xp_reward * xp_scale)
 	damage = base_damage + (base_damage * damage_scale)
 
-
 func _physics_process(delta: float) -> void:
 	if external_velocity_override:
-		# Use external velocity (tornado, knockback, etc.)
 		velocity = external_velocity
-		external_velocity_override = false  # Reset for next frame
+		external_velocity_override = false
 	else:
-		# Normal movement toward player
 		var direction = global_position.direction_to(player.global_position)
 		velocity = direction * move_speed
 
 	move_and_slide()
 
 func spread_infection_on_death():
-	var infection_radius = 60.0  # Spread radius
+	var infection_radius = 60.0
 	var nearby_enemies = get_nearby_enemies_for_infection(infection_radius)
 	var infection_effect = active_effects["infect"]
 
 	for nearby_enemy in nearby_enemies:
 		if nearby_enemy != self and nearby_enemy.has_method("apply_status_effect"):
-			# Don't reinfect already infected enemies
 			if not ("infect" in nearby_enemy.active_effects):
 				nearby_enemy.apply_status_effect(
 					"infect",
 					infection_effect.duration,
-					infection_effect.intensity
+					infection_effect.intensity,
+					infection_effect.get("source_bottle_id", "unknown")
 				)
-				# Add the color after applying the effect
+
 				if "color" in infection_effect:
 					nearby_enemy.active_effects["infect"]["color"] = infection_effect.color
 
-				# Create visual connection
 				var color = infection_effect.get("color", Color.GREEN)
 				VisualEffectManager.create_infection_spread_visual(
 					global_position,
@@ -192,42 +190,30 @@ func get_nearby_enemies_for_infection(radius: float) -> Array[Node2D]:
 
 	return enemies
 
-func create_infection_particles():
-	# Small burst of particles when infection damages
-	if not ("infect" in active_effects):
-		return
-
-	var infection_effect = active_effects["infect"]
-	var color = infection_effect.get("color", Color.GREEN)
-
-	for i in range(3):
-		var particle = ColorRect.new()  # Using ColorRect instead of Sprite2D for simplicity
-		particle.size = Vector2(2, 2)
-		particle.color = color
-		particle.position = global_position
-		get_parent().add_child(particle)
-
-		var direction = Vector2.from_angle(randf() * TAU)
-		var distance = randf_range(10, 25)
-
-		var tween = create_tween()
-		tween.parallel().tween_property(particle, "position", particle.position + direction * distance, 0.8)
-		tween.parallel().tween_property(particle, "modulate:a", 0.0, 0.8)
-		tween.tween_callback(particle.queue_free)
-
 func apply_external_velocity(new_velocity: Vector2):
-	"""Apply external velocity from tornado, knockback, magnetism, etc."""
 	external_velocity = new_velocity
 	external_velocity_override = true
 
-func take_damage(damage: int):
-	health -= damage
+# New damage tracking functions
+func take_damage_from_source(damage_amount: float, source_bottle_id: String):
+	health -= damage_amount
 	health_bar.value = health
 	health_bar_container.visible = true
 	health_bar_timer = health_bar_duration
 
+	# Track damage for XP distribution
+	if not damage_sources.has(source_bottle_id):
+		damage_sources[source_bottle_id] = 0.0
+	damage_sources[source_bottle_id] += damage_amount
+	total_damage_taken += damage_amount
+
 	if health <= 0:
 		if "infect" in active_effects:
 			spread_infection_on_death()
+
 		queue_free()
-		emit_signal("died", xp_on_kill)
+		emit_signal("died", xp_on_kill, damage_sources)
+
+# Fallback for old take_damage calls
+func take_damage(damage: int):
+	take_damage_from_source(damage, "unknown")
