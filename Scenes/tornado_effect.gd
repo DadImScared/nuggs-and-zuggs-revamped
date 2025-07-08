@@ -1,4 +1,3 @@
-# Save as Scripts/tornado_effect.gd
 extends Area2D
 
 var pull_force: float = 450.0
@@ -33,12 +32,6 @@ func _physics_process(delta: float):
 		var direction = (enemy.global_position - global_position).normalized()
 		var distance = global_position.distance_to(enemy.global_position)
 		var pull_strength = pull_force * delta
-
-		# Reduce pull force when very close to center to prevent getting stuck
-		#if distance < 10.0:  # Within 10 pixels of center
-			#pull_strength *= 0.1  # Much weaker pull
-		#elif distance < 20.0:  # Within 20 pixels
-			#pull_strength *= 0.5  # Half strength
 
 		if enemy is CharacterBody2D:
 			var pull_velocity = -direction * pull_strength

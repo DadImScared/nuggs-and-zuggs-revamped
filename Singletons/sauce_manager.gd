@@ -7,7 +7,8 @@ var all_sauces = {
 	"ranch": preload("res://Resources/ranch.tres"),
 	"mustard": preload("res://Resources/mustard.tres"),
 	"sriracha": preload("res://Resources/sriracha.tres"),
-	"worcestershire": preload("res://Resources/worcestershire.tres")
+	"worcestershire": preload("res://Resources/worcestershire.tres"),
+	"mesozoic_mayo": preload("res://Resources/mesozoic_miracle_whip.tres")
 }
 
 func get_sauce(name: String):

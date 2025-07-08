@@ -133,12 +133,9 @@ func create_tornado_visual(intensity: float, sauce_color: Color) -> Node2D:
 
 		visual_container.add_child(line)
 
-		var tween = get_tree().create_tween()
+		var tween = line.create_tween()
 		tween.set_loops()
-		tween.tween_method(
-			func(angle: float): line.rotation = angle,
-			0.0, TAU, 0.5
-		)
+		tween.tween_method(line.set_rotation, 0.0, TAU, 0.5)
 
 	var center_circle = Line2D.new()
 	center_circle.width = 3.0
