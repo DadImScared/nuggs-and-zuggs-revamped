@@ -1,0 +1,95 @@
+[gd_scene load_steps=2 format=3 uid="uid://eji8tvbsfw71"]
+
+[ext_resource type="Script" uid="uid://bp2vmulfnlxtc" path="res://Scenes/UI/upgrade_choice_menu.gd" id="1_hx88u"]
+
+[node name="UpgradeChoiceMenu" type="Control"]
+process_mode = 2
+z_index = 65
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("1_hx88u")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+modulate = Color(0, 0, 0, 0.503)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="CenterPanel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -400.0
+offset_right = 400.0
+offset_bottom = 400.0
+grow_horizontal = 2
+
+[node name="MainContainer" type="VBoxContainer" parent="CenterPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TitleLabel" type="Label" parent="CenterPanel/MainContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "LEVEL UP!"
+horizontal_alignment = 1
+
+[node name="SauceInfoLabel" type="Label" parent="CenterPanel/MainContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Sauce Level Info"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="CenterPanel/MainContainer"]
+layout_mode = 2
+
+[node name="ChoicesContainer" type="HBoxContainer" parent="CenterPanel/MainContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Choice1" type="VBoxContainer" parent="CenterPanel/MainContainer/ChoicesContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Button1" type="Button" parent="CenterPanel/MainContainer/ChoicesContainer/Choice1"]
+layout_mode = 2
+text = "Choose"
+
+[node name="Description1" type="Label" parent="CenterPanel/MainContainer/ChoicesContainer/Choice1"]
+layout_mode = 2
+
+[node name="Choice2" type="VBoxContainer" parent="CenterPanel/MainContainer/ChoicesContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Button2" type="Button" parent="CenterPanel/MainContainer/ChoicesContainer/Choice2"]
+layout_mode = 2
+text = "Choose"
+
+[node name="Description2" type="Label" parent="CenterPanel/MainContainer/ChoicesContainer/Choice2"]
+layout_mode = 2
+
+[node name="Choice3" type="VBoxContainer" parent="CenterPanel/MainContainer/ChoicesContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Button3" type="Button" parent="CenterPanel/MainContainer/ChoicesContainer/Choice3"]
+layout_mode = 2
+text = "Choose"
+
+[node name="Description3" type="Label" parent="CenterPanel/MainContainer/ChoicesContainer/Choice3"]
+layout_mode = 2

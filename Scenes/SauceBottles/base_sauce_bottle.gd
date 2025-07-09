@@ -123,6 +123,15 @@ func update_fire_rate():
 		shoot_timer.wait_time = 1.0 / current_fire_rate
 
 # Leveling system functions
+func show_upgrade_menu():
+	var upgrade_menu = preload("res://Scenes/UI/upgrade_choice_menu.tscn").instantiate()
+	get_tree().current_scene.add_child(upgrade_menu)
+	upgrade_menu.setup(sauce_data.sauce_name, current_level)
+	upgrade_menu.upgrade_selected.connect(_on_upgrade_chosen)
+
+func _on_upgrade_chosen(choice_number: int):
+	print("%s chose upgrade %d" % [sauce_data.sauce_name, choice_number])
+
 func gain_xp(amount: int):
 	if current_level >= max_level:
 		return
@@ -144,6 +153,7 @@ func level_up():
 	update_fire_rate() # Just update fire rate, don't recreate timer
 	update_detection_range() # Update range
 
+	show_upgrade_menu()
 	# Emit signal for potential upgrade choices
 	leveled_up.emit(bottle_id, current_level, sauce_data.sauce_name)
 
