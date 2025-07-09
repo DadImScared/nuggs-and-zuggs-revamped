@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://bp2vmulfnlxtc" path="res://Scenes/UI/upgrade_choice_menu.gd" id="1_hx88u"]
 
 [node name="UpgradeChoiceMenu" type="Control"]
-process_mode = 2
+process_mode = 3
 z_index = 65
 layout_mode = 3
 anchors_preset = 15

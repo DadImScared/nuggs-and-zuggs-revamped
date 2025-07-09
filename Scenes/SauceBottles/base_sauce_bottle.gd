@@ -153,7 +153,7 @@ func level_up():
 	update_fire_rate() # Just update fire rate, don't recreate timer
 	update_detection_range() # Update range
 
-	show_upgrade_menu()
+	#show_upgrade_menu()
 	# Emit signal for potential upgrade choices
 	leveled_up.emit(bottle_id, current_level, sauce_data.sauce_name)
 
