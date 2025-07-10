@@ -1,14 +1,15 @@
-class_name BaseSauceBottle
+class_name ImprovedBaseSauceBottle
 extends Area2D
 
 signal leveled_up(bottle_id: String, new_level: int, sauce_name: String)
 
 @export var sauce_data: BaseSauceResource
-@export var regular_texture: Texture2D
-@export var squeeze_texture: Texture2D
 @onready var shoot_timer = $ShootingTimer
 @onready var detection_area = $CollisionShape2D
-@onready var sprite = $Sprite2D
+@onready var bottle_sprites = $BottleSprites
+@onready var bottle_base = $BottleSprites/BottleBase
+@onready var the_tip = $BottleSprites/TheTip
+@onready var shooting_point = $BottleSprites/TheTip/ShootingPoint
 @onready var animation_player = $AnimationPlayer
 
 var enemies_in_range = []
@@ -34,6 +35,7 @@ var chosen_upgrades: Array[String] = []
 func _ready() -> void:
 	var sauce_name = sauce_data.sauce_name if sauce_data else "UnknownSauce"
 	bottle_id = "%s_%d" % [sauce_name, get_instance_id()]
+	print("🍼 Created improved bottle with ID: %s" % bottle_id)
 
 	body_entered.connect(_on_body_entered)
 	body_exited.connect(_on_body_exited)
@@ -42,12 +44,10 @@ func _ready() -> void:
 		setup_bottle()
 
 func setup_bottle():
-	modulate = sauce_data.sauce_color
+	# Apply sauce color to both base and tip
+	if bottle_base and bottle_sprites:
+		bottle_sprites.modulate = sauce_data.sauce_color
 	update_detection_range()
-
-	# Set regular texture if available
-	if regular_texture:
-		sprite.texture = regular_texture
 
 func update_detection_range():
 	if detection_area and detection_area.shape and sauce_data:
@@ -61,8 +61,13 @@ func _physics_process(delta: float) -> void:
 		if enemies_in_range.size() > 1:
 			update_closest_target()
 
+	# Rotate the whole bottle sprites group to face target
 	if current_target and is_instance_valid(current_target):
-		look_at(current_target.global_position)
+		if bottle_sprites:
+			# Calculate direction from bottle to target
+			var direction = current_target.global_position - global_position
+			# Set rotation to point toward target
+			bottle_sprites.rotation = direction.angle()
 
 func _on_body_entered(body):
 	if body.name != "Player":
@@ -79,37 +84,40 @@ func shoot():
 
 	is_shooting = true
 
-	# Just squeeze and fire, then recover
+	# Play squeeze animation and handle firing
 	await squeeze_and_fire()
-	await recover()
 
 	is_shooting = false
 
 func squeeze_and_fire() -> void:
-	"""Play squeeze animation and fire projectile"""
+	"""Play squeeze animation and fire projectile with tip flash"""
 
-	# Play the squeeze animation (created in AnimationPlayer)
+	# Play squeeze animation if available
 	if animation_player and animation_player.has_animation("squeeze"):
 		animation_player.play("squeeze")
 
 	# Fire projectile at peak compression
 	var fire_delay = squeeze_duration * 0.8
-	get_tree().create_timer(fire_delay).timeout.connect(fire_projectile)
+	get_tree().create_timer(fire_delay).timeout.connect(fire_projectile_with_flash)
 
-	# Wait for squeeze duration
-	await get_tree().create_timer(squeeze_duration).timeout
+	# Wait for animation to complete
+	await get_tree().create_timer(squeeze_duration + recovery_duration).timeout
 
-func recover() -> void:
-	"""Just wait for recovery time"""
-	await get_tree().create_timer(recovery_duration).timeout
+func fire_projectile_with_flash() -> void:
+	"""Create projectile and flash the tip"""
 
-func fire_projectile() -> void:
-	"""Create and launch the projectile"""
+	# Check if target is still valid
+	if not current_target or not is_instance_valid(current_target):
+		print("❌ No valid target when firing!")
+		return
+
+	# Create and launch projectile
 	var new_sauce = SAUCE.instantiate()
 	get_tree().current_scene.add_child(new_sauce)
 	new_sauce.scale = scale
 
-	var shoot_position = %ShootingPoint.global_position
+	# Use the tip's shooting point for accurate positioning
+	var shoot_position = shooting_point.global_position if shooting_point else global_position
 	var target_direction = shoot_position.direction_to(current_target.global_position)
 
 	new_sauce.launch(
@@ -120,16 +128,21 @@ func fire_projectile() -> void:
 		bottle_id
 	)
 
-	# Very quick flash
-	create_muzzle_flash()
+	# Flash just the tip for muzzle flash
+	create_tip_flash()
 
-func create_muzzle_flash() -> void:
-	"""Quick flash when firing"""
-	var flash_tween = create_tween()
-	var original_modulate = modulate
+func create_tip_flash() -> void:
+	"""Flash only the tip part for muzzle flash effect"""
+	if not the_tip:
+		print("❌ No tip found for flash!")
+		return
 
-	flash_tween.tween_property(self, "modulate", Color.WHITE, 0.02)
-	flash_tween.tween_property(self, "modulate", original_modulate, 0.04)
+	# Scale flash - this works great!
+	var scale_tween = create_tween()
+	var original_scale = the_tip.scale
+
+	scale_tween.tween_property(the_tip, "scale", original_scale * 1.3, 0.05)
+	scale_tween.tween_property(the_tip, "scale", original_scale, 0.15)
 
 # Fast version for rapid fire weapons
 func shoot_quick():
@@ -142,9 +155,16 @@ func shoot_quick():
 		animation_player.play("squeeze")
 
 	# Fire almost immediately
-	get_tree().create_timer(0.03).timeout.connect(fire_projectile)
+	get_tree().create_timer(0.03).timeout.connect(fire_projectile_with_flash)
 
 func update_closest_target():
+	# Clean up invalid enemies first
+	var valid_enemies = []
+	for enemy in enemies_in_range:
+		if is_instance_valid(enemy):
+			valid_enemies.append(enemy)
+	enemies_in_range = valid_enemies
+
 	if enemies_in_range.size() == 0:
 		current_target = null
 		return
@@ -153,12 +173,11 @@ func update_closest_target():
 	var closest_dist = global_position.distance_to(closest.global_position)
 
 	for enemy in enemies_in_range:
-		if not is_instance_valid(enemy):
-			continue
-		var dist = global_position.distance_to(enemy.global_position)
-		if dist < closest_dist:
-			closest_dist = dist
-			closest = enemy
+		if is_instance_valid(enemy):
+			var dist = global_position.distance_to(enemy.global_position)
+			if dist < closest_dist:
+				closest_dist = dist
+				closest = enemy
 
 	current_target = closest
 
@@ -169,7 +188,7 @@ func _on_shoot_timer_timeout():
 	if fire_rate >= 4.0:
 		shoot_quick()  # Very fast weapons
 	else:
-		shoot()  # Normal subtle squeeze
+		shoot()  # Normal squeeze animation
 
 func setup_shoot_timer():
 	if not shoot_timer:
@@ -202,10 +221,19 @@ func level_up():
 	create_level_up_effect()
 
 func create_level_up_effect():
-	var tween = create_tween()
-	var original_scale = scale
-	tween.tween_property(self, "scale", original_scale * 1.3, 0.2)
-	tween.tween_property(self, "scale", original_scale, 0.2)
+	"""Level up effect that flashes both base and tip"""
+	var base_tween = create_tween()
+	var tip_tween = create_tween()
+
+	if bottle_base:
+		var original_base_scale = bottle_base.scale
+		base_tween.tween_property(bottle_base, "scale", original_base_scale * 1.3, 0.2)
+		base_tween.tween_property(bottle_base, "scale", original_base_scale, 0.2)
+
+	if the_tip:
+		var original_tip_modulate = the_tip.modulate
+		tip_tween.tween_property(the_tip, "modulate", Color.GOLD, 0.2)
+		tip_tween.tween_property(the_tip, "modulate", original_tip_modulate, 0.2)
 
 func get_level_info() -> Dictionary:
 	return {
@@ -214,3 +242,20 @@ func get_level_info() -> Dictionary:
 		"xp_to_next": xp_to_next_level,
 		"upgrades": chosen_upgrades.duplicate()
 	}
+
+# Utility functions for external access
+func get_bottle_base() -> Node2D:
+	return bottle_base
+
+func get_tip() -> Node2D:
+	return the_tip
+
+func set_tip_color(color: Color):
+	"""Set tip color independently from base"""
+	if the_tip:
+		the_tip.modulate = color
+
+func set_base_color(color: Color):
+	"""Set base color independently from tip"""
+	if bottle_base:
+		bottle_base.modulate = color

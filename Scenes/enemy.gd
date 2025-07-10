@@ -20,7 +20,7 @@ var max_health = 0
 
 var damage = 5
 var xp_on_kill = 5
-var move_speed = 18.0
+var move_speed = 25.0
 var health = 30
 
 # Damage tracking for XP distribution
@@ -152,6 +152,7 @@ func _physics_process(delta: float) -> void:
 	else:
 		var direction = global_position.direction_to(player.global_position)
 		velocity = direction * move_speed
+		#global_position += direction * move_speed * delta
 
 	move_and_slide()
 

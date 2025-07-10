@@ -29,16 +29,23 @@ func _on_sauce_unequipped(sauce: BaseSauceResource):
 func create_bottle_instance(sauce_resource: BaseSauceResource):
 	var item_data = ItemData.new()
 	var bottle = item_data.create_bottle(sauce_resource)
+
+	if not bottle:
+		print("❌ Failed to create bottle instance!")
+		return
+
 	# Add to scene
 	add_child(bottle)
+
 	# Connect bottle level up signal to BottleUpgradeManager
-	bottle.leveled_up.connect(BottleUpgradeManager._on_bottle_leveled_up)
+	if bottle.has_signal("leveled_up"):
+		bottle.leveled_up.connect(BottleUpgradeManager._on_bottle_leveled_up)
 
 	# Store bottle instance
 	active_bottles[bottle.bottle_id] = bottle
 
 	_position_weapons()
-	print("Created bottle instance: %s" % bottle.bottle_id)
+	print("✅ Created IMPROVED bottle instance: %s" % bottle.bottle_id)
 
 func destroy_bottle_instance(sauce_resource: BaseSauceResource):
 	# Find bottle with matching sauce resource
@@ -49,10 +56,10 @@ func destroy_bottle_instance(sauce_resource: BaseSauceResource):
 			remove_child(bottle)
 			bottle.queue_free()
 			_position_weapons()
-			print("Destroyed bottle instance: %s" % bottle_id)
+			print("🗑️ Destroyed bottle instance: %s" % bottle_id)
 			break
 
-func get_bottle_by_id(bottle_id: String) -> BaseSauceBottle:
+func get_bottle_by_id(bottle_id: String):
 	return active_bottles.get(bottle_id)
 
 func apply_upgrade_to_bottle(bottle_id: String, choice_number: int):
@@ -93,6 +100,7 @@ func _on_enemy_died_with_sources(total_xp: int, damage_sources: Dictionary):
 	if total_damage <= 0:
 		distribute_xp_equally(total_xp)
 		return
+
 	# Distribute XP proportionally based on damage contribution
 	for bottle_id in damage_sources:
 		var damage_dealt = damage_sources[bottle_id]
@@ -102,8 +110,9 @@ func _on_enemy_died_with_sources(total_xp: int, damage_sources: Dictionary):
 		# Find the bottle and give it XP
 		var bottle = get_bottle_by_id(bottle_id)
 		if bottle and is_instance_valid(bottle):
-			bottle.gain_xp(max(1, xp_earned))  # Minimum 1 XP
-			print("%s earned %d XP (%.1f%% contribution)" % [bottle.sauce_data.sauce_name, xp_earned, damage_percentage * 100])
+			if bottle.has_method("gain_xp"):
+				bottle.gain_xp(max(1, xp_earned))  # Minimum 1 XP
+				print("%s earned %d XP (%.1f%% contribution)" % [bottle.sauce_data.sauce_name, xp_earned, damage_percentage * 100])
 
 func distribute_xp_equally(total_xp: int):
 	# Fallback: give equal XP to all active bottles
@@ -113,7 +122,7 @@ func distribute_xp_equally(total_xp: int):
 	var xp_per_bottle = max(1, total_xp / active_bottles.size())
 	for bottle_id in active_bottles:
 		var bottle = active_bottles[bottle_id]
-		if is_instance_valid(bottle):
+		if is_instance_valid(bottle) and bottle.has_method("gain_xp"):
 			bottle.gain_xp(xp_per_bottle)
 			print("%s earned %d XP (equal share)" % [bottle.sauce_data.sauce_name, xp_per_bottle])
 

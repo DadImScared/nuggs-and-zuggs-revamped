@@ -5,6 +5,7 @@ var speed = 50.0
 func _physics_process(delta: float) -> void:
 	var input_direction = Input.get_vector("left", "right", "up", "down")
 	velocity = input_direction * speed
+	print("Player global_position: ", global_position, " velocity: ", velocity)
 	move_and_slide()
 	#if sauce_holder:
 		#sauce_holder.global_position = global_position

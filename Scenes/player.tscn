@@ -23,7 +23,7 @@ debug_color = Color(0, 0.6, 0.701961, 0)
 metadata/_edit_lock_ = true
 
 [node name="Camera2D" type="Camera2D" parent="."]
-zoom = Vector2(7.665, 7.665)
+zoom = Vector2(4.945, 4.945)
 metadata/_edit_lock_ = true
 
 [node name="SauceHolder" parent="." instance=ExtResource("2_cvnsp")]

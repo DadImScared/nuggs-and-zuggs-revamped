@@ -1,0 +1,76 @@
+[gd_scene load_steps=9 format=3 uid="uid://dgojxq1xi2bo8"]
+
+[ext_resource type="Script" uid="uid://d4jdhnqkmn8vb" path="res://Resources/improved_base_sauce_bottle.gd" id="1_tdy8v"]
+[ext_resource type="Texture2D" uid="uid://bwvs2qlcbbnug" path="res://Assets/Sprites/Bottles/normalbase.png" id="1_ye331"]
+[ext_resource type="Texture2D" uid="uid://cor568ajusl2" path="res://Assets/Sprites/Bottles/thetip.png" id="2_3xyhw"]
+[ext_resource type="Texture2D" uid="uid://c3f0q4y167jj4" path="res://Assets/Sprites/Bottles/squeezebase.png" id="4_ghitr"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_ye331"]
+radius = 153.004
+
+[sub_resource type="Animation" id="Animation_etwxx"]
+resource_name = "squeeze"
+length = 0.3
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("BottleSprites/BottleBase:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.166667, 0.3),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 1,
+"values": [ExtResource("1_ye331"), ExtResource("4_ghitr"), ExtResource("1_ye331")]
+}
+
+[sub_resource type="Animation" id="Animation_vpkd6"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("BottleSprites/BottleBase:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("1_ye331")]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_4qu4e"]
+_data = {
+&"RESET": SubResource("Animation_vpkd6"),
+&"squeeze": SubResource("Animation_etwxx")
+}
+
+[node name="ImprovedBaseSauceBottle" type="Area2D"]
+rotation = 1.54663
+collision_layer = 2
+collision_mask = 2
+script = ExtResource("1_tdy8v")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, 2)
+shape = SubResource("CircleShape2D_ye331")
+
+[node name="BottleSprites" type="Node2D" parent="."]
+scale = Vector2(0.12, 0.12)
+
+[node name="BottleBase" type="Sprite2D" parent="BottleSprites"]
+texture = ExtResource("1_ye331")
+
+[node name="TheTip" type="Sprite2D" parent="BottleSprites"]
+texture = ExtResource("2_3xyhw")
+
+[node name="ShootingPoint" type="Marker2D" parent="BottleSprites/TheTip"]
+position = Vector2(0, -43)
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+&"": SubResource("AnimationLibrary_4qu4e")
+}
+
+[node name="ShootingTimer" type="Timer" parent="."]
+autostart = true
