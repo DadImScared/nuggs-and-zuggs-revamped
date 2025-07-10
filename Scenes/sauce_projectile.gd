@@ -33,7 +33,7 @@ func launch(start_pos: Vector2, direction: Vector2, sauce: BaseSauceResource, le
 	source_bottle_id = bottle_id
 	velocity = direction.normalized() * sauce.get_current_projectile_speed(sauce_level)
 	max_range = sauce.get_current_range(sauce_level)
-	rotation = direction.angle()
+	rotation = direction.angle() + PI/2
 	sauce_damage = sauce.get_current_damage(sauce_level)
 	modulate = sauce.sauce_color
 	sauce_resource = sauce

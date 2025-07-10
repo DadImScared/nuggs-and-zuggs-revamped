@@ -1,8 +1,7 @@
 [gd_scene load_steps=4 format=3 uid="uid://cera2areas50a"]
 
 [ext_resource type="Script" uid="uid://bsocahowonyj4" path="res://Scenes/sauce_projectile.gd" id="1_0ykkt"]
-
-[sub_resource type="CanvasTexture" id="CanvasTexture_2tn5f"]
+[ext_resource type="Texture2D" uid="uid://dlirdogitqnoe" path="res://Assets/Sprites/bullet.png" id="2_2xw1m"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_0ykkt"]
 size = Vector2(1, 1)
@@ -13,7 +12,8 @@ collision_mask = 2
 script = ExtResource("1_0ykkt")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
-texture = SubResource("CanvasTexture_2tn5f")
+scale = Vector2(0.215, 0.215)
+texture = ExtResource("2_2xw1m")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("RectangleShape2D_0ykkt")
