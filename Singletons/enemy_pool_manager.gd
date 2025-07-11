@@ -4,7 +4,8 @@ extends Node
 # Arrays to hold different types of enemies
 var basic_enemies: Array[BaseEnemyResource] = [
 	preload("res://Scenes/Enemies/bee_enemy.tres"),
-	preload("res://Scenes/Enemies/dragonfly_enemy.tres")
+	preload("res://Scenes/Enemies/dragonfly_enemy.tres"),
+	preload("res://Scenes/Enemies/gnome_enemy.tres")
 ]
 var elite_enemies: Array[BaseEnemyResource] = []
 var boss_enemies: Array[BaseEnemyResource] = []

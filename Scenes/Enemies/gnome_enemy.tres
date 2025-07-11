@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="BaseEnemyResource" load_steps=2 format=3 uid="uid://14kv8fsnx42r"]
+
+[ext_resource type="Script" uid="uid://di7axva1sbj8b" path="res://Resources/base_enemy_resource.gd" id="1_btgce"]
+
+[resource]
+script = ExtResource("1_btgce")
+enemy_name = "Gnome"
+enemy_type = "basic"
+base_health = 30.0
+base_damage = 10.0
+base_speed = 18.0
+base_xp_reward = 5
+enemy_color = Color(1, 0, 0, 1)
+scale_modifier = 0.1
+spawn_weight = 100
+scene_path = "res://Scenes/Enemies/gnome.tscn"
+animation_speed_multiplier = 1.0
+move_animation_name = "move"
+hit_animation_name = "hit"
+burn_resistance = 1.0
+poison_resistance = 1.0
+freeze_resistance = 1.0
+slow_resistance = 1.0
+metadata/_custom_type_script = "uid://di7axva1sbj8b"

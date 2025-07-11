@@ -70,7 +70,9 @@ func setup_from_resource():
 
 	# Apply visual settings from resource
 	scale = Vector2.ONE * enemy_resource.scale_modifier  # Scale the whole enemy (sprite + collision)
-	animated_sprite.modulate = enemy_resource.enemy_color
+	#animated_sprite.modulate = enemy_resource.enemy_color
+	if enemy_resource.apply_color_tint:
+		animated_sprite.modulate = enemy_resource.enemy_color
 
 	# Set animation speed if we have animations
 	if animated_sprite:

@@ -15,6 +15,7 @@ extends Resource
 # Visual appearance
 @export var enemy_color: Color = Color.RED
 @export var scale_modifier: float = 1.0
+@export var apply_color_tint: bool = false
 
 # How likely this enemy is to spawn (higher = more common)
 @export var spawn_weight: int = 100

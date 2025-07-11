@@ -27,8 +27,8 @@ animations = [{
 }]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_x4ly1"]
-radius = 22.8156
-height = 160.042
+radius = 26.0122
+height = 156.012
 
 [node name="DragonFly" type="CharacterBody2D" groups=["enemies"]]
 collision_layer = 2
@@ -43,7 +43,7 @@ frame = 3
 frame_progress = 0.909536
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(6, 37)
+position = Vector2(5, 37)
 rotation = 1.55565
 shape = SubResource("CapsuleShape2D_x4ly1")
 

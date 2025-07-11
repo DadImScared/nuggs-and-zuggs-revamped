@@ -1,0 +1,55 @@
+[gd_scene load_steps=6 format=3 uid="uid://d1or3hugn2353"]
+
+[ext_resource type="Script" uid="uid://b3ebqljnpf6mn" path="res://Scenes/Enemies/base_enemy_script.gd" id="1_gr5v4"]
+[ext_resource type="Texture2D" uid="uid://dgp5wo2wrd4d4" path="res://Assets/Sprites/Enemies/Gnome/tile003.png" id="2_64nor"]
+[ext_resource type="Texture2D" uid="uid://c68xsphb5qagi" path="res://Assets/Sprites/Enemies/Gnome/tile005.png" id="3_klxj1"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_js2tx"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_64nor")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_klxj1")
+}],
+"loop": true,
+"name": &"move",
+"speed": 5.0
+}]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_64nor"]
+height = 34.0
+
+[node name="Gnome" type="CharacterBody2D" groups=["enemies"]]
+collision_layer = 2
+collision_mask = 2
+script = ExtResource("1_gr5v4")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+position = Vector2(3, 0)
+sprite_frames = SubResource("SpriteFrames_js2tx")
+animation = &"move"
+frame_progress = 0.462307
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(2, 1)
+shape = SubResource("CapsuleShape2D_64nor")
+
+[node name="HealthBarContainer" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_left = -16.0
+offset_top = 19.0
+offset_right = 18.0
+offset_bottom = 26.0
+
+[node name="HealthBar" type="ProgressBar" parent="HealthBarContainer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+show_percentage = false
+metadata/_edit_lock_ = true
