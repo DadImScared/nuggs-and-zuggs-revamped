@@ -1,0 +1,65 @@
+[gd_scene load_steps=8 format=3 uid="uid://v7hx041l0ijj"]
+
+[ext_resource type="Texture2D" uid="uid://pbut76yto0m8" path="res://Assets/Sprites/Enemies/DragonFly/Flying/MEDIUM/MEDIUM_0000_Capa-1.png" id="1_2xxib"]
+[ext_resource type="Script" uid="uid://b3ebqljnpf6mn" path="res://Scenes/Enemies/base_enemy_script.gd" id="1_x4ly1"]
+[ext_resource type="Texture2D" uid="uid://dp1le414q71qm" path="res://Assets/Sprites/Enemies/DragonFly/Flying/MEDIUM/MEDIUM_0001_Capa-2.png" id="2_x4ly1"]
+[ext_resource type="Texture2D" uid="uid://dvvk4d0r8mygx" path="res://Assets/Sprites/Enemies/DragonFly/Flying/MEDIUM/MEDIUM_0002_Capa-3.png" id="3_r2wtf"]
+[ext_resource type="Texture2D" uid="uid://deo7ahfvkdsq2" path="res://Assets/Sprites/Enemies/DragonFly/Flying/MEDIUM/MEDIUM_0003_Capa-4.png" id="4_wy30n"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_wxyco"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_2xxib")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_x4ly1")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_r2wtf")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_wy30n")
+}],
+"loop": true,
+"name": &"move",
+"speed": 5.0
+}]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_x4ly1"]
+radius = 22.8156
+height = 160.042
+
+[node name="DragonFly" type="CharacterBody2D" groups=["enemies"]]
+collision_layer = 2
+collision_mask = 2
+script = ExtResource("1_x4ly1")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+position = Vector2(3, 0)
+sprite_frames = SubResource("SpriteFrames_wxyco")
+animation = &"move"
+frame = 3
+frame_progress = 0.909536
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(6, 37)
+rotation = 1.55565
+shape = SubResource("CapsuleShape2D_x4ly1")
+
+[node name="HealthBarContainer" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_left = -35.0
+offset_top = 61.0
+offset_right = 77.0
+offset_bottom = 74.0
+
+[node name="HealthBar" type="ProgressBar" parent="HealthBarContainer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+show_percentage = false

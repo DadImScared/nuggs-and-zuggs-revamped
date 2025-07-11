@@ -2,7 +2,10 @@
 extends Node
 
 # Arrays to hold different types of enemies
-var basic_enemies: Array[BaseEnemyResource] = []
+var basic_enemies: Array[BaseEnemyResource] = [
+	preload("res://Scenes/Enemies/bee_enemy.tres"),
+	preload("res://Scenes/Enemies/dragonfly_enemy.tres")
+]
 var elite_enemies: Array[BaseEnemyResource] = []
 var boss_enemies: Array[BaseEnemyResource] = []
 
@@ -24,31 +27,16 @@ func _ready():
 func load_enemy_types():
 	print("Loading enemy types...")
 
-	# Load basic enemy (your existing red square)
+	# Create basic enemy and add to existing array
 	var basic_enemy = BaseEnemyResource.new()
 	basic_enemy.enemy_name = "Red Square"
 	basic_enemy.enemy_type = "basic"
 	basic_enemy.enemy_color = Color.RED
 	basic_enemy.spawn_weight = 100
-	basic_enemy.scene_path = "res://Scenes/enemy.tscn"  # Your existing enemy scene
+	basic_enemy.scene_path = "res://Scenes/enemy.tscn"
 	basic_enemies.append(basic_enemy)
-	print("✓ Created basic enemy resource")
 
-	# Load bee enemy from .tres file
-	var bee_resource_path = "res://Scenes/Enemies/bee_enemy.tres"
-	if ResourceLoader.exists(bee_resource_path):
-		var bee_enemy = load(bee_resource_path) as BaseEnemyResource
-		if bee_enemy:
-			basic_enemies.append(bee_enemy)
-			print("✓ Loaded bee enemy from file: %s" % bee_enemy.enemy_name)
-			print("  - Health: %.1f, Speed: %.1f, Spawn Weight: %d" % [bee_enemy.base_health, bee_enemy.base_speed, bee_enemy.spawn_weight])
-		else:
-			print("✗ Failed to load bee enemy resource - file exists but couldn't parse")
-	else:
-		print("✗ Bee enemy resource file not found at: %s" % bee_resource_path)
-		print("  Please create Resources/bee_enemy.tres with BaseEnemyResource type")
-
-	print("Final enemy count: %d enemies loaded" % basic_enemies.size())
+	print("Loaded %d enemy types:" % basic_enemies.size())
 	for enemy in basic_enemies:
 		print("  - %s (weight: %d)" % [enemy.enemy_name, enemy.spawn_weight])
 

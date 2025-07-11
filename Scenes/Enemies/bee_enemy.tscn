@@ -1,7 +1,7 @@
 [gd_scene load_steps=14 format=3 uid="uid://dejcnidd8q7ru"]
 
 [ext_resource type="Texture2D" uid="uid://beq1448oiyio4" path="res://Assets/Sprites/Enemies/Bee/HIT/Bee_0005_Capa-6.png" id="1_icc58"]
-[ext_resource type="Script" uid="uid://br5hl1xtj8so7" path="res://Scenes/Enemies/bee_enemy.gd" id="1_krk6v"]
+[ext_resource type="Script" uid="uid://b3ebqljnpf6mn" path="res://Scenes/Enemies/base_enemy_script.gd" id="1_krk6v"]
 [ext_resource type="Texture2D" uid="uid://eo1q1ajloy2s" path="res://Assets/Sprites/Enemies/Bee/HIT/Bee_0006_Capa-7.png" id="2_krk6v"]
 [ext_resource type="Texture2D" uid="uid://cuvit2q8gq3xe" path="res://Assets/Sprites/Enemies/Bee/HIT/Bee_0007_Capa-8.png" id="3_ylxdx"]
 [ext_resource type="Texture2D" uid="uid://d31uo14ty521p" path="res://Assets/Sprites/Enemies/Bee/HIT/Bee_0008_Capa-9.png" id="4_q4c8k"]
