@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=3 uid="uid://pauhynd1wg0o"]
 
 [ext_resource type="Script" uid="uid://xge3p6mqv7mo" path="res://Scenes/player.gd" id="1_v0iea"]
-[ext_resource type="Texture2D" uid="uid://dwrndojqcx7oc" path="res://Assets/Sprites/Player/bronto.png" id="2_6t5aa"]
+[ext_resource type="Texture2D" uid="uid://byxitwxe1rd0g" path="res://Assets/Sprites/Player/stego.png" id="2_6t5aa"]
 [ext_resource type="PackedScene" uid="uid://byy46yjfi8nve" path="res://Scenes/sauce_holder.tscn" id="2_cvnsp"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_v0iea"]
