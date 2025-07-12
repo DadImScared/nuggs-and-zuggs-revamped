@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_0pnvf")
 enemy_name = "Mesozoic Bee"
-enemy_type = "bee"
+enemy_type = "basic"
 base_health = 30.0
 base_damage = 8.0
 base_speed = 25.0

@@ -1,4 +1,3 @@
-# Scenes/Enemies/generic_enemy.gd
 extends CharacterBody2D
 
 signal died(xp_amount: int, damage_sources: Dictionary)
@@ -6,29 +5,35 @@ signal debuff_xp_earned(bottle_id: String, xp_amount: int)
 
 @onready var player = get_node("/root/Game/Player")
 @onready var health_bar_container = $HealthBarContainer
-@onready var animated_sprite = $AnimatedSprite2D
 @onready var health_bar = $HealthBarContainer/HealthBar
+@onready var animated_sprite = $AnimatedSprite2D
 
-# Enemy resource - this defines what type of enemy this is
-var enemy_resource: BaseEnemyResource
+var external_velocity_override: bool = false
+var external_velocity: Vector2 = Vector2.ZERO
 
-# Current stats (calculated from resource + player level)
+var health_bar_timer = 0.0
+var health_bar_duration = 3.0
+
+var base_xp_reward = 5
+var base_health = 30
+var base_damage = 10
+var base_speed = 18.0
 var max_health = 0
-var damage = 5
+
+var damage = 10
 var xp_on_kill = 5
 var move_speed = 18.0
 var health = 30
 
-# Movement and effects
-var external_velocity_override: bool = false
-var external_velocity: Vector2 = Vector2.ZERO
-var health_bar_timer = 0.0
-var health_bar_duration = 3.0
+# Damage tracking for XP distribution
 var damage_sources: Dictionary = {}
 var total_damage_taken: float = 0.0
+
+# Debuff XP tracking
 var debuff_periodic_timer: float = 0.0
 var debuff_periodic_interval: float = 1.0
 var debuff_xp_per_tick: int = 2
+
 var active_effects = {}
 var original_speed: float
 var is_marked: bool = false
@@ -36,41 +41,40 @@ var mark_damage_multiplier: float = 1.0
 var has_shield: bool = false
 var shield_health: float = 0.0
 
-# Animation state
-var is_playing_hit_animation: bool = false
+var is_playing_hit_animation = false
+var enemy_resource: BaseEnemyResource
 
 func _ready() -> void:
-	if not enemy_resource:
-		print("Warning: No enemy resource set!")
-		setup_default_stats()
-	else:
-		print("Setting up enemy: %s" % enemy_resource.enemy_name)
-		setup_from_resource()
+	if animated_sprite:
+		animated_sprite.connect("animation_finished", _on_animation_finished)
+		animated_sprite.play("move")
 
+	scale_to_player_level()
 	setup_health_bar()
+	setup_default_stats()
 	original_speed = move_speed
 
-	# Start with move animation
-	if animated_sprite:
-		var move_anim = enemy_resource.move_animation_name if enemy_resource else "move"
-		if animated_sprite.sprite_frames and animated_sprite.sprite_frames.has_animation(move_anim):
-			animated_sprite.play(move_anim)
-			animated_sprite.animation_finished.connect(_on_animation_finished)
-			print("Started %s animation: %s" % [enemy_resource.enemy_name if enemy_resource else "enemy", move_anim])
+	if enemy_resource:
+		setup_from_resource()
 
 func setup_from_resource():
-	var player_level = PlayerStats.level if PlayerStats else 1
+	if not enemy_resource:
+		return
 
-	# Calculate stats from the resource
-	health = enemy_resource.get_scaled_health(player_level)
+	# Set base stats from resource
+	health = enemy_resource.base_health
 	max_health = health
-	move_speed = enemy_resource.get_scaled_speed(player_level)
-	damage = enemy_resource.get_scaled_damage(player_level)
-	xp_on_kill = enemy_resource.get_scaled_xp_reward(player_level)
+	move_speed = enemy_resource.base_speed
+	damage = enemy_resource.base_damage
+	xp_on_kill = enemy_resource.base_xp_reward
 
-	# Apply visual settings from resource
-	scale = Vector2.ONE * enemy_resource.scale_modifier  # Scale the whole enemy (sprite + collision)
-	#animated_sprite.modulate = enemy_resource.enemy_color
+	# Scale stats to player level
+	scale_to_player_level()
+
+	# FIXED: Apply scale modifier from resource
+	scale = Vector2.ONE * enemy_resource.scale_modifier
+
+	# Apply color if we have one and the resource wants us to
 	if enemy_resource.apply_color_tint:
 		animated_sprite.modulate = enemy_resource.enemy_color
 
@@ -78,7 +82,7 @@ func setup_from_resource():
 	if animated_sprite:
 		animated_sprite.speed_scale = enemy_resource.animation_speed_multiplier
 
-	print("%s stats - Health: %d, Speed: %.1f, Damage: %.1f" % [enemy_resource.enemy_name, health, move_speed, damage])
+	print("%s stats - Health: %d, Speed: %.1f, Damage: %.1f, Scale: %.3f" % [enemy_resource.enemy_name, health, move_speed, damage, enemy_resource.scale_modifier])
 
 func setup_default_stats():
 	# Fallback stats
@@ -126,6 +130,186 @@ func _physics_process(delta: float) -> void:
 
 	move_and_slide()
 
+# FIXED: Complete status effects processing including infection!
+func process_status_effects(delta: float):
+	var effects_to_remove = []
+
+	for effect_name in active_effects.keys():
+		var effect = active_effects[effect_name]
+		effect.timer += delta
+
+		# Apply enemy-specific resistances to ALL DOT effects
+		match effect_name:
+			"burn":
+				if effect.timer >= 1.0:
+					var resistance = enemy_resource.burn_resistance if enemy_resource else 1.0
+					var burn_damage = effect.intensity * 5.0 * resistance
+					var source_id = effect.get("source_bottle_id", "unknown")
+					take_damage_from_source(burn_damage, source_id)
+					effect.timer = 0.0
+			"poison":
+				if effect.timer >= 0.5:
+					var resistance = enemy_resource.poison_resistance if enemy_resource else 1.0
+					var poison_damage = effect.intensity * 3.0 * resistance
+					var source_id = effect.get("source_bottle_id", "unknown")
+					take_damage_from_source(poison_damage, source_id)
+					effect.timer = 0.0
+			"infect":
+				# FIXED: Add missing infection damage processing!
+				effect.tick_timer = effect.get("tick_timer", 0.0) + delta
+				if effect.tick_timer >= 0.5:
+					effect.tick_timer = 0.0
+					var infect_damage = effect.intensity * 2.0
+					var source_id = effect.get("source_bottle_id", "unknown")
+					take_damage_from_source(infect_damage, source_id)
+
+		# Remove expired effects
+		if effect.timer >= effect.duration:
+			effects_to_remove.append(effect_name)
+
+	# Clean up expired effects
+	for effect_name in effects_to_remove:
+		remove_status_effect(effect_name)
+
+func process_debuff_periodic_xp(delta: float):
+	debuff_periodic_timer += delta
+	if debuff_periodic_timer >= debuff_periodic_interval:
+		debuff_periodic_timer = 0.0
+
+		# Give XP only to pure debuffs (not DOTs)
+		for effect_name in active_effects.keys():
+			var effect = active_effects[effect_name]
+			if is_pure_debuff_effect(effect_name) and effect.has("source_bottle_id"):
+				var bottle_id = effect.source_bottle_id
+				debuff_xp_earned.emit(bottle_id, debuff_xp_per_tick)
+
+func is_pure_debuff_effect(effect_name: String) -> bool:
+	return effect_name in ["slow", "freeze", "sticky"]
+
+func is_dot_effect(effect_name: String) -> bool:
+	return effect_name in ["burn", "poison", "infect"]
+
+func is_debuff_effect(effect_name: String) -> bool:
+	return is_pure_debuff_effect(effect_name) or is_dot_effect(effect_name)
+
+func apply_status_effect(effect_name: String, duration: float, intensity: float, source_bottle_id: String = "unknown"):
+	# Apply enemy resistances
+	var actual_intensity = intensity
+	var actual_duration = duration
+
+	if enemy_resource:
+		match effect_name:
+			"slow":
+				actual_intensity *= (2.0 - enemy_resource.slow_resistance)
+				actual_duration *= (2.0 - enemy_resource.slow_resistance)
+			"freeze":
+				actual_intensity *= (2.0 - enemy_resource.freeze_resistance)
+				actual_duration *= (2.0 - enemy_resource.freeze_resistance)
+			"burn":
+				actual_intensity *= enemy_resource.burn_resistance
+				actual_duration *= (2.0 - enemy_resource.burn_resistance)
+			"poison":
+				actual_intensity *= enemy_resource.poison_resistance
+				actual_duration *= (2.0 - enemy_resource.poison_resistance)
+
+	active_effects[effect_name] = {
+		"duration": actual_duration,
+		"intensity": actual_intensity,
+		"timer": 0.0,
+		"source_bottle_id": source_bottle_id
+	}
+
+	# Apply immediate visual/movement effects
+	match effect_name:
+		"slow":
+			move_speed = original_speed * (1.0 - actual_intensity * 0.5)
+			animated_sprite.modulate = Color(0.7, 0.7, 1.0) # Blue tint
+		"freeze":
+			move_speed = 0
+			animated_sprite.modulate = Color(0.8, 0.8, 1.0) # Light blue tint
+		"sticky":
+			move_speed = original_speed * 0.2
+			animated_sprite.modulate = Color(1.0, 1.0, 0.6) # Yellow tint
+		"burn":
+			animated_sprite.modulate = Color(1.2, 0.8, 0.8) # Red tint
+		"poison":
+			animated_sprite.modulate = Color(0.8, 1.0, 0.8) # Green tint
+		"infect":
+			active_effects[effect_name]["tick_timer"] = 0.0
+			animated_sprite.modulate = Color(0.8, 1.2, 0.8) # Bright green
+
+func remove_status_effect(effect_name: String):
+	active_effects.erase(effect_name)
+
+	# Remove effect consequences
+	match effect_name:
+		"slow", "freeze", "sticky":
+			move_speed = original_speed
+		"burn", "poison", "infect":
+			pass # Visual effects will fade naturally
+
+	if active_effects.is_empty():
+		# Return to original color when no effects
+		if enemy_resource and enemy_resource.apply_color_tint:
+			animated_sprite.modulate = enemy_resource.enemy_color
+		else:
+			animated_sprite.modulate = Color.WHITE
+
+func scale_to_player_level():
+	if PlayerStats.level < 2:
+		max_health = base_health
+		return
+	var base_scale = 1.0 + (PlayerStats.level - 1)
+	var health_scale = base_scale * 1.1
+	var speed_scale = base_scale * 0.02
+	var xp_scale = base_scale * 0.10
+	var damage_scale = base_scale * 0.4
+
+	health = base_health + (base_health * health_scale)
+	max_health = health
+	move_speed = base_speed + (base_speed * speed_scale)
+	xp_on_kill = base_xp_reward + (base_xp_reward * xp_scale)
+	damage = base_damage + (base_damage * damage_scale)
+
+func spread_infection_on_death():
+	var infection_radius = 60.0
+	var nearby_enemies = get_nearby_enemies_for_infection(infection_radius)
+	var infection_effect = active_effects["infect"]
+
+	for nearby_enemy in nearby_enemies:
+		if nearby_enemy != self and nearby_enemy.has_method("apply_status_effect"):
+			if not ("infect" in nearby_enemy.active_effects):
+				nearby_enemy.apply_status_effect(
+					"infect",
+					infection_effect.duration,
+					infection_effect.intensity,
+					infection_effect.get("source_bottle_id", "unknown")
+				)
+
+				if "color" in infection_effect:
+					nearby_enemy.active_effects["infect"]["color"] = infection_effect.color
+
+				var color = infection_effect.get("color", Color.GREEN)
+				VisualEffectManager.create_infection_spread_visual(
+					global_position,
+					nearby_enemy.global_position,
+					color
+				)
+
+func get_nearby_enemies_for_infection(radius: float) -> Array[Node2D]:
+	var enemies: Array[Node2D] = []
+	var bodies = get_tree().get_nodes_in_group("enemies")
+
+	for body in bodies:
+		if body != self and body.global_position.distance_to(global_position) <= radius:
+			enemies.append(body)
+
+	return enemies
+
+func apply_external_velocity(new_velocity: Vector2):
+	external_velocity = new_velocity
+	external_velocity_override = true
+
 func take_damage_from_source(damage_amount: float, source_bottle_id: String):
 	# Apply resistances from the enemy resource
 	var actual_damage = damage_amount
@@ -151,6 +335,9 @@ func take_damage_from_source(damage_amount: float, source_bottle_id: String):
 	play_hit_animation()
 
 	if health <= 0:
+		if "infect" in active_effects:
+			spread_infection_on_death()
+
 		var enemy_name = enemy_resource.enemy_name if enemy_resource else "Enemy"
 		print("%s died! XP reward: %d" % [enemy_name, xp_on_kill])
 		queue_free()
@@ -178,105 +365,30 @@ func _on_animation_finished():
 func take_damage(damage_amount: float):
 	take_damage_from_source(damage_amount, "unknown")
 
-func process_status_effects(delta: float):
-	var effects_to_remove = []
-
+# XP Distribution helper functions
+func get_pure_debuff_sources() -> Array[String]:
+	var debuff_sources: Array[String] = []
 	for effect_name in active_effects.keys():
-		var effect = active_effects[effect_name]
-		effect.timer += delta
+		if is_pure_debuff_effect(effect_name):
+			var source_id = active_effects[effect_name].get("source_bottle_id", "")
+			if source_id != "" and source_id not in debuff_sources:
+				debuff_sources.append(source_id)
+	return debuff_sources
 
-		# Apply enemy-specific resistances
-		match effect_name:
-			"burn":
-				if effect.timer >= 1.0:
-					var resistance = enemy_resource.burn_resistance if enemy_resource else 1.0
-					var burn_damage = effect.intensity * 5.0 * resistance
-					var source_id = effect.get("source_bottle_id", "unknown")
-					take_damage_from_source(burn_damage, source_id)
-					effect.timer = 0.0
-			"poison":
-				if effect.timer >= 0.5:
-					var resistance = enemy_resource.poison_resistance if enemy_resource else 1.0
-					var poison_damage = effect.intensity * 3.0 * resistance
-					var source_id = effect.get("source_bottle_id", "unknown")
-					take_damage_from_source(poison_damage, source_id)
-					effect.timer = 0.0
+func get_dot_debuff_sources() -> Array[String]:
+	var dot_sources: Array[String] = []
+	for effect_name in active_effects.keys():
+		if is_dot_effect(effect_name):
+			var source_id = active_effects[effect_name].get("source_bottle_id", "")
+			if source_id != "" and source_id not in dot_sources:
+				dot_sources.append(source_id)
+	return dot_sources
 
-		# Remove expired effects
-		if effect.timer >= effect.duration:
-			effects_to_remove.append(effect_name)
-
-	# Clean up expired effects
-	for effect_name in effects_to_remove:
-		remove_status_effect(effect_name)
-
-func process_debuff_periodic_xp(delta: float):
-	debuff_periodic_timer += delta
-	if debuff_periodic_timer >= debuff_periodic_interval:
-		debuff_periodic_timer = 0.0
-
-		# Give XP only to pure debuffs (not DOTs)
-		for effect_name in active_effects.keys():
-			var effect = active_effects[effect_name]
-			if is_pure_debuff_effect(effect_name) and effect.has("source_bottle_id"):
-				var bottle_id = effect.source_bottle_id
-				debuff_xp_earned.emit(bottle_id, debuff_xp_per_tick)
-
-func is_pure_debuff_effect(effect_name: String) -> bool:
-	return effect_name in ["slow", "freeze", "sticky"]
-
-func apply_status_effect(effect_name: String, duration: float, intensity: float, source_bottle_id: String = "unknown"):
-	# Apply enemy resistances
-	var actual_intensity = intensity
-	var actual_duration = duration
-
-	if enemy_resource:
-		match effect_name:
-			"slow":
-				actual_intensity *= (2.0 - enemy_resource.slow_resistance)
-				actual_duration *= (2.0 - enemy_resource.slow_resistance)
-			"freeze":
-				actual_intensity *= (2.0 - enemy_resource.freeze_resistance)
-				actual_duration *= (2.0 - enemy_resource.freeze_resistance)
-
-	active_effects[effect_name] = {
-		"duration": actual_duration,
-		"intensity": actual_intensity,
-		"timer": 0.0,
-		"source_bottle_id": source_bottle_id
-	}
-
-	# Apply immediate visual effects
-	match effect_name:
-		"slow":
-			move_speed = original_speed * (1.0 - actual_intensity * 0.5)
-			animated_sprite.modulate = Color(0.7, 0.7, 1.0)
-		"freeze":
-			move_speed = 0
-			animated_sprite.modulate = Color(0.8, 0.8, 1.0)
-			animated_sprite.speed_scale = 0
-		"burn":
-			animated_sprite.modulate = Color(1.2, 0.8, 0.8)
-		"poison":
-			animated_sprite.modulate = Color(0.8, 1.0, 0.8)
-
-func remove_status_effect(effect_name: String):
-	active_effects.erase(effect_name)
-
-	# Restore normal behavior
-	match effect_name:
-		"slow", "freeze":
-			move_speed = original_speed
-			if animated_sprite and enemy_resource:
-				animated_sprite.speed_scale = enemy_resource.animation_speed_multiplier
-
-	# Restore normal color if no effects remain
-	if active_effects.is_empty():
-		if enemy_resource:
-			animated_sprite.modulate = enemy_resource.enemy_color
-		else:
-			animated_sprite.modulate = Color.WHITE
-
-func apply_external_velocity(new_velocity: Vector2):
-	external_velocity = new_velocity
-	external_velocity_override = true
+func get_all_debuff_sources() -> Array[String]:
+	var all_sources: Array[String] = []
+	for effect_name in active_effects.keys():
+		if is_debuff_effect(effect_name):
+			var source_id = active_effects[effect_name].get("source_bottle_id", "")
+			if source_id != "" and source_id not in all_sources:
+				all_sources.append(source_id)
+	return all_sources
