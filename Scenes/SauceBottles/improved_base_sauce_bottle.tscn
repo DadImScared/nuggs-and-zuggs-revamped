@@ -1,6 +1,6 @@
 [gd_scene load_steps=9 format=3 uid="uid://dgojxq1xi2bo8"]
 
-[ext_resource type="Script" uid="uid://d4jdhnqkmn8vb" path="res://Resources/improved_base_sauce_bottle.gd" id="1_tdy8v"]
+[ext_resource type="Script" uid="uid://d4jdhnqkmn8vb" path="res://Scenes/SauceBottles/improved_base_sauce_bottle.gd" id="1_tdy8v"]
 [ext_resource type="Texture2D" uid="uid://bwvs2qlcbbnug" path="res://Assets/Sprites/Bottles/normalbase.png" id="1_ye331"]
 [ext_resource type="Texture2D" uid="uid://cor568ajusl2" path="res://Assets/Sprites/Bottles/thetip.png" id="2_3xyhw"]
 [ext_resource type="Texture2D" uid="uid://c3f0q4y167jj4" path="res://Assets/Sprites/Bottles/squeezebase.png" id="4_ghitr"]

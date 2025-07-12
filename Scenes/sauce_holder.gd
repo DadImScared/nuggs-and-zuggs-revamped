@@ -10,6 +10,8 @@ func _ready():
 	if player.has_signal("enemy_died_with_sources"):
 		player.enemy_died_with_sources.connect(InventoryManager.distribute_xp_by_damage)
 
-	# Create bottles for initially equipped sauces
-	for sauce in InventoryManager.get_equipped_sauces():
+	for sauce in InventoryManager.old_equipped:
 		InventoryManager.create_bottle_for_sauce(sauce)
+	# Create bottles for initially equipped sauces
+	#for sauce in InventoryManager.get_equipped_sauces():
+		#InventoryManager.create_bottle_for_sauce(sauce)

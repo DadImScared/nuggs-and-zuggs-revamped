@@ -9,8 +9,13 @@ var max_inventory = 6
 
 # Sauce resources (for UI display)
 var storage: Array = []
-var equipped: Array = [
+var old_equipped: Array = [
+	preload("res://Resources/prehistoric_pesto.tres"),
 	preload("res://Resources/prehistoric_pesto.tres")
+]
+
+var equipped = [
+
 ]
 
 # Bottle instances (for gameplay) - NO DUPLICATION!
@@ -33,9 +38,9 @@ func register_scene_node(scene_node: Node2D):
 
 # BOTTLE MANAGEMENT - Merged from SauceHolder
 func create_bottle_for_sauce(sauce_resource: BaseSauceResource):
-	if equipped_bottles.has(sauce_resource):
-		print("Bottle already exists for %s" % sauce_resource.sauce_name)
-		return
+	#if equipped_bottles.has(sauce_resource):
+		#print("Bottle already exists for %s" % sauce_resource.sauce_name)
+		#return
 
 	var item_data = ItemData.new()
 	var bottle = item_data.create_bottle(sauce_resource)
@@ -54,6 +59,7 @@ func create_bottle_for_sauce(sauce_resource: BaseSauceResource):
 
 	# Store bottle instance
 	equipped_bottles[sauce_resource] = bottle
+	equip_new_sauce(bottle)
 	_position_weapons()
 	print("✅ Created bottle for: %s" % sauce_resource.sauce_name)
 
@@ -107,8 +113,8 @@ func apply_upgrade_choice(bottle_id: String, choice_number: int):
 						bottle.update_detection_range()
 
 func get_bottle_by_id(bottle_id: String):
-	for bottle in equipped_bottles.values():
-		if bottle.bottle_id == bottle_id:
+	for bottle in equipped:
+		if bottle and bottle.bottle_id == bottle_id:
 			return bottle
 	return null
 
@@ -116,16 +122,16 @@ func _position_weapons():
 	if not scene_holder_node:
 		return
 
-	var bottle_count = equipped_bottles.size()
+	var bottle_count = equipped.size()
 	if bottle_count == 0:
 		return
 
 	var angle_step = TAU / bottle_count
 	var i = 0
-	for bottle in equipped_bottles.values():
+	for bottle in equipped:
 		if is_instance_valid(bottle):
 			var angle = i * angle_step
-			var offset = Vector2(cos(angle), sin(angle)) * 12.0 # weapon_radius
+			var offset = Vector2(cos(angle), sin(angle)) * 24.0 # weapon_radius
 			bottle.position = offset
 			i += 1
 
@@ -167,6 +173,7 @@ func get_storage_data(location):
 		return storage
 
 func get_equipped_sauces() -> Array:
+	return equipped
 	var active_sauces = []
 	for sauce in equipped:
 		if sauce != null:
@@ -246,8 +253,12 @@ func can_store_sauce():
 func select_sauce(sauce: BaseSauceResource):
 	var first_null_index = equipped.find(null)
 	if first_null_index != -1:
-		equipped[first_null_index] = sauce
 		create_bottle_for_sauce(sauce)
 		sauce_equipped.emit(sauce)
 	else:
 		storage.append(sauce)
+
+func equip_new_sauce(sauce_bottle):
+	var first_null_index = equipped.find(null)
+	if first_null_index != -1:
+		equipped[first_null_index] = sauce_bottle
