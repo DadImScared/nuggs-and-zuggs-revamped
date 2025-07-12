@@ -1,3 +1,4 @@
+# Scenes/UI/level_up.gd
 extends Control
 
 signal sauce_selected(sauce_data: BaseSauceResource)
@@ -9,7 +10,8 @@ func _ready() -> void:
 	generate_cards()
 
 func generate_cards():
-	var sauces = SauceManager.get_random_sauces()
+	# UPDATED: Use static SauceDatabase instead of SauceManager singleton
+	var sauces = SauceDatabase.get_random_sauces(3)
 	for sauce in sauces:
 		var sauce_card = SAUCE_CARD.instantiate()
 		sauce_selection.add_child(sauce_card)
@@ -20,4 +22,3 @@ func _on_sauce_selected(sauce: BaseSauceResource):
 	InventoryManager.select_sauce(sauce)
 	get_tree().paused = false
 	queue_free()
-	#emit_signal("sauce_selected", sauce)

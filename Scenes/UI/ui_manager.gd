@@ -1,3 +1,4 @@
+# Scenes/UI/ui_manager.gd
 extends Control
 
 @onready var game_ui = $GameUI
@@ -18,8 +19,10 @@ func _ready() -> void:
 	if current_level:
 		current_level.text = "%d" % PlayerStats.level
 	update_xp_display(PlayerStats.xp, PlayerStats.xp_to_next)
-	# Connect to Bottle Upgrade Manager for bottle upgrades
-	BottleUpgradeManager.bottle_needs_upgrade.connect(_on_bottle_needs_upgrade)
+
+	# DIRECT CONNECTION to InventoryManager - No separate singletons!
+	InventoryManager.bottle_leveled_up.connect(_on_bottle_leveled_up)
+	print("UI Manager connected directly to InventoryManager")
 
 func _on_inventory_pressed():
 	get_tree().paused = true
@@ -34,10 +37,9 @@ func update_xp_display(current_xp: int, max_xp: int):
 	if xp_label:
 		xp_label.text = str(current_xp) + "/" + str(max_xp)
 
-func _on_bottle_needs_upgrade(bottle_id: String, sauce_name: String, level: int):
+func _on_bottle_leveled_up(bottle_id: String, sauce_name: String, level: int):
 	print("UI Manager: %s leveled up to %d" % [sauce_name, level])
 
-	# Create and show upgrade choice menu
 	var upgrade_menu = UPGRADE_CHOICE_MENU.instantiate()
 	menu_ui.add_child(upgrade_menu)
 	upgrade_menu.setup(sauce_name, level)
@@ -45,8 +47,8 @@ func _on_bottle_needs_upgrade(bottle_id: String, sauce_name: String, level: int)
 
 func _on_upgrade_chosen(bottle_id: String, choice_number: int):
 	print("UI Manager: Forwarding choice %d for bottle %s" % [choice_number, bottle_id])
-	# Forward to Bottle Upgrade Manager to apply the upgrade
-	BottleUpgradeManager.apply_upgrade_choice(bottle_id, choice_number)
+	# DIRECT CALL to InventoryManager - No separate singletons!
+	InventoryManager.apply_upgrade_choice(bottle_id, choice_number)
 
 func _on_level_up(level: int):
 	var level_up_menu =  LEVEL_UP_MENU.instantiate()

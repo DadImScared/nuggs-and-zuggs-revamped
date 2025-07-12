@@ -12,6 +12,7 @@ base_speed = 25.0
 base_xp_reward = 7
 enemy_color = Color(1, 0.8, 0.2, 1)
 scale_modifier = 0.195
+apply_color_tint = false
 spawn_weight = 50
 scene_path = "res://Scenes/Enemies/bee_enemy.tscn"
 animation_speed_multiplier = 1.0

@@ -19,10 +19,8 @@ config/icon="res://icon.svg"
 
 InventoryManager="*res://Singletons/inventory_manager.gd"
 PlayerStats="*res://Singletons/player_stats.gd"
-SauceManager="*res://Singletons/sauce_manager.gd"
 SauceEffectManager="*res://Singletons/sauce_effect_manager.gd"
 VisualEffectManager="*res://Singletons/visual_effect_manager.gd"
-BottleUpgradeManager="*res://Singletons/bottle_upgrade_manager.gd"
 EnemyPoolManager="*res://Singletons/enemy_pool_manager.gd"
 
 [display]

@@ -8,6 +8,21 @@
 [sub_resource type="CircleShape2D" id="CircleShape2D_ye331"]
 radius = 153.004
 
+[sub_resource type="Animation" id="Animation_vpkd6"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("BottleSprites/BottleBase:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("1_ye331")]
+}
+
 [sub_resource type="Animation" id="Animation_etwxx"]
 resource_name = "squeeze"
 length = 0.3
@@ -22,21 +37,6 @@ tracks/0/keys = {
 "transitions": PackedFloat32Array(1, 1, 1),
 "update": 1,
 "values": [ExtResource("1_ye331"), ExtResource("4_ghitr"), ExtResource("1_ye331")]
-}
-
-[sub_resource type="Animation" id="Animation_vpkd6"]
-length = 0.001
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("BottleSprites/BottleBase:texture")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 1,
-"values": [ExtResource("1_ye331")]
 }
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_4qu4e"]
