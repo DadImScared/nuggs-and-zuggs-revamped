@@ -1,9 +1,8 @@
 [gd_scene load_steps=5 format=3 uid="uid://pauhynd1wg0o"]
 
 [ext_resource type="Script" uid="uid://xge3p6mqv7mo" path="res://Scenes/player.gd" id="1_v0iea"]
+[ext_resource type="Texture2D" uid="uid://dwrndojqcx7oc" path="res://Assets/Sprites/Player/bronto.png" id="2_6t5aa"]
 [ext_resource type="PackedScene" uid="uid://byy46yjfi8nve" path="res://Scenes/sauce_holder.tscn" id="2_cvnsp"]
-
-[sub_resource type="CanvasTexture" id="CanvasTexture_f60y1"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_v0iea"]
 size = Vector2(5, 4.96875)
@@ -12,9 +11,8 @@ size = Vector2(5, 4.96875)
 script = ExtResource("1_v0iea")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
-modulate = Color(0.453905, 0.592377, 1, 1)
-scale = Vector2(5, 5)
-texture = SubResource("CanvasTexture_f60y1")
+scale = Vector2(0.335, 0.335)
+texture = ExtResource("2_6t5aa")
 metadata/_edit_lock_ = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
