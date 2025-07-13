@@ -3,10 +3,23 @@
 [ext_resource type="Script" uid="uid://ctrxmtwlm8ipl" path="res://Scenes/UI/bottle_details_panel.gd" id="1_details"]
 [ext_resource type="Texture2D" uid="uid://duprnfdb7k65g" path="res://Assets/Sprites/Bottles/basebottle.png" id="2_bottle"]
 
-[node name="BottleDetailsPanel" type="Panel"]
+[node name="BottleDetailsPanel" type="Control"]
+z_index = -1
+layout_mode = 3
+anchors_preset = 0
 offset_right = 250.0
 offset_bottom = 400.0
 script = ExtResource("1_details")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+custom_minimum_size = Vector2(250, 400)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.448, 0.347, 0.588, 0.807)
 
 [node name="VBox" type="VBoxContainer" parent="."]
 layout_mode = 1

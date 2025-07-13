@@ -2,6 +2,7 @@ class_name InventorySlot
 extends AspectRatioContainer
 
 signal slot_selected(slot: InventorySlot)
+signal slot_drag_started(slot: InventorySlot)
 
 var slot_type = "inventory"
 var slot_index = 0
@@ -46,6 +47,10 @@ func _on_slot_frame_input(event: InputEvent):
 func get_drag_data(at_position):
 	if sauce_bottle == null:
 		return null
+
+	# Emit signal that drag started - this will clear selection
+	slot_drag_started.emit(self)
+
 	var preview = create_drag_preview()
 	set_drag_preview(preview)
 	return SlotData.new(self, sauce_bottle, slot_type, slot_index)

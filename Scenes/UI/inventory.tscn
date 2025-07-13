@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://btbtk48sslcg3"]
+[gd_scene load_steps=3 format=3 uid="uid://btbtk48sslcg3"]
 
 [ext_resource type="Script" uid="uid://byb5c63plmpjj" path="res://Scenes/UI/inventory.gd" id="1_s6m5x"]
+[ext_resource type="PackedScene" uid="uid://bjavlsvo6o2qd" path="res://Scenes/UI/bottle_details_panel.tscn" id="2_dt15g"]
 
 [node name="Inventory" type="Control"]
 layout_mode = 3
@@ -66,11 +67,24 @@ unique_name_in_owner = true
 layout_mode = 2
 columns = 6
 
+[node name="BottleDetailsPanel" parent="Panel/VBoxContainer" instance=ExtResource("2_dt15g")]
+unique_name_in_owner = true
+z_index = 55
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 6
+
 [node name="CloseInventory" type="Button" parent="."]
-layout_mode = 0
-offset_left = 911.0
-offset_top = 939.0
-offset_right = 1064.0
-offset_bottom = 1024.0
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -76.0
+offset_top = -108.0
+offset_right = 77.0
+grow_horizontal = 2
+grow_vertical = 0
 theme_override_font_sizes/font_size = 56
 text = "Close"

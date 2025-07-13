@@ -1,5 +1,5 @@
 class_name BottleDetailsPanel
-extends Panel
+extends Control
 
 @onready var bottle_name = $VBox/BottleName
 @onready var bottle_level = $VBox/BottleLevel
@@ -17,6 +17,7 @@ const BOTTLE_TEXTURE = preload("res://Assets/Sprites/Bottles/basebottle.png")
 var current_bottle: ImprovedBaseSauceBottle = null
 
 func _ready():
+	#modulate = Color.REBECCA_PURPLE
 	hide()
 
 func show_bottle_details(bottle: ImprovedBaseSauceBottle):
