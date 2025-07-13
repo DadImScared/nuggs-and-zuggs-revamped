@@ -193,6 +193,12 @@ func apply_upgrade_choice(bottle_id: String, choice_number: int):
 		print("Warning: Bottle %s not found!" % bottle_id)
 		return
 
+	# Get the upgrade name and add it to bottle's chosen_upgrades
+	var upgrade_name = get_upgrade_name(bottle.sauce_data.sauce_name, choice_number)
+	bottle.chosen_upgrades.append(upgrade_name)
+	print("Added upgrade '%s' to bottle %s" % [upgrade_name, bottle_id])
+	print("Bottle now has upgrades: ", bottle.chosen_upgrades)
+
 	# Apply upgrade to the sauce resource (for persistence)
 	apply_upgrade_to_sauce(bottle.sauce_data, choice_number)
 
@@ -207,6 +213,27 @@ func apply_upgrade_choice(bottle_id: String, choice_number: int):
 				3: # Range upgrades
 					if bottle.has_method("update_detection_range"):
 						bottle.update_detection_range()
+
+# Get the human-readable upgrade name
+func get_upgrade_name(sauce_name: String, choice_number: int) -> String:
+	match sauce_name:
+		"Ketchup":
+			match choice_number:
+				1: return "Thick & Chunky"
+				2: return "Double Squirt"
+				3: return "Fast Food"
+		"Prehistoric Pesto":
+			match choice_number:
+				1: return "Viral Load"
+				2: return "Rapid Mutation"
+				3: return "Toxic Herbs"
+		_:
+			match choice_number:
+				1: return "More Damage"
+				2: return "Faster Shooting"
+				3: return "Longer Range"
+
+	return "Unknown Upgrade"
 
 func apply_upgrade_to_sauce(sauce_resource: BaseSauceResource, choice_number: int):
 	var sauce_name = sauce_resource.sauce_name

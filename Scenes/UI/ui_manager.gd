@@ -43,7 +43,8 @@ func _on_bottle_leveled_up(bottle_id: String, sauce_name: String, level: int):
 	var upgrade_menu = UPGRADE_CHOICE_MENU.instantiate()
 	menu_ui.add_child(upgrade_menu)
 	upgrade_menu.setup(sauce_name, level)
-	upgrade_menu.upgrade_selected.connect(_on_upgrade_chosen.bind(bottle_id))
+	# FIX: Use lambda to get the parameters in the right order
+	upgrade_menu.upgrade_selected.connect(func(choice_number): _on_upgrade_chosen(bottle_id, choice_number))
 
 func _on_upgrade_chosen(bottle_id: String, choice_number: int):
 	print("UI Manager: Forwarding choice %d for bottle %s" % [choice_number, bottle_id])
