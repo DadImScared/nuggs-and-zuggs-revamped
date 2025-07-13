@@ -7,5 +7,5 @@ extends Resource
 func create_bottle(p_resource: BaseSauceResource):
 	var scene = load(bottle_scene_path)
 	var bottle = scene.instantiate()
-	bottle.sauce_data = p_resource
+	bottle.sauce_data = p_resource.duplicate()
 	return bottle

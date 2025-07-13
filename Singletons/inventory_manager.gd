@@ -183,7 +183,7 @@ func distribute_xp_by_damage(total_xp: int, damage_sources: Dictionary):
 		if bottle and bottle.has_method("gain_xp"):
 			bottle.gain_xp(xp_earned)
 
-# UPGRADE APPLICATION
+# UPGRADE APPLICATION - FIXED VERSION
 func apply_upgrade_choice(bottle_id: String, choice_number: int):
 	print("InventoryManager: Applying upgrade choice %d to bottle %s" % [choice_number, bottle_id])
 
@@ -201,20 +201,68 @@ func apply_upgrade_choice(bottle_id: String, choice_number: int):
 	bottle.chosen_upgrades.append(full_upgrade)
 	print("Added upgrade '%s' to bottle %s" % [full_upgrade, bottle_id])
 
-	# Apply upgrade to the sauce resource (for persistence)
-	apply_upgrade_to_sauce(bottle.sauce_data, choice_number)
+	# APPLY UPGRADE TO THE BOTTLE INSTANCE - This was missing!
+	apply_upgrade_to_bottle_stats(bottle, choice_number)
 
-	# Update bottle instance if needed (for immediate effects)
+# NEW FUNCTION: Apply upgrades directly to bottle stats
+func apply_upgrade_to_bottle_stats(bottle: ImprovedBaseSauceBottle, choice_number: int):
 	var sauce_name = bottle.sauce_data.sauce_name
+	print("Applying upgrade choice %d to %s BOTTLE STATS" % [choice_number, sauce_name])
+
 	match sauce_name:
-		"Ketchup", "Prehistoric Pesto", _:
-			match choice_number:
-				2, 3: # Fire rate upgrades
-					if bottle.has_method("update_fire_rate"):
-						bottle.update_fire_rate()
-				3: # Range upgrades
-					if bottle.has_method("update_detection_range"):
-						bottle.update_detection_range()
+		"Ketchup":
+			_apply_ketchup_upgrade_to_bottle(bottle, choice_number)
+		"Prehistoric Pesto":
+			_apply_pesto_upgrade_to_bottle(bottle, choice_number)
+		_:
+			_apply_generic_upgrade_to_bottle(bottle, choice_number)
+
+# BOTTLE UPGRADE FUNCTIONS - Apply to bottle instance
+func _apply_ketchup_upgrade_to_bottle(bottle: ImprovedBaseSauceBottle, choice: int):
+	match choice:
+		1: # Thick & Chunky
+			# Modify the bottle's actual damage stat
+			bottle.sauce_data.damage += 5.0
+			print("Ketchup bottle damage increased to: %f" % bottle.sauce_data.damage)
+		2: # Double Squirt
+			bottle.sauce_data.projectile_count += 1
+			print("Ketchup bottle projectile count increased to: %d" % bottle.sauce_data.projectile_count)
+		3: # Fast Food
+			bottle.sauce_data.fire_rate += 0.3
+			print("Ketchup bottle fire rate increased to: %f" % bottle.sauce_data.fire_rate)
+			if bottle.has_method("update_fire_rate"):
+				bottle.update_fire_rate()
+
+func _apply_pesto_upgrade_to_bottle(bottle: ImprovedBaseSauceBottle, choice: int):
+	match choice:
+		1: # Viral Load
+			bottle.sauce_data.effect_chance += 0.3
+			print("Pesto bottle effect chance increased to: %f" % bottle.sauce_data.effect_chance)
+		2: # Rapid Mutation
+			bottle.sauce_data.fire_rate += 0.5
+			print("Pesto bottle fire rate increased to: %f" % bottle.sauce_data.fire_rate)
+			if bottle.has_method("update_fire_rate"):
+				bottle.update_fire_rate()
+		3: # Toxic Herbs
+			bottle.sauce_data.damage += 3.0
+			bottle.sauce_data.effect_intensity += 1.5
+			print("Pesto bottle damage: %f, effect intensity: %f" % [bottle.sauce_data.damage, bottle.sauce_data.effect_intensity])
+
+func _apply_generic_upgrade_to_bottle(bottle: ImprovedBaseSauceBottle, choice: int):
+	match choice:
+		1: # More Damage
+			bottle.sauce_data.damage += 3.0
+			print("Generic bottle damage increased to: %f" % bottle.sauce_data.damage)
+		2: # Faster Shooting
+			bottle.sauce_data.fire_rate += 0.2
+			print("Generic bottle fire rate increased to: %f" % bottle.sauce_data.fire_rate)
+			if bottle.has_method("update_fire_rate"):
+				bottle.update_fire_rate()
+		3: # Longer Range
+			bottle.sauce_data.range += 20.0
+			print("Generic bottle range increased to: %f" % bottle.sauce_data.range)
+			if bottle.has_method("update_detection_range"):
+				bottle.update_detection_range()
 
 # Get the human-readable upgrade name
 func get_upgrade_name(sauce_name: String, choice_number: int) -> String:
@@ -256,46 +304,6 @@ func get_upgrade_description(sauce_name: String, choice_number: int) -> String:
 				3: return "+20 Range"
 
 	return "Unknown Effect"
-
-func apply_upgrade_to_sauce(sauce_resource: BaseSauceResource, choice_number: int):
-	var sauce_name = sauce_resource.sauce_name
-	print("Applying upgrade choice %d to %s resource" % [choice_number, sauce_name])
-
-	match sauce_name:
-		"Ketchup":
-			_apply_ketchup_upgrade(sauce_resource, choice_number)
-		"Prehistoric Pesto":
-			_apply_pesto_upgrade(sauce_resource, choice_number)
-		_:
-			_apply_generic_upgrade(sauce_resource, choice_number)
-
-func _apply_ketchup_upgrade(sauce_resource: BaseSauceResource, choice: int):
-	match choice:
-		1: # Thick & Chunky
-			sauce_resource.damage += 5.0
-		2: # Double Squirt
-			sauce_resource.projectile_count += 1
-		3: # Fast Food
-			sauce_resource.fire_rate += 0.3
-
-func _apply_pesto_upgrade(sauce_resource: BaseSauceResource, choice: int):
-	match choice:
-		1: # Viral Load
-			sauce_resource.effect_chance += 0.3
-		2: # Rapid Mutation
-			sauce_resource.fire_rate += 0.5
-		3: # Toxic Herbs
-			sauce_resource.damage += 3.0
-			sauce_resource.effect_intensity += 1.5
-
-func _apply_generic_upgrade(sauce_resource: BaseSauceResource, choice: int):
-	match choice:
-		1: # More Damage
-			sauce_resource.damage += 3.0
-		2: # Faster Shooting
-			sauce_resource.fire_rate += 0.2
-		3: # Longer Range
-			sauce_resource.range += 20.0
 
 # SAUCE SELECTION
 func select_sauce(sauce: BaseSauceResource):
