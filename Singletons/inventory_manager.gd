@@ -193,11 +193,13 @@ func apply_upgrade_choice(bottle_id: String, choice_number: int):
 		print("Warning: Bottle %s not found!" % bottle_id)
 		return
 
-	# Get the upgrade name and add it to bottle's chosen_upgrades
+	# Get both name and description
 	var upgrade_name = get_upgrade_name(bottle.sauce_data.sauce_name, choice_number)
-	bottle.chosen_upgrades.append(upgrade_name)
-	print("Added upgrade '%s' to bottle %s" % [upgrade_name, bottle_id])
-	print("Bottle now has upgrades: ", bottle.chosen_upgrades)
+	var upgrade_desc = get_upgrade_description(bottle.sauce_data.sauce_name, choice_number)
+	var full_upgrade = "%s (%s)" % [upgrade_name, upgrade_desc]
+
+	bottle.chosen_upgrades.append(full_upgrade)
+	print("Added upgrade '%s' to bottle %s" % [full_upgrade, bottle_id])
 
 	# Apply upgrade to the sauce resource (for persistence)
 	apply_upgrade_to_sauce(bottle.sauce_data, choice_number)
@@ -234,6 +236,26 @@ func get_upgrade_name(sauce_name: String, choice_number: int) -> String:
 				3: return "Longer Range"
 
 	return "Unknown Upgrade"
+
+func get_upgrade_description(sauce_name: String, choice_number: int) -> String:
+	match sauce_name:
+		"Ketchup":
+			match choice_number:
+				1: return "+5 Damage"
+				2: return "+1 Projectile"
+				3: return "+0.3 Fire Rate"
+		"Prehistoric Pesto":
+			match choice_number:
+				1: return "+30% Effect Chance"
+				2: return "+0.5 Fire Rate"
+				3: return "+3 Damage, +1.5 Effect Intensity"
+		_:
+			match choice_number:
+				1: return "+3 Damage"
+				2: return "+0.2 Fire Rate"
+				3: return "+20 Range"
+
+	return "Unknown Effect"
 
 func apply_upgrade_to_sauce(sauce_resource: BaseSauceResource, choice_number: int):
 	var sauce_name = sauce_resource.sauce_name
