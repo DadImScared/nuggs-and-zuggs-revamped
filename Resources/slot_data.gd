@@ -2,7 +2,7 @@ class_name SlotData
 extends Resource
 
 var slot: Node
-var sauce_bottle: BaseSauceResource
+var sauce_bottle: ImprovedBaseSauceBottle
 @export var slot_type: String
 @export var slot_index: int
 

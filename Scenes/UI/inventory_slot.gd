@@ -3,8 +3,7 @@ extends AspectRatioContainer
 
 var slot_type = "inventory"
 var slot_index = 0
-var sauce_bottle = null
-
+var sauce_bottle = null  # Now always a bottle instance or null
 
 var is_dragging = false
 var drag_preview = null
@@ -30,7 +29,7 @@ func get_drag_data(at_position):
 	return SlotData.new(self, sauce_bottle, slot_type, slot_index)
 
 func can_drop_data(at_position, data):
-#	only allow movement from equipped to inventory and back
+	# Only allow movement from equipped to inventory and back
 	if slot_type == "equipped":
 		return data["slot_type"] == "inventory"
 
@@ -45,15 +44,19 @@ func drop_data(at_position, data):
 	data["slot"].update_visual()
 	update_visual()
 
-
-
 func create_drag_preview():
 	var _drag_preview = DRAG_PREVIEW_SCENE.instantiate()
-	_drag_preview.modulate = sauce_bottle.sauce_color
+	if sauce_bottle and sauce_bottle.sauce_data:
+		_drag_preview.modulate = sauce_bottle.sauce_data.sauce_color
 	return _drag_preview
 
 func update_visual():
-	if sauce_bottle:
-		sauce_icon.modulate = sauce_bottle.sauce_color
+	if sauce_bottle and sauce_bottle.sauce_data:
+		sauce_icon.modulate = sauce_bottle.sauce_data.sauce_color
+
+		# Optional: Show level indicator if bottle is leveled up
+		if sauce_bottle.current_level > 1:
+			# Could add a level indicator here
+			pass
 	else:
 		sauce_icon.modulate = Color(0.5, 0.5, 0.5, 0.3)

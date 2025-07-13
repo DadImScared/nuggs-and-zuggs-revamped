@@ -1,8 +1,8 @@
-# Scenes/sauce_holder.gd - Now just a simple scene registration
+# Scenes/sauce_holder.gd - Simplified to just register with InventoryManager
 extends Node2D
 
 func _ready():
-	# Register with InventoryManager
+	# Register with InventoryManager so it can manage bottles in this scene
 	InventoryManager.register_scene_node(self)
 
 	# Connect to player's enemy death signal for XP distribution
@@ -10,8 +10,7 @@ func _ready():
 	if player.has_signal("enemy_died_with_sources"):
 		player.enemy_died_with_sources.connect(InventoryManager.distribute_xp_by_damage)
 
+	# Create bottle instances for initially equipped resources
 	for sauce in InventoryManager.old_equipped:
-		InventoryManager.create_bottle_for_sauce(sauce)
-	# Create bottles for initially equipped sauces
-	#for sauce in InventoryManager.get_equipped_sauces():
-		#InventoryManager.create_bottle_for_sauce(sauce)
+		if sauce:
+			InventoryManager.select_sauce(sauce)
