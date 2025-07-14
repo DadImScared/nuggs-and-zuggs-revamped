@@ -24,6 +24,11 @@ func _ready() -> void:
 	InventoryManager.bottle_leveled_up.connect(_on_bottle_leveled_up)
 	print("UI Manager connected directly to InventoryManager")
 
+	# Connect to new talent signals
+	InventoryManager.talent_applied.connect(_on_talent_applied)
+	InventoryManager.talent_removed.connect(_on_talent_removed)
+	InventoryManager.bottle_respecced.connect(_on_bottle_respecced)
+
 func _on_inventory_pressed():
 	get_tree().paused = true
 	var inventory = INVENTORY.instantiate()
@@ -42,18 +47,47 @@ func _on_bottle_leveled_up(bottle_id: String, sauce_name: String, level: int):
 
 	var upgrade_menu = UPGRADE_CHOICE_MENU.instantiate()
 	menu_ui.add_child(upgrade_menu)
-	upgrade_menu.setup(sauce_name, level)
-	# FIX: Use lambda to get the parameters in the right order
-	upgrade_menu.upgrade_selected.connect(func(choice_number): _on_upgrade_chosen(bottle_id, choice_number))
+	upgrade_menu.setup_with_talents(sauce_name, level)
+	upgrade_menu.talent_selected.connect(_on_talent_chosen.bind(bottle_id, level))
 
-func _on_upgrade_chosen(bottle_id: String, choice_number: int):
-	print("UI Manager: Forwarding choice %d for bottle %s" % [choice_number, bottle_id])
-	# DIRECT CALL to InventoryManager - No separate singletons!
-	InventoryManager.apply_upgrade_choice(bottle_id, choice_number)
+func _on_talent_chosen(bottle_id: String, level: int, choice_number: int):
+	print("UI Manager: Forwarding level %d talent choice %d for bottle %s" % [level, choice_number, bottle_id])
+	InventoryManager.apply_talent_choice_with_level(bottle_id, level, choice_number)
 
 func _on_level_up(level: int):
-	var level_up_menu =  LEVEL_UP_MENU.instantiate()
+	var level_up_menu = LEVEL_UP_MENU.instantiate()
 	get_tree().paused = true
 	menu_ui.add_child(level_up_menu)
 	if current_level:
 		current_level.text = "%d" % level
+
+# Talent system feedback
+func _on_talent_applied(bottle: ImprovedBaseSauceBottle, talent: Talent):
+	# Show talent application feedback
+	var feedback_text = "Talent Applied: %s" % talent.talent_name
+	_show_talent_notification(feedback_text, Color.GOLD)
+
+func _on_talent_removed(bottle: ImprovedBaseSauceBottle, talent: Talent):
+	var feedback_text = "Talent Removed: %s" % talent.talent_name
+	_show_talent_notification(feedback_text, Color.ORANGE)
+
+func _on_bottle_respecced(bottle: ImprovedBaseSauceBottle):
+	var feedback_text = "%s Respecced!" % bottle.sauce_data.sauce_name
+	_show_talent_notification(feedback_text, Color.PURPLE)
+
+func _show_talent_notification(text: String, color: Color = Color.WHITE):
+	# Enhanced notification system
+	var notification = Label.new()
+	notification.text = text
+	notification.add_theme_color_override("font_color", color)
+	notification.add_theme_font_size_override("font_size", 20)
+	notification.position = Vector2(20, 120)
+	game_ui.add_child(notification)
+
+	# Notification animation
+	var tween = create_tween()
+	tween.tween_property(notification, "position", Vector2(20, 100), 3.0)
+	tween.parallel().tween_property(notification, "modulate:a", 0.0, 3.0)
+	tween.tween_callback(notification.queue_free)
+
+	print("📢 %s" % text)

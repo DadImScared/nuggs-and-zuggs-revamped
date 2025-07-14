@@ -22,6 +22,8 @@ PlayerStats="*res://Singletons/player_stats.gd"
 SauceEffectManager="*res://Singletons/sauce_effect_manager.gd"
 VisualEffectManager="*res://Singletons/visual_effect_manager.gd"
 EnemyPoolManager="*res://Singletons/enemy_pool_manager.gd"
+TalentManager="*res://Singletons/talent_manager.gd"
+TalentEffectManager="*res://Singletons/talent_effect_manager.gd"
 
 [display]
 

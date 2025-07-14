@@ -23,6 +23,11 @@ signal sauce_moved(from_data, to_data)
 signal sauce_equipped(bottle_instance: ImprovedBaseSauceBottle)
 signal sauce_unequipped(bottle_instance: ImprovedBaseSauceBottle)
 
+# New signals for talent system
+signal talent_applied(bottle: ImprovedBaseSauceBottle, talent: Talent)
+signal talent_removed(bottle: ImprovedBaseSauceBottle, talent: Talent)
+signal bottle_respecced(bottle: ImprovedBaseSauceBottle)
+
 func _ready() -> void:
 	storage.resize(max_inventory)
 	equipped.resize(max_equipped_size)
@@ -183,127 +188,180 @@ func distribute_xp_by_damage(total_xp: int, damage_sources: Dictionary):
 		if bottle and bottle.has_method("gain_xp"):
 			bottle.gain_xp(xp_earned)
 
-# UPGRADE APPLICATION - FIXED VERSION
-func apply_upgrade_choice(bottle_id: String, choice_number: int):
-	print("InventoryManager: Applying upgrade choice %d to bottle %s" % [choice_number, bottle_id])
+# ===================================================================
+# TALENT SYSTEM - REPLACES OLD UPGRADE SYSTEM
+# ===================================================================
 
-	# Find the bottle instance
+# TALENT APPLICATION
+func apply_upgrade_choice(bottle_id: String, choice_number: int):
+	print("InventoryManager: Applying talent choice %d to bottle %s" % [choice_number, bottle_id])
+
 	var bottle = get_bottle_by_id(bottle_id)
 	if not bottle:
 		print("Warning: Bottle %s not found!" % bottle_id)
 		return
 
-	# Get both name and description
-	var upgrade_name = get_upgrade_name(bottle.sauce_data.sauce_name, choice_number)
-	var upgrade_desc = get_upgrade_description(bottle.sauce_data.sauce_name, choice_number)
-	var full_upgrade = "%s (%s)" % [upgrade_name, upgrade_desc]
-
-	bottle.chosen_upgrades.append(full_upgrade)
-	print("Added upgrade '%s' to bottle %s" % [full_upgrade, bottle_id])
-
-	# APPLY UPGRADE TO THE BOTTLE INSTANCE - This was missing!
-	apply_upgrade_to_bottle_stats(bottle, choice_number)
-
-# NEW FUNCTION: Apply upgrades directly to bottle stats
-func apply_upgrade_to_bottle_stats(bottle: ImprovedBaseSauceBottle, choice_number: int):
 	var sauce_name = bottle.sauce_data.sauce_name
-	print("Applying upgrade choice %d to %s BOTTLE STATS" % [choice_number, sauce_name])
+	var level = bottle.current_level
 
-	match sauce_name:
-		"Ketchup":
-			_apply_ketchup_upgrade_to_bottle(bottle, choice_number)
-		"Prehistoric Pesto":
-			_apply_pesto_upgrade_to_bottle(bottle, choice_number)
-		_:
-			_apply_generic_upgrade_to_bottle(bottle, choice_number)
+	# Get talent from talent manager
+	var talent = TalentManager.get_talent_by_choice(sauce_name, level, choice_number)
+	if not talent:
+		print("No talent found for %s level %d choice %d" % [sauce_name, level, choice_number])
+		return
 
-# BOTTLE UPGRADE FUNCTIONS - Apply to bottle instance
-func _apply_ketchup_upgrade_to_bottle(bottle: ImprovedBaseSauceBottle, choice: int):
-	match choice:
-		1: # Thick & Chunky
-			# Modify the bottle's actual damage stat
-			bottle.sauce_data.damage += 5.0
-			print("Ketchup bottle damage increased to: %f" % bottle.sauce_data.damage)
-		2: # Double Squirt
-			bottle.sauce_data.projectile_count += 1
-			print("Ketchup bottle projectile count increased to: %d" % bottle.sauce_data.projectile_count)
-		3: # Fast Food
-			bottle.sauce_data.fire_rate += 0.3
-			print("Ketchup bottle fire rate increased to: %f" % bottle.sauce_data.fire_rate)
-			if bottle.has_method("update_fire_rate"):
-				bottle.update_fire_rate()
+	# Apply the talent
+	talent.apply_to_bottle(bottle)
+	bottle.active_talents.append(talent)
 
-func _apply_pesto_upgrade_to_bottle(bottle: ImprovedBaseSauceBottle, choice: int):
-	match choice:
-		1: # Viral Load
-			bottle.sauce_data.effect_chance += 0.3
-			print("Pesto bottle effect chance increased to: %f" % bottle.sauce_data.effect_chance)
-		2: # Rapid Mutation
-			bottle.sauce_data.fire_rate += 0.5
-			print("Pesto bottle fire rate increased to: %f" % bottle.sauce_data.fire_rate)
-			if bottle.has_method("update_fire_rate"):
-				bottle.update_fire_rate()
-		3: # Toxic Herbs
-			bottle.sauce_data.damage += 3.0
-			bottle.sauce_data.effect_intensity += 1.5
-			print("Pesto bottle damage: %f, effect intensity: %f" % [bottle.sauce_data.damage, bottle.sauce_data.effect_intensity])
+	# Update chosen upgrades display with level info
+	var full_talent = "L%d: %s" % [level, talent.talent_name]
+	bottle.chosen_upgrades.append(full_talent)
 
-func _apply_generic_upgrade_to_bottle(bottle: ImprovedBaseSauceBottle, choice: int):
-	match choice:
-		1: # More Damage
-			bottle.sauce_data.damage += 3.0
-			print("Generic bottle damage increased to: %f" % bottle.sauce_data.damage)
-		2: # Faster Shooting
-			bottle.sauce_data.fire_rate += 0.2
-			print("Generic bottle fire rate increased to: %f" % bottle.sauce_data.fire_rate)
-			if bottle.has_method("update_fire_rate"):
-				bottle.update_fire_rate()
-		3: # Longer Range
-			bottle.sauce_data.range += 20.0
-			print("Generic bottle range increased to: %f" % bottle.sauce_data.range)
-			if bottle.has_method("update_detection_range"):
-				bottle.update_detection_range()
+	print("✨ Applied talent: %s to bottle %s" % [talent.talent_name, bottle_id])
 
-# Get the human-readable upgrade name
+	# Trigger talent applied signal for UI updates
+	talent_applied.emit(bottle, talent)
+
+# Updated to get talent names and descriptions for UI
 func get_upgrade_name(sauce_name: String, choice_number: int) -> String:
-	match sauce_name:
-		"Ketchup":
-			match choice_number:
-				1: return "Thick & Chunky"
-				2: return "Double Squirt"
-				3: return "Fast Food"
-		"Prehistoric Pesto":
-			match choice_number:
-				1: return "Viral Load"
-				2: return "Rapid Mutation"
-				3: return "Toxic Herbs"
-		_:
-			match choice_number:
-				1: return "More Damage"
-				2: return "Faster Shooting"
-				3: return "Longer Range"
+	# Default to level 1 for backwards compatibility
+	return get_talent_name_for_level(sauce_name, 1, choice_number)
 
-	return "Unknown Upgrade"
+func get_talent_name_for_level(sauce_name: String, level: int, choice_number: int) -> String:
+	var talent = TalentManager.get_talent_by_choice(sauce_name, level, choice_number)
+	return talent.talent_name if talent else "Unknown Talent"
 
 func get_upgrade_description(sauce_name: String, choice_number: int) -> String:
-	match sauce_name:
-		"Ketchup":
-			match choice_number:
-				1: return "+5 Damage"
-				2: return "+1 Projectile"
-				3: return "+0.3 Fire Rate"
-		"Prehistoric Pesto":
-			match choice_number:
-				1: return "+30% Effect Chance"
-				2: return "+0.5 Fire Rate"
-				3: return "+3 Damage, +1.5 Effect Intensity"
-		_:
-			match choice_number:
-				1: return "+3 Damage"
-				2: return "+0.2 Fire Rate"
-				3: return "+20 Range"
+	# Default to level 1 for backwards compatibility
+	return get_talent_description_for_level(sauce_name, 1, choice_number)
 
-	return "Unknown Effect"
+func get_talent_description_for_level(sauce_name: String, level: int, choice_number: int) -> String:
+	var talent = TalentManager.get_talent_by_choice(sauce_name, level, choice_number)
+	return talent.description if talent else "Unknown Effect"
+
+func get_talent_preview_for_level(sauce_name: String, level: int, choice_number: int) -> String:
+	var talent = TalentManager.get_talent_by_choice(sauce_name, level, choice_number)
+	return talent.get_preview_text() if talent else ""
+
+# BETTER: Level-aware talent application (used by UI)
+func apply_talent_choice_with_level(bottle_id: String, level: int, choice_number: int):
+	print("InventoryManager: Applying level %d talent choice %d to bottle %s" % [level, choice_number, bottle_id])
+
+	var bottle = get_bottle_by_id(bottle_id)
+	if not bottle:
+		print("Warning: Bottle %s not found!" % bottle_id)
+		return
+
+	var sauce_name = bottle.sauce_data.sauce_name
+
+	# Get talent from talent manager
+	var talent = TalentManager.get_talent_by_choice(sauce_name, level, choice_number)
+	if not talent:
+		print("No talent found for %s level %d choice %d" % [sauce_name, level, choice_number])
+		return
+
+	# Apply the talent
+	talent.apply_to_bottle(bottle)
+	bottle.active_talents.append(talent)
+
+	# Update chosen upgrades display with detailed info
+	var full_talent = "L%d: %s (%s)" % [level, talent.talent_name, talent.description]
+	bottle.chosen_upgrades.append(full_talent)
+
+	print("✨ Applied talent: %s to bottle %s" % [talent.talent_name, bottle_id])
+
+	# Trigger talent applied signal for UI updates
+	talent_applied.emit(bottle, talent)
+
+# Helper functions for talent system
+func get_available_talents_for_bottle(bottle: ImprovedBaseSauceBottle) -> Array[Talent]:
+	"""Get available talents for a bottle's current level"""
+	return TalentManager.get_talents_for_level(bottle.sauce_data.sauce_name, bottle.current_level)
+
+func can_bottle_level_up(bottle: ImprovedBaseSauceBottle) -> bool:
+	"""Check if bottle can still level up and get talents"""
+	return bottle.current_level < bottle.max_level
+
+func get_bottle_talent_summary(bottle: ImprovedBaseSauceBottle) -> Dictionary:
+	"""Get summary of bottle's talents for UI"""
+	var summary = bottle.get_talent_summary()
+	summary["available_talents"] = get_available_talents_for_bottle(bottle).size()
+	summary["can_level_up"] = can_bottle_level_up(bottle)
+	return summary
+
+# Talent removal (for respec functionality)
+func remove_talent_from_bottle(bottle: ImprovedBaseSauceBottle, talent: Talent):
+	"""Remove a specific talent from a bottle"""
+	if talent in bottle.active_talents:
+		talent.remove_from_bottle(bottle)
+		bottle.active_talents.erase(talent)
+
+		# Update display
+		var talent_display = "L%d: %s" % [talent.level_required, talent.talent_name]
+		if talent_display in bottle.chosen_upgrades:
+			bottle.chosen_upgrades.erase(talent_display)
+
+		print("Removed talent: %s from bottle %s" % [talent.talent_name, bottle.bottle_id])
+		talent_removed.emit(bottle, talent)
+
+func respec_bottle(bottle: ImprovedBaseSauceBottle):
+	"""Remove all talents from a bottle (full respec)"""
+	var talents_to_remove = bottle.active_talents.duplicate()
+
+	for talent in talents_to_remove:
+		remove_talent_from_bottle(bottle, talent)
+
+	print("Full respec completed for bottle %s" % bottle.bottle_id)
+	bottle_respecced.emit(bottle)
+
+# Statistics and debugging
+func get_talent_statistics() -> Dictionary:
+	"""Get statistics about talent usage across all bottles"""
+	var stats = {
+		"total_talents_applied": 0,
+		"talent_usage": {},
+		"transformation_count": 0,
+		"bottles_with_talents": 0
+	}
+
+	var all_bottles = get_equipped_bottles() + storage.filter(func(x): return x != null)
+
+	for bottle in all_bottles:
+		if bottle and bottle.active_talents.size() > 0:
+			stats.bottles_with_talents += 1
+			stats.total_talents_applied += bottle.active_talents.size()
+
+			for talent in bottle.active_talents:
+				if not stats.talent_usage.has(talent.talent_name):
+					stats.talent_usage[talent.talent_name] = 0
+				stats.talent_usage[talent.talent_name] += 1
+
+				if talent.talent_type == Talent.TalentType.TRANSFORMATION:
+					stats.transformation_count += 1
+
+	return stats
+
+func debug_print_bottle_talents(bottle: ImprovedBaseSauceBottle):
+	"""Debug function to print all talents on a bottle"""
+	print("=== Bottle Talents Debug: %s ===" % bottle.bottle_id)
+	print("Sauce: %s, Level: %d" % [bottle.sauce_data.sauce_name, bottle.current_level])
+	print("Active Talents (%d):" % bottle.active_talents.size())
+
+	for i in range(bottle.active_talents.size()):
+		var talent = bottle.active_talents[i]
+		print("  %d. L%d %s (%s)" % [i+1, talent.level_required, talent.talent_name, Talent.TalentType.keys()[talent.talent_type]])
+
+	print("Special Effects (%d):" % bottle.special_effects.size())
+	for effect in bottle.special_effects:
+		print("  - %s (%s)" % [effect.effect_name, SpecialEffectResource.EffectType.keys()[effect.effect_type]])
+
+	print("Trigger Effects (%d):" % bottle.trigger_effects.size())
+	for trigger in bottle.trigger_effects:
+		print("  - %s (%s)" % [trigger.trigger_name, TriggerEffectResource.TriggerType.keys()[trigger.trigger_type]])
+
+	print("Transformations: %s" % str(bottle.transformation_effects))
+	print("========================")
 
 # SAUCE SELECTION
 func select_sauce(sauce: BaseSauceResource):
