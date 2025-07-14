@@ -1,11 +1,29 @@
 extends Node
 
-func apply_effect(projectile: Area2D, enemy: Node2D, sauce_resource: BaseSauceResource, sauce_level: int = 1, source_bottle_id: String = "unknown"):
+func apply_effect(
+	projectile: Area2D, enemy: Node2D, sauce_resource: BaseSauceResource,
+	sauce_level: int = 1, source_bottle_id: String = "unknown",
+	effective_chance: float = -1.0, effective_intensity: float = -1.0,
+	source_bottle: ImprovedBaseSauceBottle = null
+):
 	if not sauce_resource or sauce_resource.special_effect_type == BaseSauceResource.SpecialEffectType.NONE:
 		return
 
-	# Check if effect triggers (use leveled effect chance)
-	var current_effect_chance = sauce_resource.get_current_effect_chance(sauce_level)
+	# Use provided effective values or fall back to base resource
+	var current_effect_chance: float
+	var current_effect_intensity: float
+
+	if source_bottle:
+		# Use bottle's effective stats (includes talents!)
+		current_effect_chance = source_bottle.effective_effect_chance
+		current_effect_intensity = source_bottle.effective_effect_intensity
+	else:
+		# Fallback for projectiles without bottle reference
+		current_effect_chance = sauce_resource.get_current_effect_chance(sauce_level)
+		current_effect_intensity = sauce_resource.get_current_effect_intensity(sauce_level)
+
+
+	# Check if effect triggers using effective chance
 	if randf() > current_effect_chance:
 		return
 
@@ -13,7 +31,7 @@ func apply_effect(projectile: Area2D, enemy: Node2D, sauce_resource: BaseSauceRe
 		BaseSauceResource.SpecialEffectType.TORNADO:
 			_apply_tornado_effect(projectile, enemy, sauce_resource, sauce_level, source_bottle_id)
 		BaseSauceResource.SpecialEffectType.INFECT:
-			_apply_infect_effect(enemy, sauce_resource, sauce_level, source_bottle_id)
+			_apply_infect_effect(enemy, sauce_resource, sauce_level, source_bottle_id, current_effect_intensity)
 		BaseSauceResource.SpecialEffectType.BURN:
 			_apply_burn_effect(enemy, sauce_resource, sauce_level, source_bottle_id)
 		BaseSauceResource.SpecialEffectType.SLOW:
@@ -55,10 +73,10 @@ func _apply_tornado_effect(projectile: Area2D, enemy: Node2D, sauce_resource: Ba
 		sauce_resource.sauce_color
 	)
 
-func _apply_infect_effect(enemy: Node2D, sauce_resource: BaseSauceResource, sauce_level: int, source_bottle_id: String):
+func _apply_infect_effect(enemy: Node2D, sauce_resource: BaseSauceResource, sauce_level: int, source_bottle_id: String, effect_intensity):
 	var current_intensity = sauce_resource.get_current_effect_intensity(sauce_level)
 	if enemy.has_method("apply_status_effect"):
-		enemy.apply_status_effect("infect", sauce_resource.effect_duration, current_intensity, source_bottle_id)
+		enemy.apply_status_effect("infect", sauce_resource.effect_duration, effect_intensity, source_bottle_id)
 		if "infect" in enemy.active_effects:
 			enemy.active_effects["infect"]["color"] = sauce_resource.sauce_color
 

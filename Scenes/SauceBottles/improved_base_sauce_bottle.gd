@@ -51,6 +51,8 @@ var effective_damage: float = 0.0
 var effective_fire_rate: float = 0.0
 var effective_range: float = 0.0
 var effective_projectile_count: int = 1
+var effective_effect_chance: float = 0
+var effective_effect_intensity: float = 0
 
 
 func _ready() -> void:
@@ -193,8 +195,11 @@ func fire_projectile_with_flash():
 		target_direction,
 		modified_sauce_data,
 		current_level,
-		bottle_id
+		bottle_id,
+		self
 	)
+	new_sauce.effect_chance = effective_effect_chance
+	new_sauce.effect_intensity = effective_effect_intensity
 
 	# Apply special effects to projectile
 	_apply_special_effects_to_projectile(new_sauce)
@@ -284,30 +289,35 @@ func create_level_up_effect():
 # ===================================================================
 
 func recalculate_all_effective_stats():
-	if not sauce_data:
-		print("⚠ No sauce_data; cannot recalculate stats")
-		return
-
-	# Get base stats with level scaling
+	# Start with base + level scaling
 	var base_damage = sauce_data.get_current_damage(current_level)
 	var base_fire_rate = sauce_data.get_current_fire_rate(current_level)
 	var base_range = sauce_data.get_current_range(current_level)
-	var base_projectile_count = sauce_data.projectile_count
+	var base_effect_chance = sauce_data.get_current_effect_chance(current_level)
+	var base_effect_intensity = sauce_data.get_current_effect_intensity(current_level)
 
-	# Apply modifiers
-	effective_damage = get_modified_damage(base_damage)
-	effective_fire_rate = get_modified_fire_rate(base_fire_rate)
-	effective_range = get_modified_range(base_range)
+	# Apply all modifiers from stat_modifier_history
+	for modifier in stat_modifier_history:
+		match modifier.stat_name:
+			"damage": base_damage = modifier.apply_to_value(base_damage)
+			"fire_rate": base_fire_rate = modifier.apply_to_value(base_fire_rate)
+			"range": base_range = modifier.apply_to_value(base_range)
+			"effect_chance": base_effect_chance = modifier.apply_to_value(base_effect_chance)
+			"effect_intensity": base_effect_intensity = modifier.apply_to_value(base_effect_intensity)
 
-	# projectile_count may need special treatment (int)
-	effective_projectile_count = get_modified_projectile_count()
-
-	# Optional debug
-	print("[🧪] Recalculated stats for %s:" % bottle_id)
-	print("   Damage: %.1f → %.1f" % [base_damage, effective_damage])
-	print("   Fire Rate: %.2f/sec → %.2f/sec" % [base_fire_rate, effective_fire_rate])
-	print("   Range: %.0f → %.0f" % [base_range, effective_range])
-	print("   Projectiles: %d → %d" % [base_projectile_count, effective_projectile_count])
+	# Store in effective variables
+	effective_damage = base_damage
+	effective_fire_rate = base_fire_rate
+	effective_range = base_range
+	effective_effect_chance = base_effect_chance
+	effective_effect_intensity = base_effect_intensity
+	print("Final effective stats:")
+	print("  Damage: %.1f" % effective_damage)
+	print("  Fire Rate: %.1f" % effective_fire_rate)
+	print("  Range: %.1f" % effective_range)
+	print("  Effect Chance: %.2f" % effective_effect_chance)
+	print("  Effect Intensity: %.2f" % effective_effect_intensity)
+	print("=======================================")
 
 
 # TALENT MODIFIER CALCULATION METHODS

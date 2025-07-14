@@ -12,6 +12,7 @@ var projectile_behavior: ProjectileBehavior
 # Level and source tracking
 var source_bottle_id: String = ""
 var sauce_level: int = 1
+var source_bottle: ImprovedBaseSauceBottle = null
 
 # Enhanced talent variables
 var damage_multiplier: float = 1.0
@@ -33,15 +34,19 @@ var bounces_remaining: int = 0
 var bounce_range: float = 200.0
 var bounced_enemies: Array[Node2D] = []
 
+var effect_chance: float = -1.0
+var effect_intensity: float = -1.0
+
 #func _ready():
 	#body_entered.connect(_on_body_entered)
 
-func launch(start_pos: Vector2, direction: Vector2, sauce: BaseSauceResource, level: int = 1, bottle_id: String = ""):
+func launch(start_pos: Vector2, direction: Vector2, sauce: BaseSauceResource, level: int = 1, bottle_id: String = "", bottle: ImprovedBaseSauceBottle = null):
 	global_position = start_pos
 	start_position = start_pos
 	sauce_level = level
 	sauce_resource = sauce
 	source_bottle_id = bottle_id
+	source_bottle = bottle
 
 	# Use level-modified stats
 	velocity = direction.normalized() * sauce.projectile_speed
@@ -114,7 +119,7 @@ func handle_enemy_hit(enemy: Node2D):
 		return
 
 	# Calculate enhanced damage
-	var final_damage = get_scaled_damage() * damage_multiplier
+	var final_damage = source_bottle.effective_damage * damage_multiplier
 
 	# Add pierce bonus damage
 	if pierce_hits > 0 and pierce_damage_bonus > 0:
@@ -157,7 +162,11 @@ func handle_enemy_hit(enemy: Node2D):
 func _finalize_projectile(enemy: Node2D):
 	"""Apply final effects and destroy projectile"""
 	# Apply sauce effects on final hit
-	SauceEffectManager.apply_effect(self, enemy, sauce_resource, sauce_level, source_bottle_id)
+	SauceEffectManager.apply_effect(
+		self, enemy, sauce_resource,
+		sauce_level, source_bottle_id, effect_chance,
+		effect_intensity, source_bottle
+		)
 
 	var should_destroy = projectile_behavior.handle_hit(self, enemy)
 	if should_destroy:
@@ -319,6 +328,7 @@ func _create_bounce_effect(position: Vector2):
 
 # Override get_scaled_damage to include all multipliers
 func get_scaled_damage() -> float:
+	return sauce_damage * damage_multiplier
 	var base_scale = 1.0 + (PlayerStats.level - 1)
 	var damage_scale = base_scale * 0.1
 	var leveled_damage = sauce_resource.get_current_damage(sauce_level)
