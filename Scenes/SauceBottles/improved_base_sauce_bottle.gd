@@ -1,3 +1,4 @@
+# Scenes/SauceBottles/improved_base_sauce_bottle.gd
 class_name ImprovedBaseSauceBottle
 extends Area2D
 
@@ -79,13 +80,20 @@ func setup_shoot_timer():
 	shoot_timer.timeout.connect(_on_shoot_timer_timeout)
 
 func _on_shoot_timer_timeout():
-	if current_target and is_instance_valid(current_target):
-		shoot()
-	else:
+	if not current_target or not is_instance_valid(current_target):
 		current_target = null
+		return
+
+	# Choose animation based on fire rate
+	var fire_rate = sauce_data.get_current_fire_rate(current_level) if sauce_data else 1.0
+
+	if fire_rate >= 4.0:
+		shoot_quick_enhanced()  # Very fast weapons - minimal animation
+	else:
+		shoot()  # Normal squeeze animation with enhanced projectiles
 
 func update_fire_rate():
-	if shoot_timer and sauce_data:
+	if sauce_data and shoot_timer:
 		var current_fire_rate = sauce_data.get_current_fire_rate(current_level)
 		shoot_timer.wait_time = 1.0 / current_fire_rate
 
@@ -137,16 +145,47 @@ func update_closest_target():
 	current_target = closest_enemy
 
 # ===================================================================
-# ENHANCED SHOOTING WITH TALENT EFFECTS
+# ENHANCED SHOOTING WITH TALENT EFFECTS AND ANIMATIONS
 # ===================================================================
 
 func shoot():
+	if not current_target or not sauce_data or is_shooting:
+		return
+
+	is_shooting = true
 	shot_counter += 1
 
 	# Check all trigger effects
 	_check_trigger_effects()
 
 	if not current_target:
+		is_shooting = false
+		return
+
+	# Start animation and enhanced shooting
+	await squeeze_and_fire_enhanced()
+	is_shooting = false
+
+func squeeze_and_fire_enhanced() -> void:
+	"""Play squeeze animation and fire enhanced projectiles"""
+
+	# Play squeeze animation if available
+	if animation_player and animation_player.has_animation("squeeze"):
+		animation_player.play("squeeze")
+
+	# Fire projectile at peak compression
+	var fire_delay = squeeze_duration * 0.8
+	get_tree().create_timer(fire_delay).timeout.connect(fire_enhanced_projectiles)
+
+	# Wait for animation to complete
+	await get_tree().create_timer(squeeze_duration + recovery_duration).timeout
+
+func fire_enhanced_projectiles() -> void:
+	"""Fire projectiles with talent effects and tip flash"""
+
+	# Check if target is still valid
+	if not current_target or not is_instance_valid(current_target):
+		print("❌ No valid target when firing!")
 		return
 
 	# Determine shot type based on special effects
@@ -156,6 +195,24 @@ func shoot():
 		_fire_enhanced_shot(3, 15.0)
 	else:
 		_fire_enhanced_shot(1, 0.0)
+
+	# Flash the tip for visual feedback
+	create_tip_flash()
+
+func shoot_quick_enhanced():
+	"""Ultra-fast shooting with minimal animation for high fire rate weapons"""
+	if not current_target or not sauce_data:
+		return
+
+	shot_counter += 1
+	_check_trigger_effects()
+
+	# Quick animation
+	if animation_player and animation_player.has_animation("squeeze"):
+		animation_player.play("squeeze")
+
+	# Fire almost immediately with enhancements
+	get_tree().create_timer(0.03).timeout.connect(fire_enhanced_projectiles)
 
 func _get_projectile_modifiers() -> Array[String]:
 	"""Get list of active projectile modifiers"""
@@ -222,6 +279,10 @@ func _execute_trigger_effect(trigger: TriggerEffectResource):
 
 func _fire_enhanced_shot(count: int, spread_angle: float):
 	"""Fire projectiles with all current enhancements"""
+
+	if not current_target or not is_instance_valid(current_target):
+		return
+
 	for i in range(count):
 		var angle_offset = 0.0
 		if count > 1:
@@ -230,7 +291,7 @@ func _fire_enhanced_shot(count: int, spread_angle: float):
 		var projectile = SAUCE.instantiate()
 		get_tree().current_scene.add_child(projectile)
 
-		var shoot_position = shooting_point.global_position
+		var shoot_position = shooting_point.global_position if shooting_point else global_position
 		var base_direction = shoot_position.direction_to(current_target.global_position)
 		var adjusted_direction = base_direction.rotated(deg_to_rad(angle_offset))
 
@@ -313,6 +374,19 @@ func _apply_effect_to_projectile(projectile, effect: SpecialEffectResource):
 			var bonus = effect.get_parameter("damage_bonus", 0.25)
 			var duration = effect.get_parameter("duration", 5.0)
 			projectile.add_on_hit_effect("vulnerability", {"bonus": bonus, "duration": duration})
+
+func create_tip_flash() -> void:
+	"""Flash only the tip part for muzzle flash effect"""
+	if not the_tip:
+		print("❌ No tip found for flash!")
+		return
+
+	# Scale flash - this works great!
+	var scale_tween = create_tween()
+	var original_scale = the_tip.scale
+
+	scale_tween.tween_property(the_tip, "scale", original_scale * 1.3, 0.05)
+	scale_tween.tween_property(the_tip, "scale", original_scale, 0.15)
 
 # ===================================================================
 # TALENT INTERFACE FUNCTIONS
@@ -444,7 +518,6 @@ func remove_transformation(talent: Talent):
 # LEVELING SYSTEM
 # ===================================================================
 
-# Level system functions
 func gain_xp(amount: int):
 	if current_level >= max_level:
 		return
@@ -457,70 +530,61 @@ func gain_xp(amount: int):
 func level_up():
 	current_level += 1
 	current_xp -= xp_to_next_level
-	xp_to_next_level = int(xp_to_next_level * 1.3) # 30% more XP needed each level
+	xp_to_next_level = int(xp_to_next_level * 1.4)
 
-	# Update stats based on new level
-	update_fire_rate() # Update fire rate
-	update_detection_range() # Update range
-
-	# Emit signal for UI updates
+	update_fire_rate()
+	update_detection_range()
 	leveled_up.emit(bottle_id, current_level, sauce_data.sauce_name)
-
-	# Visual feedback
 	create_level_up_effect()
 
 func create_level_up_effect():
-	"""Level up effect that flashes both base and tip"""
-	var base_tween = create_tween()
-	var tip_tween = create_tween()
+	"""Visual effect when bottle levels up"""
+	if not bottle_sprites:
+		return
 
-	if bottle_base:
-		var original_base_scale = bottle_base.scale
-		base_tween.tween_property(bottle_base, "scale", original_base_scale * 1.3, 0.2)
-		base_tween.tween_property(bottle_base, "scale", original_base_scale, 0.2)
+	var original_scale = bottle_sprites.scale
+	var flash_tween = create_tween()
 
-	if the_tip:
-		var original_tip_modulate = the_tip.modulate
-		tip_tween.tween_property(the_tip, "modulate", Color.GOLD, 0.2)
-		tip_tween.tween_property(the_tip, "modulate", original_tip_modulate, 0.2)
+	# Brief flash and scale up
+	flash_tween.tween_property(bottle_sprites, "scale", original_scale * 1.2, 0.2)
+	flash_tween.tween_property(bottle_sprites, "modulate", Color.YELLOW, 0.2)
+	flash_tween.tween_property(bottle_sprites, "scale", original_scale, 0.3)
+	flash_tween.tween_property(bottle_sprites, "modulate", sauce_data.sauce_color, 0.3)
 
 # ===================================================================
 # UTILITY FUNCTIONS
 # ===================================================================
 
-func get_level_info() -> Dictionary:
-	return {
+func get_talent_summary() -> Dictionary:
+	"""Get summary of this bottle's talents for UI"""
+	var summary = {
+		"bottle_id": bottle_id,
+		"sauce_name": sauce_data.sauce_name if sauce_data else "Unknown",
 		"level": current_level,
 		"xp": current_xp,
 		"xp_to_next": xp_to_next_level,
-		"upgrades": chosen_upgrades.duplicate()
-	}
-
-func get_talent_summary() -> Dictionary:
-	"""Get summary of all applied talents for UI"""
-	return {
 		"active_talents": active_talents.size(),
-		"stat_modifiers": stat_modifier_history.size(),
+		"talent_names": [],
 		"special_effects": special_effects.size(),
 		"trigger_effects": trigger_effects.size(),
-		"transformations": transformation_effects.size(),
-		"crit_chance": crit_chance,
-		"perfect_shots": perfect_shots_remaining
+		"transformations": transformation_effects.size()
 	}
 
-# Utility functions for external access
-func get_bottle_base() -> Node2D:
-	return bottle_base
+	for talent in active_talents:
+		summary.talent_names.append(talent.talent_name)
 
-func get_tip() -> Node2D:
-	return the_tip
+	return summary
 
-func set_tip_color(color: Color):
-	"""Set tip color independently from base"""
-	if the_tip:
-		the_tip.modulate = color
-
-func set_base_color(color: Color):
-	"""Set base color independently from tip"""
-	if bottle_base:
-		bottle_base.modulate = color
+func debug_print_bottle_info():
+	"""Debug function to print all bottle information"""
+	print("=== Bottle Debug Info: %s ===" % bottle_id)
+	print("Sauce: %s, Level: %d" % [sauce_data.sauce_name, current_level])
+	print("XP: %d/%d" % [current_xp, xp_to_next_level])
+	print("Active Talents (%d):" % active_talents.size())
+	for talent in active_talents:
+		print("  - %s (L%d)" % [talent.talent_name, talent.level_required])
+	print("Special Effects (%d):" % special_effects.size())
+	for effect in special_effects:
+		print("  - %s" % effect.effect_name)
+	print("Runtime: Crit %.1f%%, Multiplier %.1fx" % [crit_chance * 100, crit_multiplier])
+	print("=============================")
