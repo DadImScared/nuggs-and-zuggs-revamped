@@ -38,21 +38,29 @@ extends Resource
 
 enum SpecialEffectType {
 	NONE,
-	BURN,
-	POISON,
-	SLOW,
-	FREEZE,
-	STICKY,
-	EXPLODE,
-	CHAIN,
-	HEAL,
-	MULTIPLY,
-	MAGNETIZE,
-	SHIELD_BREAK,
-	LEECH,
-	LIGHTNING,
-	TORNADO,
-	INFECT
+	BURN,           # Fire damage over time
+	POISON,         # Damage over time + health reduction
+	SLOW,           # Reduce enemy speed
+	FREEZE,         # Stop enemy movement
+	STICKY,         # Enemies stick together/to ground
+	EXPLODE,        # Area damage on impact
+	CHAIN,          # Projectile jumps to nearby enemies
+	HEAL,           # Heal player on hit
+	MULTIPLY,       # Projectile splits on impact
+	MAGNETIZE,      # Attracts nearby enemies
+	SHIELD_BREAK,   # Ignores enemy shields
+	LEECH,          # Steal health from enemies
+	LIGHTNING,      # Chain lightning effect
+	TORNADO,        # Spawns a tornado that moves around
+	INFECT,         # Spreads infection between enemies
+	PIERCE,         # Goes through enemies (for behavior factory)
+	BOUNCE,         # Projectile bounces off walls/enemies
+	QUANTUM,        # Quantum effects
+	CURSE,          # Reduce enemy damage/stats
+	CHAOS,          # Random effect each shot
+	GROWTH,         # Damage increases over distance
+	RICOCHET,       # Bounces between enemies
+	MARK            # Mark enemies for bonus damage
 }
 
 # Get current stats with level modifiers applied
@@ -107,6 +115,22 @@ func get_effect_description() -> String:
 			return "Spawns a tornado that moves around"
 		SpecialEffectType.INFECT:
 			return "Spreads infection between enemies"
+		SpecialEffectType.PIERCE:
+			return "Goes through multiple enemies"
+		SpecialEffectType.BOUNCE:
+			return "Bounces off walls and enemies"
+		SpecialEffectType.QUANTUM:
+			return "Quantum phase effects"
+		SpecialEffectType.CURSE:
+			return "Reduces enemy damage and stats"
+		SpecialEffectType.CHAOS:
+			return "Random effect each shot"
+		SpecialEffectType.GROWTH:
+			return "Damage increases over distance"
+		SpecialEffectType.RICOCHET:
+			return "Bounces between enemies"
+		SpecialEffectType.MARK:
+			return "Marks enemies for bonus damage"
 		_:
 			return "No special effect"
 

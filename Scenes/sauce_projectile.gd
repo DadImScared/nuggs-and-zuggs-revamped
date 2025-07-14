@@ -33,8 +33,8 @@ var bounces_remaining: int = 0
 var bounce_range: float = 200.0
 var bounced_enemies: Array[Node2D] = []
 
-func _ready():
-	body_entered.connect(_on_body_entered)
+#func _ready():
+	#body_entered.connect(_on_body_entered)
 
 func launch(start_pos: Vector2, direction: Vector2, sauce: BaseSauceResource, level: int = 1, bottle_id: String = ""):
 	global_position = start_pos

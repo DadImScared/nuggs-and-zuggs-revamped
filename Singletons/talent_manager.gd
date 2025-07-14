@@ -1,3 +1,4 @@
+# Singletons/talent_manager.gd
 extends Node
 
 var talent_trees: Dictionary = {}
@@ -18,7 +19,7 @@ func _create_ketchup_talents():
 				"+50% damage, -25% fire rate",
 				1,
 				[
-					StatModifier.create_damage_boost(0),  # Will be multiplied
+					StatModifier.create_damage_boost(0.5),  # Fixed from 0
 					StatModifier.create_fire_rate_multiplier(0.75)
 				]
 			),
@@ -279,31 +280,30 @@ func _create_pesto_talents():
 				2,
 				[_create_poison_aura()]
 			),
-			# Stack Damage
-			Talent.create_effect_talent(
-				"Toxic Buildup",
-				"Each poison stack increases damage by 20%",
-				2,
-				[_create_stack_damage()]
-			),
-			# Exploding Clouds
+			# Infectious Death
 			Talent.create_effect_talent(
 				"Spore Burst",
-				"Clouds explode when enemies die inside them",
+				"Poisoned enemies explode on death, poisoning others",
 				2,
-				[_create_exploding_clouds()]
+				[_create_infectious_death()]
+			),
+			# Stack Boost
+			Talent.create_stat_talent(
+				"Concentrated Toxin",
+				"Each poison stack increases damage by 20%",
+				2,
+				[_create_poison_damage_stacking()]
 			)
 		]
-		# Continue for levels 3-10...
 	}
 
-# Helper functions to create custom effects
-func _create_pierce_modifier(count: int) -> StatModifier:
-	var mod = StatModifier.new()
-	mod.stat_name = "pierce_count"
-	mod.mode = StatModifier.ModifierMode.ADD
-	mod.add = count
-	return mod
+# Helper functions for creating special effects
+func _create_pierce_modifier(pierce_count: int) -> StatModifier:
+	var modifier = StatModifier.new()
+	modifier.stat_name = "pierce_count"
+	modifier.mode = StatModifier.ModifierMode.ADD
+	modifier.add = pierce_count
+	return modifier
 
 func _create_enhanced_puddles() -> SpecialEffectResource:
 	var effect = SpecialEffectResource.new()
@@ -317,7 +317,7 @@ func _create_slow_synergy() -> SpecialEffectResource:
 	var effect = SpecialEffectResource.new()
 	effect.effect_name = "slow_synergy"
 	effect.effect_type = SpecialEffectResource.EffectType.PASSIVE_EFFECT
-	effect.set_parameter("bonus_damage_vs_slowed", 0.5)
+	effect.set_parameter("damage_bonus", 0.5)
 	return effect
 
 func _create_armor_break() -> SpecialEffectResource:
@@ -332,8 +332,8 @@ func _create_mega_puddles() -> SpecialEffectResource:
 	var effect = SpecialEffectResource.new()
 	effect.effect_name = "mega_puddles"
 	effect.effect_type = SpecialEffectResource.EffectType.ON_HIT_EFFECT
-	effect.set_parameter("growth_rate", 1.5)
-	effect.set_parameter("chain_range", 150.0)
+	effect.set_parameter("expansion_rate", 1.5)
+	effect.set_parameter("chain_distance", 150.0)
 	return effect
 
 func _create_bouncing_shots() -> SpecialEffectResource:
@@ -348,15 +348,15 @@ func _create_crit_mode() -> SpecialEffectResource:
 	var effect = SpecialEffectResource.new()
 	effect.effect_name = "crit_mode"
 	effect.effect_type = SpecialEffectResource.EffectType.PASSIVE_EFFECT
-	effect.set_parameter("activation_threshold", 0.5)
-	effect.set_parameter("duration", 10.0)
+	effect.set_parameter("crit_threshold", 0.5)
+	effect.set_parameter("mode_duration", 10.0)
 	return effect
 
 func _create_flood_zone() -> SpecialEffectResource:
 	var effect = SpecialEffectResource.new()
 	effect.effect_name = "flood_zone"
 	effect.effect_type = SpecialEffectResource.EffectType.ON_HIT_EFFECT
-	effect.set_parameter("coverage", 0.25)  # 25% of screen
+	effect.set_parameter("screen_coverage", 0.25)
 	effect.set_parameter("duration", 15.0)
 	return effect
 
@@ -368,28 +368,27 @@ func _create_super_crits() -> SpecialEffectResource:
 	effect.set_parameter("reset_cooldowns", true)
 	return effect
 
-# Pesto helper functions
 func _create_poison_spread() -> SpecialEffectResource:
 	var effect = SpecialEffectResource.new()
 	effect.effect_name = "poison_spread"
 	effect.effect_type = SpecialEffectResource.EffectType.ON_HIT_EFFECT
+	effect.set_parameter("poison_chance", 0.5)
 	effect.set_parameter("spread_on_death", true)
-	effect.set_parameter("spread_range", 100.0)
 	return effect
 
 func _create_poison_stacking() -> StatModifier:
-	var mod = StatModifier.new()
-	mod.stat_name = "poison_max_stacks"
-	mod.mode = StatModifier.ModifierMode.SET
-	mod.set_value = 5
-	return mod
+	var modifier = StatModifier.new()
+	modifier.stat_name = "poison_stacks"
+	modifier.mode = StatModifier.ModifierMode.ADD
+	modifier.add = 5
+	return modifier
 
 func _create_poison_clouds() -> SpecialEffectResource:
 	var effect = SpecialEffectResource.new()
 	effect.effect_name = "poison_clouds"
 	effect.effect_type = SpecialEffectResource.EffectType.ON_HIT_EFFECT
 	effect.set_parameter("cloud_radius", 80.0)
-	effect.set_parameter("cloud_duration", 8.0)
+	effect.set_parameter("duration", 5.0)
 	return effect
 
 func _create_poison_aura() -> SpecialEffectResource:
@@ -397,15 +396,23 @@ func _create_poison_aura() -> SpecialEffectResource:
 	effect.effect_name = "poison_aura"
 	effect.effect_type = SpecialEffectResource.EffectType.PASSIVE_EFFECT
 	effect.set_parameter("spread_interval", 2.0)
-	effect.set_parameter("aura_range", 120.0)
+	effect.set_parameter("aura_radius", 120.0)
 	return effect
 
-func _create_stack_damage() -> SpecialEffectResource:
+func _create_infectious_death() -> SpecialEffectResource:
 	var effect = SpecialEffectResource.new()
-	effect.effect_name = "stack_damage"
-	effect.effect_type = SpecialEffectResource.EffectType.PASSIVE_EFFECT
-	effect.set_parameter("damage_per_stack", 0.2)
+	effect.effect_name = "infectious_death"
+	effect.effect_type = SpecialEffectResource.EffectType.ON_HIT_EFFECT
+	effect.set_parameter("explosion_radius", 100.0)
+	effect.set_parameter("spread_poison", true)
 	return effect
+
+func _create_poison_damage_stacking() -> StatModifier:
+	var modifier = StatModifier.new()
+	modifier.stat_name = "damage_per_stack"
+	modifier.mode = StatModifier.ModifierMode.MULTIPLY
+	modifier.multiply = 1.2
+	return modifier
 
 func _create_exploding_clouds() -> SpecialEffectResource:
 	var effect = SpecialEffectResource.new()
@@ -415,21 +422,30 @@ func _create_exploding_clouds() -> SpecialEffectResource:
 	effect.set_parameter("explosion_damage", 1.5)
 	return effect
 
-# Public API functions
+# ===================================================================
+# PUBLIC API FUNCTIONS - WITH ARRAY TYPE FIX
+# ===================================================================
+
 func get_talents_for_level(sauce_name: String, level: int) -> Array[Talent]:
 	if talent_trees.has(sauce_name) and talent_trees[sauce_name].has(level):
-		return talent_trees[sauce_name][level]
+		# Cast the untyped dictionary array to proper type
+		var raw_array = talent_trees[sauce_name][level]
+		var typed_talents: Array[Talent] = []
+		typed_talents.assign(raw_array)
+		return typed_talents
 	return _get_default_talents(level)
 
 func _get_default_talents(level: int) -> Array[Talent]:
-	return [
-		Talent.create_stat_talent("More Damage", "+50% damage", level,
-			[StatModifier.create_damage_boost(0.5)]),
-		Talent.create_stat_talent("Faster Shooting", "+50% fire rate", level,
-			[StatModifier.create_fire_rate_multiplier(1.5)]),
-		Talent.create_stat_talent("Longer Range", "+50% range", level,
-			[StatModifier.create_range_boost(0.5)])
-	]
+	var defaults: Array[Talent] = []
+
+	defaults.append(Talent.create_stat_talent("More Damage", "+50% damage", level,
+		[StatModifier.create_damage_boost(0.5)]))
+	defaults.append(Talent.create_stat_talent("Faster Shooting", "+50% fire rate", level,
+		[StatModifier.create_fire_rate_multiplier(1.5)]))
+	defaults.append(Talent.create_stat_talent("Longer Range", "+50% range", level,
+		[StatModifier.create_range_boost(0.5)]))
+
+	return defaults
 
 func get_talent_by_choice(sauce_name: String, level: int, choice: int) -> Talent:
 	var talents = get_talents_for_level(sauce_name, level)
