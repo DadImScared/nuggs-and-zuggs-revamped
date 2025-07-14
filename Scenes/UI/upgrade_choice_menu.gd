@@ -42,15 +42,25 @@ func setup_with_talents(sauce_name: String, level: int):
 
 	# Get talents for this specific level
 	var talents = TalentManager.get_talents_for_level(sauce_name, level)
+	print("Setting up upgrade menu with %d talents for %s level %d" % [talents.size(), sauce_name, level])
 
 	if talents.size() >= 1:
 		_setup_choice_button(button1, desc1, preview1, talents[0])
+		button1.visible = true
+	else:
+		button1.visible = false
 
 	if talents.size() >= 2:
 		_setup_choice_button(button2, desc2, preview2, talents[1])
+		button2.visible = true
+	else:
+		button2.visible = false
 
 	if talents.size() >= 3:
 		_setup_choice_button(button3, desc3, preview3, talents[2])
+		button3.visible = true
+	else:
+		button3.visible = false
 
 func _setup_choice_button(button: Button, desc_label: Label, preview_label: Label, talent: Talent):
 	# Set button text and description
@@ -127,7 +137,7 @@ func _on_button_mouse_exited(button: Button):
 	# Remove highlight
 	button.scale = Vector2.ONE
 
-# Optional: Legacy setup function for backwards compatibility
+# Legacy setup function for backwards compatibility
 func setup(sauce_name: String, level: int):
 	# Call the new talent-based setup
 	setup_with_talents(sauce_name, level)

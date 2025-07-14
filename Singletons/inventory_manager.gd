@@ -13,8 +13,9 @@ var equipped: Array = []
 
 # Legacy resources for initial setup only
 var old_equipped: Array = [
-	preload("res://Resources/prehistoric_pesto.tres"),
-	preload("res://Resources/prehistoric_pesto.tres")
+	preload("res://Resources/sriracha.tres")
+	#preload("res://Resources/prehistoric_pesto.tres"),
+	#preload("res://Resources/prehistoric_pesto.tres")
 ]
 
 var scene_holder_node: Node2D

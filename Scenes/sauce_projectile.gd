@@ -46,7 +46,7 @@ func launch(start_pos: Vector2, direction: Vector2, sauce: BaseSauceResource, le
 	# Use level-modified stats
 	velocity = direction.normalized() * sauce.projectile_speed
 	max_range = sauce.get_current_range(sauce_level)
-	rotation = direction.angle()
+	rotation = direction.angle() + deg_to_rad(90)
 	sauce_damage = sauce.get_current_damage(sauce_level)
 	modulate = sauce.sauce_color
 
