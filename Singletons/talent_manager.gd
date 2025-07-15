@@ -120,6 +120,56 @@ func _build_mustard_talents() -> Dictionary:
 
 	return mustard_talents
 
+func _create_teriyaki_talents():
+	var teriyaki_talents = {}
+	teriyaki_talents[2] = [
+		Talent.create_effect_talent(
+			"Ancient Marinade",
+			"Each hit on same enemy +20% damage (max 5 stacks)",
+			2,
+			[_create_damage_stacking()]
+		),
+		Talent.create_effect_talent(
+			"Sticky Glaze",
+			"25% chance to create damage pools that grow over time",
+			2,
+			[_create_glaze_pools()]
+		),
+		Talent.create_effect_talent(
+			"Sweet Caramelization",
+			"Enemies hit 3+ times become brittle (+50% damage taken)",
+			2,
+			[_create_caramelization()]
+		)
+	]
+
+func _create_damage_stacking() -> SpecialEffectResource:
+	var effect = SpecialEffectResource.new()
+	effect.effect_name = "damage_stacking"
+	effect.effect_type = SpecialEffectResource.EffectType.ON_HIT_EFFECT
+	effect.set_parameter("damage_per_stack", 0.2)  # +20% per stack
+	effect.set_parameter("max_stacks", 5)
+	return effect
+
+func _create_glaze_pools() -> SpecialEffectResource:
+	var effect = SpecialEffectResource.new()
+	effect.effect_name = "glaze_pools"
+	effect.effect_type = SpecialEffectResource.EffectType.ON_HIT_EFFECT
+	effect.set_parameter("chance", 0.25)
+	effect.set_parameter("initial_radius", 60.0)
+	effect.set_parameter("growth_rate", 5.0)  # +5 pixels per second
+	effect.set_parameter("duration", 12.0)
+	return effect
+
+func _create_caramelization() -> SpecialEffectResource:
+	var effect = SpecialEffectResource.new()
+	effect.effect_name = "caramelization"
+	effect.effect_type = SpecialEffectResource.EffectType.ON_HIT_EFFECT
+	effect.set_parameter("hits_required", 3)
+	effect.set_parameter("damage_bonus", 0.5)  # +50% damage taken
+	effect.set_parameter("duration", 8.0)
+	return effect
+
 # Helper functions using existing StatModifier
 func _create_fire_rate_boost(amount: float) -> StatModifier:
 	var mod = StatModifier.new()

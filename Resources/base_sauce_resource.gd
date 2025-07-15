@@ -60,7 +60,10 @@ enum SpecialEffectType {
 	CHAOS,          # Random effect each shot
 	GROWTH,         # Damage increases over distance
 	RICOCHET,       # Bounces between enemies
-	MARK            # Mark enemies for bonus damage
+	MARK,       	# Mark enemies for bonus damage,
+	GLAZE_POOL,     # Creates growing damage zones
+	CARAMELIZE,     # Makes enemies brittle (bonus damage)
+	FERMENT         # Effects that improve over time
 }
 
 # Get current stats with level modifiers applied

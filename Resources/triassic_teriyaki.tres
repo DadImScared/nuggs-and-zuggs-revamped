@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="BaseSauceResource" load_steps=2 format=3 uid="uid://fcge6s464r26"]
+
+[ext_resource type="Script" uid="uid://cv0efftypvupm" path="res://Resources/base_sauce_resource.gd" id="1_xd0vp"]
+
+[resource]
+script = ExtResource("1_xd0vp")
+sauce_name = "Triassic Teriyaki"
+description = null
+geological_period = null
+damage = 6.0
+fire_rate = 1.2
+range = null
+projectile_count = null
+projectile_speed = null
+pierce_count = null
+effect_chance = 0.4
+effect_intensity = 0.5
+effect_duration = 4.0
+orbit_speed = null
+orbit_distance = null
+sauce_color = Color(0.545098, 0.270588, 0.0745098, 1)
+special_effect_type = 5
+damage_per_level = null
+fire_rate_per_level = null
+range_per_level = null
+effect_chance_per_level = null
+effect_intensity_per_level = null
+metadata/_custom_type_script = "uid://cv0efftypvupm"
