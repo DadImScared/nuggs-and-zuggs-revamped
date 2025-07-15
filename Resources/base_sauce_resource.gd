@@ -63,7 +63,8 @@ enum SpecialEffectType {
 	MARK,       	# Mark enemies for bonus damage,
 	GLAZE_POOL,     # Creates growing damage zones
 	CARAMELIZE,     # Makes enemies brittle (bonus damage)
-	FERMENT         # Effects that improve over time
+	FERMENT,     	# Effects that improve over time,
+	VOLCANIC_RING,	# Creates expanding damage rings
 }
 
 # Get current stats with level modifiers applied

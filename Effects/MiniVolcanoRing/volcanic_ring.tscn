@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://5w2mx3vh8ve4"]
+
+[ext_resource type="Script" uid="uid://dsjni38wn35n3" path="res://Effects/MiniVolcanoRing/volcanic_ring.gd" id="1_tha1d"]
+
+[node name="VolcanicRing" type="Node2D"]
+script = ExtResource("1_tha1d")

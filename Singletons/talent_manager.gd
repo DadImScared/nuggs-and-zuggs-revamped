@@ -13,7 +13,25 @@ func _build_talent_trees():
 	talent_trees["Ketchup"] = _build_ketchup_talents()
 	talent_trees["Prehistoric Pesto"] = _build_prehistoric_pesto_talents()
 	talent_trees["Mustard"] = _build_mustard_talents()
+	talent_trees["Jurassic Jalapeno"] = _build_jurassic_jalapeno_talents()
 	print("✅ Talent trees built for %d sauces" % talent_trees.keys().size())
+
+func _build_jurassic_jalapeno_talents():
+	var jalapeno_talents = {}
+
+	jalapeno_talents[2] = [
+		Talent.create_trigger_talent(
+			"Spicy Burst",
+			 "Every 3rd shot creates a mini-volcano",
+			2,
+			[_create_mini_volcano_trigger()]
+		),
+		Talent.create_stat_talent("Placeholder 1", "Temp talent", 2, []),
+		Talent.create_stat_talent("Placeholder 2", "Temp talent", 2, [])
+	]
+
+	return jalapeno_talents
+
 
 func _build_ketchup_talents() -> Dictionary:
 	var ketchup_talents = {}
@@ -142,6 +160,16 @@ func _create_teriyaki_talents():
 			[_create_caramelization()]
 		)
 	]
+
+func _create_mini_volcano_trigger():
+	var trigger = TriggerEffectResource.new()
+	trigger.trigger_name = "mini_volcano"
+	trigger.trigger_type = TriggerEffectResource.TriggerType.ON_SHOT_COUNT
+	trigger.effect_name = "create_mini_volcano"
+	trigger.trigger_condition["interval"] = 3
+	trigger.effect_parameters["damage"] = 15.0
+	trigger.effect_parameters["radius"] = 60.0
+	return trigger
 
 func _create_damage_stacking() -> SpecialEffectResource:
 	var effect = SpecialEffectResource.new()

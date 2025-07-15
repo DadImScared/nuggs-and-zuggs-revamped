@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="BaseSauceResource" load_steps=2 format=3 uid="uid://c4nq0og1kxeg6"]
+
+[ext_resource type="Script" uid="uid://cv0efftypvupm" path="res://Resources/base_sauce_resource.gd" id="1_jxdi3"]
+
+[resource]
+script = ExtResource("1_jxdi3")
+sauce_name = "Jurassic Jalapeno"
+description = "Green heat from a time when peppers ruled the earth. Creates expanding volcanic rings that grow like ancient craters."
+geological_period = ""
+damage = 8.0
+fire_rate = 1.8
+range = 300.0
+projectile_count = 1
+projectile_speed = 280.0
+pierce_count = 0
+effect_chance = 0.125
+effect_intensity = 1.5
+effect_duration = 3.5
+orbit_speed = 2.0
+orbit_distance = 50.0
+sauce_color = Color(0.0358265, 0.226922, 0.0141417, 1)
+special_effect_type = 27
+damage_per_level = 2.0
+fire_rate_per_level = 0.1
+range_per_level = 10.0
+effect_chance_per_level = 0.05
+effect_intensity_per_level = 0.1
+metadata/_custom_type_script = "uid://cv0efftypvupm"

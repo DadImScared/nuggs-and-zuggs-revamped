@@ -8,6 +8,15 @@ var permanent_damage_fields: Array[Node2D] = []
 var mega_puddles: Array[Node2D] = []
 var active_transformations: Dictionary = {}
 
+func create_mini_volcano(position: Vector2, damage: float, radius: float, source_bottle_id: String):
+	# Create a smaller volcanic ring at the bottle's position
+	var mini_ring = preload("res://Effects/MiniVolcanoRing/volcanic_ring.tscn").instantiate()
+	mini_ring.global_position = position
+	mini_ring.setup_ring(damage, radius, 2.0, source_bottle_id)  # 2 second duration
+	mini_ring.modulate = Color(1.0, 0.8, 0.2, 0.9)  # Smaller, more yellow tint
+	mini_ring.scale = Vector2(0.7, 0.7)  # Make it visually smaller
+	get_tree().current_scene.add_child(mini_ring)
+
 func create_tsunami_wave(origin: Vector2, damage: float):
 	print("🌊 CREATING TSUNAMI WAVE! 🌊")
 

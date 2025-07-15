@@ -62,6 +62,22 @@ func apply_effect(
 			_apply_chaos_effect(projectile, enemy, sauce_resource, sauce_level, source_bottle_id)
 		BaseSauceResource.SpecialEffectType.MARK:
 			_apply_mark_effect(enemy, sauce_resource, sauce_level, source_bottle_id)
+		BaseSauceResource.SpecialEffectType.VOLCANIC_RING:
+			_apply_volcanic_ring_effect(projectile, enemy, source_bottle)
+
+func _apply_volcanic_ring_effect(projectile, enemy, bottle: ImprovedBaseSauceBottle):
+	var effect_intensity = bottle.effective_effect_intensity
+	var ring_damage = bottle.effective_damage * 0.6
+	var ring_position = enemy.global_position
+	var ring_duration = bottle.sauce_data.effect_duration
+	var max_radius = 120.0 + (effect_intensity * 30.0)
+
+	var ring = preload("res://Effects/MiniVolcanoRing/volcanic_ring.tscn").instantiate()
+	ring.global_position = ring_position
+	ring.setup_ring(ring_damage, max_radius, ring_duration, bottle.bottle_id)
+	get_tree().current_scene.add_child(ring)
+
+	print("🌋 Volcanic ring created at %s with %.1f damage and %.0f max radius" % [ring_position, ring_damage, max_radius])
 
 func _apply_tornado_effect(projectile: Area2D, enemy: Node2D, sauce_resource: BaseSauceResource, sauce_level: int, source_bottle_id: String):
 	var current_intensity = sauce_resource.get_current_effect_intensity(sauce_level)

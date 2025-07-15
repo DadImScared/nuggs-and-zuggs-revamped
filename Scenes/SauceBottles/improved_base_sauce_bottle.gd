@@ -222,6 +222,13 @@ func _check_trigger_effects():
 			"perfect_shots":
 				if perfect_shots_remaining > 0:
 					perfect_shots_remaining -= 1
+			"mini_volcano":
+				var interval = trigger.trigger_condition.interval
+				if shot_counter % interval == 0:
+					var damage = trigger.effect_parameters.damage
+					var radius = trigger.effect_parameters.radius
+
+					TalentEffectManager.create_mini_volcano(current_target.global_position, damage, radius, bottle_id )
 
 func _trigger_burst_fire(trigger: TriggerEffectResource):
 	"""Fire a burst of projectiles"""
