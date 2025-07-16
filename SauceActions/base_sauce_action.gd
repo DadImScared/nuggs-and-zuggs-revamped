@@ -34,7 +34,7 @@ func log_action_applied(enemy: Node2D, modifications: Array) -> void:
 
 # Utility to get enemies in radius
 func get_enemies_in_radius(center: Vector2, radius: float) -> Array[Node2D]:
-	var enemies = []
+	var enemies: Array[Node2D] = []
 	var all_enemies = Engine.get_main_loop().current_scene.get_tree().get_nodes_in_group("enemies")
 
 	for enemy in all_enemies:

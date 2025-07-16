@@ -22,7 +22,6 @@ func apply_effect(
 		current_effect_chance = sauce_resource.get_current_effect_chance(sauce_level)
 		current_effect_intensity = sauce_resource.get_current_effect_intensity(sauce_level)
 
-
 	# Check if effect triggers using effective chance
 	if randf() > current_effect_chance:
 		return

@@ -290,11 +290,16 @@ func spread_infection_on_death():
 					nearby_enemy.active_effects["infect"]["color"] = infection_effect.color
 
 				var color = infection_effect.get("color", Color.GREEN)
-				VisualEffectManager.create_infection_spread_visual(
+				InfectionVisuals.create_infection_death_spread_visual(
 					global_position,
 					nearby_enemy.global_position,
 					color
 				)
+				#VisualEffectManager.create_infection_spread_visual(
+					#global_position,
+					#nearby_enemy.global_position,
+					#color
+				#)
 
 func get_nearby_enemies_for_infection(radius: float) -> Array[Node2D]:
 	var enemies: Array[Node2D] = []

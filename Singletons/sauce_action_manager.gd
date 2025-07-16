@@ -12,6 +12,7 @@ func _ready():
 func _register_action_classes():
 	"""Register all modular action classes"""
 	action_classes[BaseSauceResource.SpecialEffectType.VOLCANIC_RING] = VolcanicRingAction.new()
+	action_classes[BaseSauceResource.SpecialEffectType.INFECT] = InfectionAction.new()
 
 	# TODO: Add other actions as they're migrated to modular system
 	# action_classes[BaseSauceResource.SpecialEffectType.BURN] = BurnAction.new()

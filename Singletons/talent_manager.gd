@@ -10,8 +10,10 @@ func _ready():
 
 func _build_talent_trees():
 	# Initialize talent trees for each sauce
+	var pesto_tree = PrehistoricPestoTalents.new()
+	talent_trees["Prehistoric Pesto"] = pesto_tree.build_talent_tree()
 	talent_trees["Ketchup"] = _build_ketchup_talents()
-	talent_trees["Prehistoric Pesto"] = _build_prehistoric_pesto_talents()
+	#talent_trees["Prehistoric Pesto"] = _build_prehistoric_pesto_talents()
 	talent_trees["Mustard"] = _build_mustard_talents()
 	talent_trees["Jurassic Jalapeno"] = _build_jurassic_jalapeno_talents()
 	print("✅ Talent trees built for %d sauces" % talent_trees.keys().size())
