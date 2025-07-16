@@ -27,6 +27,21 @@ func apply_effect(
 	if randf() > current_effect_chance:
 		return
 
+		# NEW: Try modular sauce action system first - SIMPLIFIED!
+	var handled_by_modular = SauceActionManager.apply_sauce_action(
+		sauce_resource.special_effect_type,
+		projectile,
+		enemy,
+		source_bottle
+	)
+
+	if handled_by_modular:
+		print("✅ Sauce action handled by modular system: %s" % BaseSauceResource.SpecialEffectType.keys()[sauce_resource.special_effect_type])
+		return
+
+	# FALLBACK: Use legacy effect system for actions not yet migrated
+	print("⚠️ Using legacy effect system for: %s" % BaseSauceResource.SpecialEffectType.keys()[sauce_resource.special_effect_type])
+
 	match sauce_resource.special_effect_type:
 		BaseSauceResource.SpecialEffectType.TORNADO:
 			_apply_tornado_effect(projectile, enemy, sauce_resource, sauce_level, source_bottle_id)

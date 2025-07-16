@@ -26,7 +26,12 @@ func _build_jurassic_jalapeno_talents():
 			2,
 			[_create_mini_volcano_trigger()]
 		),
-		Talent.create_stat_talent("Placeholder 1", "Temp talent", 2, []),
+		Talent.create_effect_talent(
+			"Collapsing Rings",
+			"Rings collapse inward, hitting enemies twice",
+			2,
+			[_create_volcanic_collapsing_rings()]
+		),
 		Talent.create_stat_talent("Placeholder 2", "Temp talent", 2, [])
 	]
 
@@ -170,6 +175,14 @@ func _create_mini_volcano_trigger():
 	trigger.effect_parameters["damage"] = 15.0
 	trigger.effect_parameters["radius"] = 60.0
 	return trigger
+
+func _create_volcanic_collapsing_rings() -> SpecialEffectResource:
+	var effect = SpecialEffectResource.new()
+	effect.effect_name = "volcanic_ring_collapsing"  # Note: matches VolcanicRingAction expectations
+	effect.effect_type = SpecialEffectResource.EffectType.ON_HIT_EFFECT
+	effect.set_parameter("ring_count", 2)
+	effect.set_parameter("collapse_speed", 1.5)
+	return effect
 
 func _create_damage_stacking() -> SpecialEffectResource:
 	var effect = SpecialEffectResource.new()

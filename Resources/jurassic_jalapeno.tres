@@ -23,6 +23,6 @@ special_effect_type = 27
 damage_per_level = 2.0
 fire_rate_per_level = 0.1
 range_per_level = 10.0
-effect_chance_per_level = 0.05
+effect_chance_per_level = 0.02
 effect_intensity_per_level = 0.1
 metadata/_custom_type_script = "uid://cv0efftypvupm"
