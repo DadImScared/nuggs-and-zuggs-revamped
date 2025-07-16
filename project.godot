@@ -25,6 +25,7 @@ EnemyPoolManager="*res://Singletons/enemy_pool_manager.gd"
 TalentManager="*res://Singletons/talent_manager.gd"
 TalentEffectManager="*res://Singletons/talent_effect_manager.gd"
 SauceActionManager="*res://Singletons/sauce_action_manager.gd"
+TriggerActionManager="*res://Singletons/trigger_action_manager.gd"
 
 [display]
 
