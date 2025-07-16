@@ -24,11 +24,11 @@ func apply_action(projectile: Area2D, enemy: Node2D, source_bottle: ImprovedBase
 
 	# Apply talent modifications to the SAME ring
 	for mod in talent_mods:
-		_apply_talent_modification_to_ring(ring, mod, ring_damage, max_radius, ring_duration)
+		_apply_talent_modification_to_ring(ring, mod, ring_damage, max_radius, ring_duration, source_bottle)
 
 	log_action_applied(enemy, talent_mods)
 
-func _apply_talent_modification_to_ring(ring: Node2D, talent: SpecialEffectResource, damage: float, radius: float, duration: float):
+func _apply_talent_modification_to_ring(ring: Node2D, talent: SpecialEffectResource, damage: float, radius: float, duration: float, source_bottle: ImprovedBaseSauceBottle):
 	"""Apply talent modifications to an existing ring"""
 	match talent.effect_name:
 		"volcanic_ring_collapsing":
@@ -42,6 +42,48 @@ func _apply_talent_modification_to_ring(ring: Node2D, talent: SpecialEffectResou
 
 		"volcanic_ring_storm":
 			_create_additional_storm_rings(ring, talent, damage, radius, duration)
+
+		"volcanic_ring_molten_pools":
+			_make_ring_create_molten_pools(ring, talent, source_bottle)
+
+func _make_ring_create_molten_pools(ring: Node2D, talent: SpecialEffectResource, source_bottle: ImprovedBaseSauceBottle):
+	"""Make the ring create molten pools when it finishes"""
+	# Connect to the ring's completion signal or use timer
+	_schedule_molten_pool_creation(ring, talent, source_bottle)
+
+func _schedule_molten_pool_creation(ring: Node2D, talent: SpecialEffectResource, source_bottle: ImprovedBaseSauceBottle):
+	"""Schedule molten pool creation when ring starts expanding"""
+	# Create pool immediately (0 delay) or after ring reaches max size
+	var pool_delay = 0.1  # Very small delay to let ring initialize
+
+	# Create timer to spawn molten pool
+	var timer = Timer.new()
+	timer.wait_time = pool_delay
+	timer.one_shot = true
+	timer.timeout.connect(_create_molten_pool_at_ring.bind(ring, talent, source_bottle))
+	ring.add_child(timer)
+	timer.start()
+
+	print("🔥 Molten pool scheduled for %.1f seconds at ring position" % pool_delay)
+
+func _create_molten_pool_at_ring(ring: Node2D, talent: SpecialEffectResource, source_bottle: ImprovedBaseSauceBottle):
+	"""Create the actual molten pool at the ring's position"""
+	if not is_instance_valid(ring):
+		return
+
+	var pool_damage = source_bottle.effective_damage * talent.get_parameter("damage_multiplier", 0.3)
+	var pool_radius = talent.get_parameter("pool_radius", 45.0)
+	var pool_duration = talent.get_parameter("pool_duration", 4.0)
+
+	# Create molten pool scene
+	var pool = preload("res://Effects/MoltenPool/molten_pool.tscn").instantiate()
+	pool.global_position = ring.global_position
+	pool.setup_pool(pool_damage, pool_radius, pool_duration, source_bottle.bottle_id)
+
+	# Add to scene
+	Engine.get_main_loop().current_scene.add_child(pool)
+
+	print("🔥 Molten pool created at %s with %.1f DPS for %.1f seconds" % [pool.global_position, pool_damage, pool_duration])
 
 func _make_ring_collapse(ring: Node2D, talent: SpecialEffectResource):
 	"""Make the ONE ring collapse inward after expanding"""

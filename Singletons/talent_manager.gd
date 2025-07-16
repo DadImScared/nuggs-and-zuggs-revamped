@@ -32,7 +32,12 @@ func _build_jurassic_jalapeno_talents():
 			2,
 			[_create_volcanic_collapsing_rings()]
 		),
-		Talent.create_stat_talent("Placeholder 2", "Temp talent", 2, [])
+		Talent.create_effect_talent(
+			"Molten Pools",
+			"Rings leave burning ground for 4 seconds",
+			2,
+			[_create_molten_pools_effect()]
+		)
 	]
 
 	return jalapeno_talents
@@ -180,9 +185,21 @@ func _create_volcanic_collapsing_rings() -> SpecialEffectResource:
 	var effect = SpecialEffectResource.new()
 	effect.effect_name = "volcanic_ring_collapsing"  # Note: matches VolcanicRingAction expectations
 	effect.effect_type = SpecialEffectResource.EffectType.ON_HIT_EFFECT
-	effect.set_parameter("ring_count", 2)
+	effect.set_parameter("ring_count", 1)
 	effect.set_parameter("collapse_speed", 1.5)
 	return effect
+
+func _create_molten_pools_effect() -> SpecialEffectResource:
+	var molten_effect = SpecialEffectResource.new()
+	molten_effect.effect_name = "volcanic_ring_molten_pools"
+	molten_effect.effect_type = SpecialEffectResource.EffectType.ON_HIT_EFFECT
+	molten_effect.parameters = {
+		"damage_multiplier": 0.3,
+		"pool_radius": 45.0,
+		"pool_duration": 4.0,
+		"tick_rate": 0.5
+	}
+	return molten_effect
 
 func _create_damage_stacking() -> SpecialEffectResource:
 	var effect = SpecialEffectResource.new()

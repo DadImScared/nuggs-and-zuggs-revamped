@@ -20,7 +20,7 @@ var ring_visual: Node2D
 
 func _ready():
 	# Set up physics
-	z_index = 1  # Above ground, below UI
+	z_index = -10  # Above ground, below UI
 
 	# Create simple visual ring
 	_create_simple_ring_visual()

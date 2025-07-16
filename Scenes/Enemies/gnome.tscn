@@ -22,6 +22,7 @@ animations = [{
 height = 34.0
 
 [node name="Gnome" type="CharacterBody2D" groups=["enemies"]]
+z_index = 1
 collision_layer = 2
 collision_mask = 2
 script = ExtResource("1_gr5v4")
