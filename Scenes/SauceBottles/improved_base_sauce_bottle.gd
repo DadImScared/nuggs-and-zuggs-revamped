@@ -238,6 +238,7 @@ func _trigger_burst_fire(trigger: TriggerEffectResource):
 
 func _apply_special_effects_to_projectile(projectile):
 	"""Apply bottle's special effects to the projectile"""
+
 	for effect in special_effects:
 		match effect.effect_name:
 			"critical_hits":

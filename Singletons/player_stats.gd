@@ -6,7 +6,7 @@ signal xp_changed(xp: int, xp_to_next: int)
 
 var xp = 0
 var level = 1
-var xp_to_next = 50
+var xp_to_next = 100
 
 var damage = 1
 var base_projectile_count = 1
