@@ -213,6 +213,7 @@ func fire_projectile_with_flash():
 
 func _check_trigger_effects():
 	"""Check and apply trigger-based effects"""
+	TriggerActionManager.process_trigger_effects(self)
 	for trigger in trigger_effects:
 		match trigger.trigger_name:
 			"burst_fire":

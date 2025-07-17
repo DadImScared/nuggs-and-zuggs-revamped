@@ -75,21 +75,31 @@ func _create_immediate_spread(enemy: Node2D, talent: SpecialEffectResource, inte
 	print("🦠 Viral Spread: Infected %d nearby enemies" % spread_targets)
 
 func _create_mutation_effect(enemy: Node2D, talent: SpecialEffectResource, intensity: float, source_bottle: ImprovedBaseSauceBottle):
-	"""Create mutating infection that gets stronger over time"""
+	"""Create mutating infection using universal stacking system - MUCH CLEANER!"""
 	var mutation_rate = talent.get_parameter("mutation_rate", 1.5)
 	var max_stacks = talent.get_parameter("max_stacks", 5)
 
-	# Enhanced infection that stacks damage
-	if enemy.has_method("apply_stacking_effect"):
-		enemy.apply_stacking_effect("mutating_infection", intensity * mutation_rate, max_stacks, source_bottle.bottle_id)
-		print("🧬 Mutation: Applied stacking infection with %.1fx multiplier" % mutation_rate)
-	else:
-		# Fallback: apply stronger infection
-		_apply_infection_to_enemy(enemy, intensity * mutation_rate, 6.0, source_bottle.bottle_id, Color.MAGENTA)
-		print("🧬 Mutation: Applied enhanced infection (fallback)")
+	# Apply base infection first
+	_apply_infection_to_enemy(enemy, intensity, 8.0, source_bottle.bottle_id, Color.GREEN)
 
-	# Use InfectionVisuals for mutation visual
-	InfectionVisuals.create_mutation_visual(enemy.global_position, Color.MAGENTA)
+	# Now apply mutation stacking - this will automatically modify the infection!
+	if enemy.has_method("apply_stacking_effect"):
+		var stack_count = enemy.apply_stacking_effect(
+			"mutation_infection",
+			intensity * mutation_rate,
+			max_stacks,
+			source_bottle.bottle_id,
+			10.0  # duration
+		)
+
+		# Use InfectionVisuals for mutation visual
+		InfectionVisuals.create_mutation_visual(enemy.global_position, Color.MAGENTA)
+
+		print("🧬 Mutation: Applied mutation stacking (%d/%d stacks from bottle %s)" % [stack_count, max_stacks, source_bottle.bottle_id])
+	else:
+		# Fallback for enemies without stacking support
+		_apply_infection_to_enemy(enemy, intensity * mutation_rate, 6.0, source_bottle.bottle_id, Color.MAGENTA)
+		print("🧬 Mutation: Applied enhanced infection (no stacking support)")
 
 func _create_epidemic_spread(enemy: Node2D, talent: SpecialEffectResource, intensity: float, duration: float, spread_radius: float, source_bottle: ImprovedBaseSauceBottle):
 	"""Create epidemic that spreads in waves"""
