@@ -1,3 +1,4 @@
+# SauceActions/Infection/Triggers/viral_relay.gd
 class_name ViralRelayTrigger
 extends BaseTriggerAction
 
@@ -118,29 +119,23 @@ func _execute_viral_jump(from_enemy: Node2D, to_enemy: Node2D, source_bottle: Im
 	_create_relay_visual(from_enemy.global_position, to_enemy.global_position, source_bottle.sauce_data.sauce_color)
 
 func _create_relay_visual(from_pos: Vector2, to_pos: Vector2, color: Color):
-	"""Create visual line showing the viral relay"""
+	"""Create visual line showing the viral relay - simplified and safe"""
 	var line = Line2D.new()
 	line.width = 4.0
 	line.default_color = Color(color.r, color.g, color.b, 0.9)
+
+	# Create complete line immediately
 	line.add_point(from_pos)
 	line.add_point(to_pos)
 
 	Engine.get_main_loop().current_scene.add_child(line)
 
-	# Animate the line with a "traveling" effect
+	# Simple fade animation - no complex tween_method calls
 	var tween = line.create_tween()
-	# First make line appear
-	tween.tween_method(_animate_line_draw.bind(line, from_pos, to_pos), 0.0, 1.0, 0.3)
-	# Then fade out
-	tween.tween_property(line, "modulate:a", 0.0, 0.4)
+
+	# Brief bright flash, then fade out
+	tween.tween_property(line, "modulate", Color.WHITE, 0.1)
+	tween.tween_property(line, "modulate:a", 0.0, 0.5)
 	tween.tween_callback(line.queue_free)
 
-func _animate_line_draw(line: Line2D, start_pos: Vector2, end_pos: Vector2, progress: float):
-	"""Animate line drawing from start to end"""
-	if not is_instance_valid(line):
-		return
-
-	line.clear_points()
-	line.add_point(start_pos)
-	var current_end = start_pos.lerp(end_pos, progress)
-	line.add_point(current_end)
+	print("🔗 Viral relay visual created from %s to %s" % [from_pos, to_pos])
