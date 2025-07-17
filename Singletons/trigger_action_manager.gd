@@ -11,6 +11,7 @@ func _ready():
 
 func _register_trigger_actions():
 	"""Register all trigger action classes"""
+	trigger_actions["infection_tsunami"] = InfectionTsunamiTrigger.new()
 	#trigger_actions["burst_fire"] = BurstFireTriggerAction.new()
 	#trigger_actions["mini_volcano"] = MiniVolcanoTriggerAction.new()
 

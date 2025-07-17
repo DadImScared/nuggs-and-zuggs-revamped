@@ -7,12 +7,25 @@ func _init():
 
 func build_talent_pool():
 	var pesto_talents = [
-		create_special_talent("Viral Spread", "Infection immediately spreads to 3 nearby enemies", 2,
-			[_create_viral_spread_effect()], TalentManager.TalentTheme.INFECTION),
-		create_stat_talent("Evolution", "+0.3 Fire Rate", 2,
-			[create_fire_rate_boost(0.3)]),
-		create_special_talent("Mutation Strain", "Infections stack and mutate for increased damage", 2,
-			[_create_mutation_effect()], TalentManager.TalentTheme.INFECTION)
+		create_special_talent(
+			"Viral Spread", "Infection immediately spreads to 3 nearby enemies", 2,
+			[_create_viral_spread_effect()],
+			TalentManager.TalentTheme.INFECTION
+		),
+		create_stat_talent(
+			"Evolution", "+0.3 Fire Rate", 2,
+			[create_fire_rate_boost(0.3)]
+		),
+		create_special_talent(
+			"Mutation Strain", "Infections stack and mutate for increased damage", 2,
+			[_create_mutation_effect()],
+			TalentManager.TalentTheme.INFECTION
+		),
+		create_trigger_talent(
+			"Infection Tsunami", "Every 15 seconds, all infections pulse and spread", 2,
+			[_create_infection_tsunami_trigger()],
+			TalentManager.TalentTheme.INFECTION
+		)
 	]
 
 	return pesto_talents
@@ -73,6 +86,17 @@ func build_talent_tree() -> Dictionary:
 	return pesto_talents
 
 # === INFECTION SPECIAL EFFECT HELPERS ===
+
+func _create_infection_tsunami_trigger() -> TriggerEffectResource:
+	"""Creates infection tsunami trigger that pulses all infections every 15 seconds"""
+	var trigger = TriggerEffectResource.new()
+	trigger.trigger_name = "infection_tsunami"
+	trigger.trigger_type = TriggerEffectResource.TriggerType.ON_TIMER
+	trigger.trigger_condition["cooldown"] = 15.0  # Every 15 seconds
+	trigger.effect_parameters["pulse_radius"] = 120.0  # Spread radius
+	trigger.effect_parameters["spread_chance"] = 0.8   # 80% chance to spread
+	trigger.effect_parameters["pulse_damage"] = 1.5    # 150% damage pulse
+	return trigger
 
 func _create_viral_spread_effect() -> SpecialEffectResource:
 	"""Creates immediate spread infection on hit"""
