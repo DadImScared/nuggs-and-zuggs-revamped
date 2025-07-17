@@ -58,6 +58,30 @@ func get_enemies_in_radius(center: Vector2, radius: float) -> Array[Node2D]:
 
 	return enemies
 
+func should_trigger_on_dot_tick(source_bottle: ImprovedBaseSauceBottle, trigger_data: TriggerEffectResource, affected_enemy: Node2D, dot_type: String, damage_dealt: float) -> bool:
+	"""Check if ON_DOT_TICK trigger should activate for this specific DOT tick"""
+
+	# Only process ON_DOT_TICK triggers
+	if trigger_data.trigger_type != TriggerEffectResource.TriggerType.ON_DOT_TICK:
+		return false
+
+	# Check for DOT type filter if specified
+	var target_dot_types = trigger_data.trigger_condition.get("dot_types", [])
+	if target_dot_types.size() > 0 and dot_type not in target_dot_types:
+		return false
+
+	# Check for random chance if specified
+	var chance = trigger_data.trigger_condition.get("chance", 1.0)  # Default 100% if no chance specified
+	if randf() > chance:
+		return false
+
+	# Check for minimum damage threshold if specified
+	var min_damage = trigger_data.trigger_condition.get("min_damage", 0.0)
+	if damage_dealt < min_damage:
+		return false
+
+	return true  # All conditions met
+
 func should_trigger_on_hit(source_bottle: ImprovedBaseSauceBottle, trigger_data: TriggerEffectResource, hit_enemy: Node2D, projectile: Area2D = null) -> bool:
 	"""Check if ON_HIT trigger should activate for this specific hit"""
 

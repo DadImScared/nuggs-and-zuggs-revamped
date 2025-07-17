@@ -16,22 +16,27 @@ func build_talent_pool():
 			"Evolution", "+0.3 Fire Rate", 2,
 			[create_fire_rate_boost(0.3)]
 		),
-		create_special_talent(
-			"Mutation Strain", "Infections stack and mutate for increased damage", 2,
-			[_create_mutation_effect()],
-			TalentManager.TalentTheme.INFECTION
-		),
+		#create_special_talent(
+			#"Mutation Strain", "Infections stack and mutate for increased damage", 2,
+			#[_create_mutation_effect()],
+			#TalentManager.TalentTheme.INFECTION
+		#),
+		#create_trigger_talent(
+			#"Infection Tsunami", "Every 15 seconds, all infections pulse and spread", 2,
+			#[_create_infection_tsunami_trigger()],
+			#TalentManager.TalentTheme.INFECTION
+		#),
+		#create_trigger_talent(
+			#"Double Dose",
+			#"20% chance: hitting infected enemy spreads to 2 nearby",
+			#2,
+			#[_create_double_dose_trigger()],
+			#TalentManager.TalentTheme.INFECTION
+		#),
 		create_trigger_talent(
-			"Infection Tsunami", "Every 15 seconds, all infections pulse and spread", 2,
-			[_create_infection_tsunami_trigger()],
-			TalentManager.TalentTheme.INFECTION
-		),
-		create_trigger_talent(
-			"Double Dose",
-			"20% chance: hitting infected enemy spreads to 2 nearby",
-			2,
-			[_create_double_dose_trigger()],
-			TalentManager.TalentTheme.INFECTION
+			"Viral Frenzy",
+			 "25% chance per infection tick: +100% fire rate for 8 seconds", 2,
+			[_create_viral_frenzy_trigger()], TalentManager.TalentTheme.INFECTION
 		)
 	]
 
@@ -93,6 +98,17 @@ func build_talent_tree() -> Dictionary:
 	return pesto_talents
 
 # === INFECTION SPECIAL EFFECT HELPERS ===
+
+func _create_viral_frenzy_trigger() -> TriggerEffectResource:
+	"""Creates viral frenzy trigger that gives fire rate boost on infection ticks"""
+	var trigger = TriggerEffectResource.new()
+	trigger.trigger_name = "viral_frenzy"
+	trigger.trigger_type = TriggerEffectResource.TriggerType.ON_DOT_TICK
+	trigger.trigger_condition["chance"] = 0.01  # 25% chance per DOT tick
+	trigger.trigger_condition["dot_types"] = ["infect"]  # Only infection ticks
+	trigger.effect_parameters["fire_rate_boost"] = 1.0  # 100% boost
+	trigger.effect_parameters["duration"] = 8.0  # 8 seconds
+	return trigger
 
 func _create_double_dose_trigger() -> TriggerEffectResource:
 	"""Creates double dose trigger that spreads infection on hitting infected enemies"""

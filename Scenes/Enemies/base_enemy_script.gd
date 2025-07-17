@@ -138,6 +138,7 @@ func process_status_effects(delta: float):
 	for effect_name in active_effects.keys():
 		var effect = active_effects[effect_name]
 		effect.timer += delta
+		var bottle_id = effect.get("source_bottle_id", "unknown")
 
 		# Apply enemy-specific resistances to ALL DOT effects
 		match effect_name:
@@ -163,7 +164,10 @@ func process_status_effects(delta: float):
 					var infect_damage = effect.intensity * 2.0
 					var source_id = effect.get("source_bottle_id", "unknown")
 					take_damage_from_source(infect_damage, source_id)
+			_:
+				take_damage_from_source(effect.intensity, bottle_id)
 
+		_execute_dot_tick_trigger(bottle_id, effect_name, effect.intensity * 2.0)
 		# Remove expired effects
 		if effect.timer >= effect.duration:
 			effects_to_remove.append(effect_name)
@@ -609,3 +613,12 @@ func _cleanup_stack_behavior(effect_name: String, effect_data: Dictionary, sourc
 func has_any_visual_effects() -> bool:
 	"""Check if enemy has any effects that should maintain visual changes"""
 	return not active_effects.is_empty() or not stacking_effects.is_empty()
+
+func _execute_dot_tick_trigger(source_bottle_id: String, dot_type: String, damage_dealt: float):
+	"""Execute DOT tick triggers when DOT effects deal damage"""
+	var source_bottle = InventoryManager.get_bottle_by_id(source_bottle_id)
+	if source_bottle:
+		TriggerActionManager.execute_dot_tick_trigger(source_bottle, self, dot_type, damage_dealt)
+	else:
+		# Bottle might not exist anymore, which is fine
+		pass

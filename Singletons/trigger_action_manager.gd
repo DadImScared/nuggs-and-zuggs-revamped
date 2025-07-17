@@ -13,6 +13,7 @@ func _register_trigger_actions():
 	"""Register all trigger action classes"""
 	trigger_actions["infection_tsunami"] = InfectionTsunamiTrigger.new()
 	trigger_actions["double_dose"] = DoubleDoseTrigger.new()
+	trigger_actions["viral_frenzy"] = ViralFrenzyTrigger.new()
 	#trigger_actions["burst_fire"] = BurstFireTriggerAction.new()
 	#trigger_actions["mini_volcano"] = MiniVolcanoTriggerAction.new()
 
@@ -62,6 +63,28 @@ func execute_hit_trigger(source_bottle: ImprovedBaseSauceBottle, hit_enemy: Node
 					action.update_trigger_timing(source_bottle, trigger_effect)
 			else:
 				print("⚠️ No trigger action registered for hit trigger: %s" % trigger_name)
+
+func execute_dot_tick_trigger(source_bottle: ImprovedBaseSauceBottle, affected_enemy: Node2D, dot_type: String, damage_dealt: float):
+	"""Execute triggers when a DOT effect deals damage"""
+	for trigger_effect in source_bottle.trigger_effects:
+		if trigger_effect.trigger_type == TriggerEffectResource.TriggerType.ON_DOT_TICK:
+			var trigger_name = trigger_effect.trigger_name
+
+			if trigger_name in trigger_actions:
+				var action = trigger_actions[trigger_name]
+
+				# Check if this specific DOT tick should trigger the effect
+				if action.should_trigger_on_dot_tick(source_bottle, trigger_effect, affected_enemy, dot_type, damage_dealt):
+					# Pass DOT context to the trigger
+					trigger_effect.effect_parameters["dot_enemy"] = affected_enemy
+					trigger_effect.effect_parameters["dot_type"] = dot_type
+					trigger_effect.effect_parameters["dot_damage"] = damage_dealt
+
+					# Execute the trigger
+					action.execute_trigger(source_bottle, trigger_effect)
+					action.update_trigger_timing(source_bottle, trigger_effect)
+			else:
+				print("⚠️ No trigger action registered for DOT tick trigger: %s" % trigger_name)
 
 func execute_event_trigger(source_bottle: ImprovedBaseSauceBottle, event_type: TriggerEffectResource.TriggerType, event_data: Dictionary = {}):
 	"""Execute triggers based on events (crit, death, etc.)"""
