@@ -316,8 +316,8 @@ func _get_default_talents(level: int) -> Array[Talent]:
 			[StatModifier.create_range_boost(20.0)])
 	] as Array[Talent]
 
-func get_talent_by_choice(sauce_name: String, level: int, choice: int) -> Talent:
-	var talents = get_talents_for_level(sauce_name, level)
+func get_talent_by_choice(sauce_name: String, level: int, choice: int, bottle = null) -> Talent:
+	var talents = get_talents_for_level(sauce_name, level, bottle)
 	if choice >= 1 and choice <= talents.size():
 		var talent = talents[choice - 1]
 		print("Retrieved talent: %s for choice %d" % [talent.talent_name, choice])

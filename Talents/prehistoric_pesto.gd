@@ -6,7 +6,14 @@ func _init():
 	sauce_name = "Prehistoric Pesto"
 
 func build_talent_pool():
-	var pesto_talents = []
+	var pesto_talents = [
+		create_special_talent("Viral Spread", "Infection immediately spreads to 3 nearby enemies", 2,
+			[_create_viral_spread_effect()], TalentManager.TalentTheme.INFECTION),
+		create_stat_talent("Evolution", "+0.3 Fire Rate", 2,
+			[create_fire_rate_boost(0.3)]),
+		create_special_talent("Mutation Strain", "Infections stack and mutate for increased damage", 2,
+			[_create_mutation_effect()], TalentManager.TalentTheme.INFECTION)
+	]
 
 	return pesto_talents
 
@@ -26,21 +33,21 @@ func build_talent_tree() -> Dictionary:
 	# Level 2 talents - First special effects appear
 	pesto_talents[2] = [
 		create_special_talent("Viral Spread", "Infection immediately spreads to 3 nearby enemies", 2,
-			[_create_viral_spread_effect()]),
+			[_create_viral_spread_effect()], TalentManager.TalentTheme.INFECTION),
 		create_stat_talent("Evolution", "+0.8 Fire Rate", 2,
 			[create_fire_rate_boost(0.8)]),
 		create_special_talent("Mutation Strain", "Infections stack and mutate for increased damage", 2,
-			[_create_mutation_effect()])
+			[_create_mutation_effect()], TalentManager.TalentTheme.INFECTION)
 	]
 
 	# Level 3 talents - More powerful effects
 	pesto_talents[3] = [
 		create_special_talent("Epidemic Outbreak", "Creates spreading waves of infection", 3,
-			[_create_epidemic_effect()]),
+			[_create_epidemic_effect()], TalentManager.TalentTheme.INFECTION),
 		create_stat_talent("Ancient Power", "+6 Damage", 3,
 			[create_damage_boost(6.0)]),
 		create_special_talent("Toxic Strain", "Infection also applies poison damage", 3,
-			[_create_toxic_strain_effect()])
+			[_create_toxic_strain_effect()], TalentManager.TalentTheme.INFECTION)
 	]
 
 	# Level 4 talents - Deeper specialization
@@ -56,11 +63,11 @@ func build_talent_tree() -> Dictionary:
 	# Level 5 talents - Game changing effects
 	pesto_talents[5] = [
 		create_special_talent("Pandemic", "Low chance to infect ALL enemies on screen", 5,
-			[_create_pandemic_effect()]),
+			[_create_pandemic_effect()], TalentManager.TalentTheme.INFECTION),
 		create_stat_talent("Meteor Impact", "+12 Damage", 5,
 			[create_damage_boost(12.0)]),
 		create_special_talent("Super Mutation", "Enhanced mutation with double stacking", 5,
-			[_create_enhanced_mutation_effect()])
+			[_create_enhanced_mutation_effect()], TalentManager.TalentTheme.INFECTION)
 	]
 
 	return pesto_talents

@@ -258,7 +258,7 @@ func apply_talent_choice_with_level(bottle_id: String, level: int, choice_number
 	var sauce_name = bottle.sauce_data.sauce_name
 
 	# Get talent from talent manager
-	var talent = TalentManager.get_talent_by_choice(sauce_name, level, choice_number)
+	var talent = TalentManager.get_talent_by_choice(sauce_name, level, choice_number, bottle)
 	if not talent:
 		print("No talent found for %s level %d choice %d" % [sauce_name, level, choice_number])
 		return
@@ -392,3 +392,25 @@ func can_equip_sauce():
 
 func can_store_sauce():
 	return storage.size() < 6
+
+func apply_specific_talent(bottle_id: String, talent: Talent):
+	"""Apply a specific talent object to a bottle"""
+	print("InventoryManager: Applying talent %s to bottle %s" % [talent.talent_name, bottle_id])
+
+	var bottle = get_bottle_by_id(bottle_id)
+	if not bottle:
+		print("Warning: Bottle %s not found!" % bottle_id)
+		return
+
+	# Apply the talent directly
+	talent.apply_to_bottle(bottle)
+	bottle.active_talents.append(talent)
+
+	# Update chosen upgrades display
+	var full_talent = "L%d: %s" % [bottle.current_level, talent.talent_name]
+	bottle.chosen_upgrades.append(full_talent)
+
+	print("✨ Applied talent: %s to bottle %s" % [talent.talent_name, bottle_id])
+
+	# Trigger talent applied signal for UI updates
+	talent_applied.emit(bottle, talent)

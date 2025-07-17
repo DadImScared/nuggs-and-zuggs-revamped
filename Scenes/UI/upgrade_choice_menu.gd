@@ -1,7 +1,7 @@
 # Scenes/UI/upgrade_choice_menu.gd
 extends Control
 
-signal talent_selected(choice_number: int)
+signal talent_selected(talent: Talent)
 
 @onready var sauce_info = $CenterPanel/MainContainer/SauceInfoLabel
 @onready var button1 = $CenterPanel/MainContainer/ChoicesContainer/Choice1/Button1
@@ -18,6 +18,7 @@ signal talent_selected(choice_number: int)
 
 var current_level: int = 1
 var current_sauce: String = ""
+var displayed_talents: Array[Talent] = []  # ✅ Store the exact talents shown
 
 func _ready():
 	get_tree().paused = true
@@ -41,23 +42,23 @@ func setup_with_talents(sauce_name: String, level: int, bottle):
 	sauce_info.text = "%s reached Level %d!" % [sauce_name, level]
 
 	# Get talents for this specific level
-	var talents = TalentManager.get_talents_for_level(sauce_name, level, bottle)
-	print("Setting up upgrade menu with %d talents for %s level %d" % [talents.size(), sauce_name, level])
+	displayed_talents = TalentManager.get_talents_for_level(sauce_name, level, bottle)
+	print("Setting up upgrade menu with %d talents for %s level %d" % [displayed_talents.size(), sauce_name, level])
 
-	if talents.size() >= 1:
-		_setup_choice_button(button1, desc1, preview1, talents[0])
+	if displayed_talents.size() >= 1:
+		_setup_choice_button(button1, desc1, preview1, displayed_talents[0])
 		button1.visible = true
 	else:
 		button1.visible = false
 
-	if talents.size() >= 2:
-		_setup_choice_button(button2, desc2, preview2, talents[1])
+	if displayed_talents.size() >= 2:
+		_setup_choice_button(button2, desc2, preview2, displayed_talents[1])
 		button2.visible = true
 	else:
 		button2.visible = false
 
-	if talents.size() >= 3:
-		_setup_choice_button(button3, desc3, preview3, talents[2])
+	if displayed_talents.size() >= 3:
+		_setup_choice_button(button3, desc3, preview3, displayed_talents[2])
 		button3.visible = true
 	else:
 		button3.visible = false
@@ -106,17 +107,17 @@ func _style_button_by_type(button: Button, talent_type: Talent.TalentType):
 
 func _on_choice_1():
 	print("Chose talent 1: Level %d %s" % [current_level, current_sauce])
-	talent_selected.emit(1)
+	talent_selected.emit(displayed_talents[0])
 	_close_menu()
 
 func _on_choice_2():
 	print("Chose talent 2: Level %d %s" % [current_level, current_sauce])
-	talent_selected.emit(2)
+	talent_selected.emit(displayed_talents[1])
 	_close_menu()
 
 func _on_choice_3():
 	print("Chose talent 3: Level %d %s" % [current_level, current_sauce])
-	talent_selected.emit(3)
+	talent_selected.emit(displayed_talents[2])
 	_close_menu()
 
 func _close_menu():
@@ -129,7 +130,8 @@ func _on_button_mouse_entered(button: Button, talent_index: int):
 	button.scale = Vector2(1.05, 1.05)
 
 	# Could show additional tooltip info here
-	var talent = TalentManager.get_talent_by_choice(current_sauce, current_level, talent_index)
+	var talent = displayed_talents[talent_index - 1]
+	#var talent = TalentManager.get_talent_by_choice(current_sauce, current_level, talent_index)
 	if talent:
 		print("Hovering over: %s" % talent.talent_name)
 

@@ -13,11 +13,11 @@ func build_talent_tree() -> Dictionary:
 func create_stat_talent(name: String, desc: String, level: int, modifiers: Array[StatModifier]) -> Talent:
 	return Talent.create_stat_talent(name, desc, level, modifiers)
 
-func create_special_talent(name: String, desc: String, level: int, effects: Array[SpecialEffectResource]) -> Talent:
-	return Talent.create_effect_talent(name, desc, level, effects)
+func create_special_talent(name: String, desc: String, level: int, effects: Array[SpecialEffectResource], theme) -> Talent:
+	return Talent.create_effect_talent(name, desc, level, effects, theme)
 
-func create_trigger_talent(name: String, desc: String, level: int, triggers: Array[TriggerEffectResource]) -> Talent:
-	return Talent.create_trigger_talent(name, desc, level, triggers)
+func create_trigger_talent(name: String, desc: String, level: int, triggers: Array[TriggerEffectResource], theme) -> Talent:
+	return Talent.create_trigger_talent(name, desc, level, triggers, theme)
 
 # Common stat modifier helpers
 func create_damage_boost(amount: float) -> StatModifier:

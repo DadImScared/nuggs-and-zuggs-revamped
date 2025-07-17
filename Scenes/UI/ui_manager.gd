@@ -56,13 +56,13 @@ func _on_bottle_leveled_up(bottle_id: String, sauce_name: String, level: int):
 	menu_ui.add_child(upgrade_menu)
 	upgrade_menu.setup_with_talents(sauce_name, level, bottle)
 	# Connect to the correct signal name
-	upgrade_menu.talent_selected.connect(func(choice): _on_talent_chosen(bottle_id, level, choice))
+	upgrade_menu.talent_selected.connect(func(talent): _on_talent_chosen(bottle_id, talent))
 	#upgrade_menu.talent_selected.connect(func(choice): print("choice ", choice))
 
 
-func _on_talent_chosen(bottle_id: String, level: int, choice_number: int):
-	print("UI Manager: Forwarding level %d talent choice %d for bottle %s" % [level, choice_number, bottle_id])
-	InventoryManager.apply_talent_choice_with_level(bottle_id, level, choice_number)
+func _on_talent_chosen(bottle_id: String, talent: Talent):
+	print("UI Manager: Applying talent %s to bottle %s" % [talent.talent_name, bottle_id])
+	InventoryManager.apply_specific_talent(bottle_id, talent)  # ✅ Pass talent object
 
 func _on_level_up(level: int):
 	var level_up_menu = LEVEL_UP_MENU.instantiate()
