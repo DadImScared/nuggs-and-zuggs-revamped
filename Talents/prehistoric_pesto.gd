@@ -34,10 +34,15 @@ func build_talent_pool():
 			#TalentManager.TalentTheme.INFECTION
 		#),
 		create_trigger_talent(
-			"Viral Frenzy",
-			 "25% chance per infection tick: +100% fire rate for 8 seconds", 2,
-			[_create_viral_frenzy_trigger()], TalentManager.TalentTheme.INFECTION
+			"Viral Relay",
+			"Every 3 seconds, infections jump to closest uninfected targets", 2,
+			[_create_viral_relay_trigger()], TalentManager.TalentTheme.INFECTION
 		)
+		#create_trigger_talent(
+			#"Viral Frenzy",
+			 #"25% chance per infection tick: +100% fire rate for 8 seconds", 2,
+			#[_create_viral_frenzy_trigger()], TalentManager.TalentTheme.INFECTION
+		#)
 	]
 
 	return pesto_talents
@@ -98,6 +103,16 @@ func build_talent_tree() -> Dictionary:
 	return pesto_talents
 
 # === INFECTION SPECIAL EFFECT HELPERS ===
+
+func _create_viral_relay_trigger() -> TriggerEffectResource:
+	"""Creates viral relay trigger that jumps infections every 3 seconds"""
+	var trigger = TriggerEffectResource.new()
+	trigger.trigger_name = "viral_relay"
+	trigger.trigger_type = TriggerEffectResource.TriggerType.ON_TIMER
+	trigger.trigger_condition["cooldown"] = 3.0  # Every 3 seconds
+	trigger.effect_parameters["jump_range"] = 150.0  # Jump range
+	trigger.effect_parameters["infection_strength"] = 0.8  # 80% strength
+	return trigger
 
 func _create_viral_frenzy_trigger() -> TriggerEffectResource:
 	"""Creates viral frenzy trigger that gives fire rate boost on infection ticks"""

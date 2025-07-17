@@ -10,20 +10,39 @@ func _ready():
 	_register_trigger_actions()
 
 func _register_trigger_actions():
-	"""Register all trigger action classes"""
-	trigger_actions["infection_tsunami"] = InfectionTsunamiTrigger.new()
-	trigger_actions["double_dose"] = DoubleDoseTrigger.new()
-	trigger_actions["viral_frenzy"] = ViralFrenzyTrigger.new()
-	#trigger_actions["burst_fire"] = BurstFireTriggerAction.new()
-	#trigger_actions["mini_volcano"] = MiniVolcanoTriggerAction.new()
+	"""Automatically register all trigger action classes"""
+	print("🔍 Auto-discovering trigger actions...")
 
-	# TODO: Add more trigger actions as they're created
-	# trigger_actions["tsunami_wave"] = TsunamiWaveTriggerAction.new()
-	# trigger_actions["chain_burst"] = ChainBurstTriggerAction.new()
-	# trigger_actions["perfect_shots"] = PerfectShotsTriggerAction.new()
-	# trigger_actions["death_explosion"] = DeathExplosionTriggerAction.new()
+	var total_registered = 0
 
-	print("TriggerActionManager: Registered %d trigger actions" % trigger_actions.size())
+	# Auto-discover all sauce folders in SauceActions
+	var sauce_paths = _discover_sauce_action_folders()
+	for path in sauce_paths:
+		var registered_count = _register_triggers_from_path(path)
+		total_registered += registered_count
+
+	# Also check global triggers folder
+	var global_registered = _register_triggers_from_path("res://TriggerActions/Global/")
+	total_registered += global_registered
+
+	print("✅ Auto-registered %d trigger actions" % total_registered)
+
+#func _register_trigger_actions():
+	#"""Register all trigger action classes"""
+	#trigger_actions["infection_tsunami"] = InfectionTsunamiTrigger.new()
+	#trigger_actions["double_dose"] = DoubleDoseTrigger.new()
+	#trigger_actions["viral_frenzy"] = ViralFrenzyTrigger.new()
+	#trigger_actions["viral_relay"] = ViralRelayTrigger.new()
+	##trigger_actions["burst_fire"] = BurstFireTriggerAction.new()
+	##trigger_actions["mini_volcano"] = MiniVolcanoTriggerAction.new()
+#
+	## TODO: Add more trigger actions as they're created
+	## trigger_actions["tsunami_wave"] = TsunamiWaveTriggerAction.new()
+	## trigger_actions["chain_burst"] = ChainBurstTriggerAction.new()
+	## trigger_actions["perfect_shots"] = PerfectShotsTriggerAction.new()
+	## trigger_actions["death_explosion"] = DeathExplosionTriggerAction.new()
+#
+	#print("TriggerActionManager: Registered %d trigger actions" % trigger_actions.size())
 
 func process_trigger_effects(source_bottle: ImprovedBaseSauceBottle) -> void:
 	"""Process all trigger effects for a bottle - called from bottle's _check_trigger_effects()"""
@@ -114,3 +133,81 @@ func debug_print_registered_triggers():
 		var action = trigger_actions[trigger_name]
 		print("  %s: %s" % [trigger_name, action.trigger_description])
 	print("========================")
+
+func _discover_sauce_action_folders() -> Array[String]:
+	"""Discover all Triggers folders in SauceActions directory"""
+	var trigger_paths: Array[String] = []
+	var dir = DirAccess.open("res://SauceActions/")
+
+	if not dir:
+		print("⚠️ SauceActions directory not found")
+		return trigger_paths
+
+	dir.list_dir_begin()
+	var folder_name = dir.get_next()
+
+	while folder_name != "":
+		if dir.current_is_dir() and not folder_name.begins_with("."):
+			# Check if this sauce folder has a Triggers subfolder
+			var triggers_path = "res://SauceActions/" + folder_name + "/Triggers/"
+			var triggers_dir = DirAccess.open(triggers_path)
+			if triggers_dir:
+				trigger_paths.append(triggers_path)
+				print("  📁 Found triggers folder: %s" % triggers_path)
+
+		folder_name = dir.get_next()
+
+	dir.list_dir_end()
+	return trigger_paths
+
+func _register_triggers_from_path(path: String) -> int:
+	"""Register all trigger files from a specific path"""
+	var dir = DirAccess.open(path)
+	if not dir:
+		# Path doesn't exist, skip silently
+		return 0
+
+	var registered_count = 0
+	dir.list_dir_begin()
+	var file_name = dir.get_next()
+
+	while file_name != "":
+		# Look for .gd files (now any .gd file in Triggers folder is a trigger)
+		if file_name.ends_with(".gd"):
+			var success = _register_trigger_from_file(path + file_name)
+			if success:
+				registered_count += 1
+
+		file_name = dir.get_next()
+
+	dir.list_dir_end()
+	return registered_count
+
+func _register_trigger_from_file(file_path: String) -> bool:
+	"""Register a single trigger from file path"""
+	# Load the script
+	var script = load(file_path)
+	if not script:
+		print("⚠️ Failed to load trigger script: %s" % file_path)
+		return false
+
+	# Create instance
+	var trigger_instance = script.new()
+	if not trigger_instance:
+		print("⚠️ Failed to instantiate trigger: %s" % file_path)
+		return false
+
+	# Check if it's a valid trigger (has trigger_name)
+	if not trigger_instance.has_method("execute_trigger"):
+		print("⚠️ Invalid trigger (no execute_trigger method): %s" % file_path)
+		return false
+
+	# Register using the trigger_name
+	var trigger_name = trigger_instance.trigger_name
+	if trigger_name == "":
+		print("⚠️ Trigger has empty name: %s" % file_path)
+		return false
+
+	trigger_actions[trigger_name] = trigger_instance
+	print("  ✅ Registered: %s from %s" % [trigger_name, file_path])
+	return true
