@@ -13,7 +13,8 @@ enum TriggerType {
 	ON_ENEMY_DEATH,   # When killing an enemy
 	ON_LOW_HEALTH,    # When player health is low
 	ON_TIMER,         # Every N seconds
-	ON_RANDOM_CHANCE  # Random probability per shot
+	ON_RANDOM_CHANCE,  # Random probability per shot
+	ON_HIT
 }
 
 # Factory methods for common triggers

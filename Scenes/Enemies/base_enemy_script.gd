@@ -15,7 +15,7 @@ var health_bar_timer = 0.0
 var health_bar_duration = 3.0
 
 var base_xp_reward = 5
-var base_health = 30
+var base_health = 100
 var base_damage = 10
 var base_speed = 18.0
 var max_health = 0
@@ -23,7 +23,7 @@ var max_health = 0
 var damage = 10
 var xp_on_kill = 5
 var move_speed = 18.0
-var health = 30
+var health = 100
 
 # Damage tracking for XP distribution
 var damage_sources: Dictionary = {}

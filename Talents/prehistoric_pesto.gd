@@ -25,6 +25,13 @@ func build_talent_pool():
 			"Infection Tsunami", "Every 15 seconds, all infections pulse and spread", 2,
 			[_create_infection_tsunami_trigger()],
 			TalentManager.TalentTheme.INFECTION
+		),
+		create_trigger_talent(
+			"Double Dose",
+			"20% chance: hitting infected enemy spreads to 2 nearby",
+			2,
+			[_create_double_dose_trigger()],
+			TalentManager.TalentTheme.INFECTION
 		)
 	]
 
@@ -86,6 +93,17 @@ func build_talent_tree() -> Dictionary:
 	return pesto_talents
 
 # === INFECTION SPECIAL EFFECT HELPERS ===
+
+func _create_double_dose_trigger() -> TriggerEffectResource:
+	"""Creates double dose trigger that spreads infection on hitting infected enemies"""
+	var trigger = TriggerEffectResource.new()
+	trigger.trigger_name = "double_dose"
+	trigger.trigger_type = TriggerEffectResource.TriggerType.ON_HIT
+	trigger.trigger_condition["chance"] = 0.20  # 20% chance per shot
+	trigger.effect_parameters["spread_count"] = 2  # Spread to 2 enemies
+	trigger.effect_parameters["spread_radius"] = 100.0  # Within 100 pixels
+	trigger.effect_parameters["target_infected_only"] = true  # Only when hitting infected
+	return trigger
 
 func _create_infection_tsunami_trigger() -> TriggerEffectResource:
 	"""Creates infection tsunami trigger that pulses all infections every 15 seconds"""

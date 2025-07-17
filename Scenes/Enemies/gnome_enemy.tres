@@ -6,7 +6,7 @@
 script = ExtResource("1_btgce")
 enemy_name = "Gnome"
 enemy_type = "basic"
-base_health = 30.0
+base_health = 100.0
 base_damage = 10.0
 base_speed = 18.0
 base_xp_reward = 5

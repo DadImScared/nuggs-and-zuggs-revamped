@@ -32,6 +32,9 @@ func should_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: Trigge
 		TriggerEffectResource.TriggerType.ON_LOW_HEALTH:
 			var health_threshold = trigger_data.trigger_condition.get("health_threshold", 0.25)
 			return PlayerStats.health / PlayerStats.max_health <= health_threshold
+		TriggerEffectResource.TriggerType.ON_HIT:
+			return false
+			#return should_trigger_on_hit(source_bottle, trigger_data)
 	return false
 
 # Update trigger timing for timer-based triggers
@@ -54,3 +57,35 @@ func get_enemies_in_radius(center: Vector2, radius: float) -> Array[Node2D]:
 			enemies.append(enemy)
 
 	return enemies
+
+func should_trigger_on_hit(source_bottle: ImprovedBaseSauceBottle, trigger_data: TriggerEffectResource, hit_enemy: Node2D, projectile: Area2D = null) -> bool:
+	"""Check if ON_HIT trigger should activate for this specific hit"""
+
+	# Default implementation - child classes can override for specific conditions
+	match trigger_data.trigger_type:
+		TriggerEffectResource.TriggerType.ON_HIT:
+			# Check for random chance if specified
+			var chance = trigger_data.trigger_condition.get("chance", 1.0)  # Default 100% if no chance specified
+			if randf() > chance:
+				return false
+
+			# Check for enemy type conditions if specified
+			var target_infected_only = trigger_data.trigger_condition.get("target_infected_only", false)
+			if target_infected_only:
+				return _is_enemy_infected(hit_enemy)
+
+			return true  # No special conditions, always trigger on hit
+
+	return false
+
+func _is_enemy_infected(enemy: Node2D) -> bool:
+	"""Helper to check if enemy is infected"""
+	if not is_instance_valid(enemy):
+		return false
+
+	if enemy.has_method("has_status_effect"):
+		return enemy.has_status_effect("infect")
+	elif "active_effects" in enemy:
+		return "infect" in enemy.active_effects
+
+	return false
