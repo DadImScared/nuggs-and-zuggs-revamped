@@ -279,7 +279,7 @@ func apply_talent_choice_with_level(bottle_id: String, level: int, choice_number
 # Helper functions for talent system
 func get_available_talents_for_bottle(bottle: ImprovedBaseSauceBottle) -> Array[Talent]:
 	"""Get available talents for a bottle's current level"""
-	return TalentManager.get_talents_for_level(bottle.sauce_data.sauce_name, bottle.current_level)
+	return TalentManager.get_talents_for_level(bottle.sauce_data.sauce_name, bottle.current_level, bottle)
 
 func can_bottle_level_up(bottle: ImprovedBaseSauceBottle) -> bool:
 	"""Check if bottle can still level up and get talents"""

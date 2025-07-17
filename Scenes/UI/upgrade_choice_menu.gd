@@ -35,13 +35,13 @@ func _ready():
 	button3.mouse_entered.connect(_on_button_mouse_entered.bind(button3, 3))
 	button3.mouse_exited.connect(_on_button_mouse_exited.bind(button3))
 
-func setup_with_talents(sauce_name: String, level: int):
+func setup_with_talents(sauce_name: String, level: int, bottle):
 	current_level = level
 	current_sauce = sauce_name
 	sauce_info.text = "%s reached Level %d!" % [sauce_name, level]
 
 	# Get talents for this specific level
-	var talents = TalentManager.get_talents_for_level(sauce_name, level)
+	var talents = TalentManager.get_talents_for_level(sauce_name, level, bottle)
 	print("Setting up upgrade menu with %d talents for %s level %d" % [talents.size(), sauce_name, level])
 
 	if talents.size() >= 1:
@@ -140,4 +140,4 @@ func _on_button_mouse_exited(button: Button):
 # Legacy setup function for backwards compatibility
 func setup(sauce_name: String, level: int):
 	# Call the new talent-based setup
-	setup_with_talents(sauce_name, level)
+	setup_with_talents(sauce_name, level, null)

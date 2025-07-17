@@ -5,6 +5,11 @@ extends BaseTalentTree
 func _init():
 	sauce_name = "Prehistoric Pesto"
 
+func build_talent_pool():
+	var pesto_talents = []
+
+	return pesto_talents
+
 func build_talent_tree() -> Dictionary:
 	var pesto_talents = {}
 

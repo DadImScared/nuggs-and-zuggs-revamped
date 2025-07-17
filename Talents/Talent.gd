@@ -9,6 +9,7 @@ extends Resource
 @export var special_effects: Array[SpecialEffectResource] = []
 @export var trigger_conditions: Array[TriggerEffectResource] = []
 @export var effect_priority: int = 0
+@export var talent_theme: TalentManager.TalentTheme = TalentManager.TalentTheme.DAMAGE
 
 enum TalentType {
 	STAT_MODIFIER,
@@ -73,32 +74,68 @@ func get_preview_text() -> String:
 
 	return "\n".join(preview_parts)
 
+func set_theme(theme: TalentManager.TalentTheme) -> Talent:
+	talent_theme = theme
+	return self
+
+# Updated factory functions with theme setting
+static func create_stat_talent_with_theme(name: String, desc: String, level: int, modifiers: Array[StatModifier], theme: TalentManager.TalentTheme) -> Talent:
+	var talent = create_stat_talent(name, desc, level, modifiers)
+	talent.talent_theme = theme
+	return talent
+
+static func create_effect_talent_with_theme(name: String, desc: String, level: int, effects: Array[SpecialEffectResource], theme: TalentManager.TalentTheme) -> Talent:
+	var talent = create_effect_talent(name, desc, level, effects)
+	talent.talent_theme = theme
+	return talent
+
 # Static factory methods for easy talent creation
-static func create_stat_talent(name: String, desc: String, level: int, modifiers: Array[StatModifier]) -> Talent:
+static func create_stat_talent(
+	name: String,
+	desc: String,
+	level: int,
+	modifiers: Array[StatModifier],
+	theme: TalentManager.TalentTheme = TalentManager.TalentTheme.DAMAGE
+) -> Talent:
 	var talent = Talent.new()
 	talent.talent_name = name
 	talent.description = desc
 	talent.level_required = level
 	talent.talent_type = TalentType.STAT_MODIFIER
 	talent.stat_modifiers = modifiers
+	talent.talent_theme = theme
 	return talent
 
-static func create_effect_talent(name: String, desc: String, level: int, effects: Array[SpecialEffectResource]) -> Talent:
+static func create_effect_talent(
+	name: String,
+	desc: String,
+	level: int,
+	effects: Array[SpecialEffectResource],
+	theme: TalentManager.TalentTheme = TalentManager.TalentTheme.DAMAGE
+) -> Talent:
 	var talent = Talent.new()
 	talent.talent_name = name
 	talent.description = desc
 	talent.level_required = level
 	talent.talent_type = TalentType.SPECIAL_EFFECT
 	talent.special_effects = effects
+	talent.talent_theme = theme
 	return talent
 
-static func create_trigger_talent(name: String, desc: String, level: int, triggers: Array[TriggerEffectResource]) -> Talent:
+static func create_trigger_talent(
+	name: String,
+	desc: String,
+	level: int,
+	triggers: Array[TriggerEffectResource],
+	theme: TalentManager.TalentTheme = TalentManager.TalentTheme.DAMAGE
+) -> Talent:
 	var talent = Talent.new()
 	talent.talent_name = name
 	talent.description = desc
 	talent.level_required = level
 	talent.talent_type = TalentType.TRIGGER_EFFECT
 	talent.trigger_conditions = triggers
+	talent.talent_theme = theme
 	return talent
 
 static func create_transformation_talent(name: String, desc: String, level: int) -> Talent:

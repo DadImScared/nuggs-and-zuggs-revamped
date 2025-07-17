@@ -47,10 +47,14 @@ func update_xp_display(current_xp: int, max_xp: int):
 
 func _on_bottle_leveled_up(bottle_id: String, sauce_name: String, level: int):
 	print("UI Manager: %s leveled up to %d" % [sauce_name, level])
+	var bottle = InventoryManager.get_bottle_by_id(bottle_id)
+	if not bottle:
+		print("❌ ERROR: Could not find bottle %s for upgrade menu!" % bottle_id)
+		return
 
 	var upgrade_menu = UPGRADE_CHOICE_MENU.instantiate()
 	menu_ui.add_child(upgrade_menu)
-	upgrade_menu.setup_with_talents(sauce_name, level)
+	upgrade_menu.setup_with_talents(sauce_name, level, bottle)
 	# Connect to the correct signal name
 	upgrade_menu.talent_selected.connect(func(choice): _on_talent_chosen(bottle_id, level, choice))
 	#upgrade_menu.talent_selected.connect(func(choice): print("choice ", choice))

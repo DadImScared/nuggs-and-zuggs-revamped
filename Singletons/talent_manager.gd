@@ -3,20 +3,54 @@ extends Node
 
 # Talent trees organized by sauce name and level
 var talent_trees: Dictionary = {}
+var talent_pools = {}
+
+const COHERENCE_CHANCE = 0.4  # 40% chance to prefer synergistic talents
+const MIN_VARIETY = 1         # Always guarantee at least 1 different theme
+const MAX_SAME_THEME = 2      # Never show more than 2 of same theme
+
+# Add to TalentManager - Smart selection metadata
+enum TalentTier {
+	FOUNDATION = 1,    # Levels 1-3: Basic mechanics, stats
+	SPECIALIZATION = 2, # Levels 4-6: Build direction, synergies
+	LEGENDARY = 3       # Levels 7-10: Game-changing effects
+}
+
+enum TalentTheme {
+	INFECTION,     # Infection-related talents
+	DAMAGE,        # Pure damage/stats
+	UTILITY,       # Fire rate, range, etc.
+	DEFENSIVE,     # Healing, shields, survival
+	EXPLOSIVE,     # AoE, explosions, volcanic rings
+	EXPERIMENTAL   # Wild, unique mechanics
+}
 
 func _ready():
 	print("TalentManager initialized")
 	_build_talent_trees()
 
 func _build_talent_trees():
-	# Initialize talent trees for each sauce
+	# Keep existing fixed trees for backwards compatibility
 	var pesto_tree = PrehistoricPestoTalents.new()
 	talent_trees["Prehistoric Pesto"] = pesto_tree.build_talent_tree()
 	talent_trees["Ketchup"] = _build_ketchup_talents()
-	#talent_trees["Prehistoric Pesto"] = _build_prehistoric_pesto_talents()
 	talent_trees["Mustard"] = _build_mustard_talents()
 	talent_trees["Jurassic Jalapeno"] = _build_jurassic_jalapeno_talents()
+
+	# Build new pool system using existing talent tree classes
+	_build_talent_pools()
+
 	print("✅ Talent trees built for %d sauces" % talent_trees.keys().size())
+	print("✅ Talent pools built for %d sauces" % talent_pools.keys().size())
+
+func _build_talent_pools():
+	# Use existing talent tree classes to build pools
+	var pesto_tree = PrehistoricPestoTalents.new()
+	if pesto_tree.has_method("build_talent_pool"):
+		talent_pools["Prehistoric Pesto"] = pesto_tree.build_talent_pool()
+		print("✅ Built talent pool for Prehistoric Pesto with %d talents" % talent_pools["Prehistoric Pesto"].size())
+	else:
+		print("⚠️ PrehistoricPestoTalents doesn't have build_talent_pool() method yet")
 
 func _build_jurassic_jalapeno_talents():
 	var jalapeno_talents = {}
@@ -253,17 +287,23 @@ func _create_effect_chance_boost(amount: float) -> StatModifier:
 	return mod
 
 # Public API functions
-func get_talents_for_level(sauce_name: String, level: int) -> Array[Talent]:
-	if talent_trees.has(sauce_name) and talent_trees[sauce_name].has(level):
-		var talents_untyped = talent_trees[sauce_name][level]
-		var typed_talents: Array[Talent] = []
-		for t in talents_untyped:
-			typed_talents.append(t)
-		print("Found %d talents for %s level %d" % [typed_talents.size(), sauce_name, level])
-		return typed_talents
+func get_talents_for_level(sauce_name: String, level: int, bottle: ImprovedBaseSauceBottle = null) -> Array[Talent]:
+	# If no bottle provided or no pools exist, fall back to fixed trees
+	if not bottle or not talent_pools.has(sauce_name):
+		print("📚 Using fixed tree for %s level %d" % [sauce_name, level])
+		return _get_fixed_tree_talents(sauce_name, level)
 
-	print("No specific talents found for %s level %d, using defaults" % [sauce_name, level])
-	return _get_default_talents(level)
+	print("🧠 Smart selection for %s level %d" % [sauce_name, level])
+
+	# Get available talent pool
+	var available_talents = _get_available_talents_for_bottle(sauce_name, level, bottle)
+
+	if available_talents.size() < 3:
+		print("⚠️ Warning: Only %d talents available, falling back to fixed tree" % available_talents.size())
+		return _get_fixed_tree_talents(sauce_name, level)
+
+	# Smart selection with medium coherence
+	return _select_smart_talents(available_talents, bottle, 3)
 
 
 func _get_default_talents(level: int) -> Array[Talent]:
@@ -294,3 +334,140 @@ func apply_aura_effect(source_bottle: ImprovedBaseSauceBottle, talent: Talent):
 func remove_aura_effect(source_bottle: ImprovedBaseSauceBottle, talent: Talent):
 	print("Removing aura effect: %s" % talent.talent_name)
 	# Implement aura removal here
+
+func get_talent_tier(level: int) -> TalentTier:
+	if level <= 3:
+		return TalentTier.FOUNDATION
+	elif level <= 6:
+		return TalentTier.SPECIALIZATION
+	else:
+		return TalentTier.LEGENDARY
+
+func _get_fixed_tree_talents(sauce_name: String, level: int) -> Array[Talent]:
+	"""Fallback to original fixed tree system"""
+	if talent_trees.has(sauce_name) and talent_trees[sauce_name].has(level):
+		var talents_untyped = talent_trees[sauce_name][level]
+		var typed_talents: Array[Talent] = []
+		for t in talents_untyped:
+			typed_talents.append(t)
+		return typed_talents
+	return _get_default_talents(level)
+
+func _get_available_talents_for_bottle(sauce_name: String, level: int, bottle: ImprovedBaseSauceBottle) -> Array[Talent]:
+	"""Get all talents available for this bottle (filter by tier and exclude owned)"""
+	var pool = talent_pools.get(sauce_name, [])
+	var available: Array[Talent] = []
+	var tier = get_talent_tier(level)
+
+	for talent in pool:
+		# Filter by tier (foundation/specialization/legendary)
+		var talent_tier = get_talent_tier(talent.level_required)
+		if talent_tier != tier:
+			continue
+
+		# Exclude talents bottle already has
+		if _bottle_has_talent(bottle, talent.talent_name):
+			continue
+
+		available.append(talent)
+
+	print("🎯 %d available talents for tier %s" % [available.size(), TalentTier.keys()[tier]])
+	return available
+
+func _select_smart_talents(available_talents: Array[Talent], bottle: ImprovedBaseSauceBottle, count: int) -> Array[Talent]:
+	"""Use smart selection with 40% coherence to pick talents"""
+	var selected: Array[Talent] = []
+	var bottle_themes = _analyze_bottle_themes(bottle)
+
+	print("📊 Bottle theme analysis: %s" % str(bottle_themes))
+
+	for i in range(count):
+		var talent = _pick_next_talent(available_talents, selected, bottle_themes)
+		if talent:
+			selected.append(talent)
+			available_talents.erase(talent)  # Don't pick same talent twice
+
+	# Fill remaining slots if we didn't get enough
+	while selected.size() < count and available_talents.size() > 0:
+		var random_talent = available_talents[randi() % available_talents.size()]
+		selected.append(random_talent)
+		available_talents.erase(random_talent)
+	var talent_names = []
+	for t in selected:
+		talent_names.append(t.talent_name)
+	print("✨ Selected talents: %s" % str(talent_names))
+	#print("✨ Selected talents: %s" % [t.talent_name for t in selected])
+	return selected
+
+func _analyze_bottle_themes(bottle: ImprovedBaseSauceBottle) -> Dictionary:
+	"""Analyze bottle's existing talents to determine build themes"""
+	var theme_counts = {}
+
+	# Initialize all theme counts
+	for theme in TalentTheme.values():
+		theme_counts[theme] = 0
+
+	# Count themes from existing talents
+	for talent in bottle.active_talents:
+		var theme = TalentTheme.DAMAGE  # Default theme
+		if "talent_theme" in talent:
+			theme = talent.talent_theme
+		theme_counts[theme] += 1
+
+	return theme_counts
+
+func _pick_next_talent(available: Array[Talent], already_selected: Array[Talent], bottle_themes: Dictionary) -> Talent:
+	"""Pick one talent using coherence rules"""
+
+	# Get themes already selected this round
+	var selected_themes = {}
+	for theme in TalentTheme.values():
+		selected_themes[theme] = 0
+	for talent in already_selected:
+		var theme = TalentTheme.DAMAGE  # Default theme
+		if "talent_theme" in talent:
+			theme = talent.talent_theme
+		selected_themes[theme] += 1
+
+	# Find dominant bottle theme
+	var dominant_theme = TalentTheme.DAMAGE
+	var max_count = 0
+	for theme in bottle_themes:
+		if bottle_themes[theme] > max_count:
+			max_count = bottle_themes[theme]
+			dominant_theme = theme
+
+	# Apply coherence (40% chance to prefer dominant theme)
+	if randf() < COHERENCE_CHANCE and max_count > 0:
+		# Try to find talent matching dominant theme
+		var matching_talents = available.filter(func(t):
+			var theme = TalentTheme.DAMAGE
+			if "talent_theme" in t:
+				theme = t.talent_theme
+			return theme == dominant_theme
+		)
+		if matching_talents.size() > 0 and selected_themes[dominant_theme] < MAX_SAME_THEME:
+			print("🎯 Coherence: Picking %s theme talent" % TalentTheme.keys()[dominant_theme])
+			return matching_talents[randi() % matching_talents.size()]
+
+	# Ensure variety - never pick more than 2 of same theme
+	var valid_talents = available.filter(func(t):
+		var theme = TalentTheme.DAMAGE
+		if "talent_theme" in t:
+			theme = t.talent_theme
+		return selected_themes[theme] < MAX_SAME_THEME
+	)
+
+	if valid_talents.size() == 0:
+		# Emergency fallback
+		return available[randi() % available.size()]
+
+	print("🎲 Random selection from %d valid talents" % valid_talents.size())
+	return valid_talents[randi() % valid_talents.size()]
+
+func _bottle_has_talent(bottle: ImprovedBaseSauceBottle, talent_name: String) -> bool:
+	"""Check if bottle already has this talent"""
+	for talent in bottle.active_talents:
+		if talent.talent_name == talent_name:
+			return true
+	return false
