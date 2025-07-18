@@ -20,11 +20,18 @@ func build_talent_pool():
 			TalentManager.TalentTheme.INFECTION
 		),
 		create_trigger_talent(
-			"Infectious Momentum",
-			"Each enemy killed while infected increases movement speed by 3% for 12 seconds (stacks up to 30%)", 2,
-			[_create_infectious_momentum_trigger()],
+			"Plague Bearer",
+			"Infection Aura",
+			2,
+			[_create_plague_bearer_resource()],
 			TalentManager.TalentTheme.INFECTION
 		)
+		#create_trigger_talent(
+			#"Infectious Momentum",
+			#"Each enemy killed while infected increases movement speed by 3% for 12 seconds (stacks up to 30%)", 2,
+			#[_create_infectious_momentum_trigger()],
+			#TalentManager.TalentTheme.INFECTION
+		#)
 		#create_trigger_talent(
 			#"Extinction Event",
 			#"After 100 total infections this run, every 5th shot creates a massive 200-pixel infection explosion", 3,
@@ -147,6 +154,14 @@ func build_talent_tree() -> Dictionary:
 	return pesto_talents
 
 # === INFECTION SPECIAL EFFECT HELPERS ===
+
+func _create_plague_bearer_resource() -> TriggerEffectResource:
+	var trigger = TriggerEffectResource.new()
+	trigger.trigger_name = "plague_bearer"
+	trigger.trigger_type = TriggerEffectResource.TriggerType.ON_TIMER
+	trigger.trigger_condition["cooldown"] = 3.0  # Every 3 seconds
+	trigger.trigger_condition["chance"] = 0.2
+	return trigger
 
 func _create_infectious_momentum_trigger() -> TriggerEffectResource:
 	"""Creates infectious momentum trigger - speed buff on infected enemy kills"""

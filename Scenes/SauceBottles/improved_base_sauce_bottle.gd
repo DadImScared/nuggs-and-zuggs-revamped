@@ -157,6 +157,19 @@ func update_closest_target():
 # SHOOTING SYSTEM
 # ===================================================================
 
+func get_modified_duration(base_duration: float) -> float:
+	"""Calculate infection duration with talent modifications"""
+	var final_duration = base_duration
+
+	# Check bottle's special effects for duration boost
+	for effect in special_effects:
+		if effect.effect_name == "infection_duration_boost":
+			var multiplier = effect.get_parameter("duration_multiplier", 1.5)
+			final_duration *= multiplier
+			print("🦠 Persistent Strain: Extending infection from %.1fs to %.1fs" % [base_duration, final_duration])
+
+	return final_duration
+
 func shoot():
 	shot_counter += 1
 	_check_trigger_effects()
