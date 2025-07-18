@@ -137,7 +137,8 @@ func _process_death_triggers():
 	var death_data = {
 		"enemy_position": global_position,
 		"enemy_health": max_health,
-		"damage_sources": damage_sources
+		"damage_sources": damage_sources,
+		"killed_enemy": self
 	}
 
 	# Notify all bottles that damaged this enemy about the death

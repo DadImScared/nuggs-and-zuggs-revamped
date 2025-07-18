@@ -8,6 +8,7 @@ var xp = 0
 var level = 1
 var xp_to_next = 100
 
+var speed = 50
 var damage = 1
 var base_projectile_count = 1
 var extra_projectile_chance = 15

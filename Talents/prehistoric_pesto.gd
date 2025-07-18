@@ -20,11 +20,17 @@ func build_talent_pool():
 			TalentManager.TalentTheme.INFECTION
 		),
 		create_trigger_talent(
-			"Extinction Event",
-			"After 100 total infections this run, every 5th shot creates a massive 200-pixel infection explosion", 3,
-			[_create_extinction_event_trigger()],
-			TalentManager.TalentTheme.EXPLOSIVE
+			"Infectious Momentum",
+			"Each enemy killed while infected increases movement speed by 3% for 12 seconds (stacks up to 30%)", 2,
+			[_create_infectious_momentum_trigger()],
+			TalentManager.TalentTheme.INFECTION
 		)
+		#create_trigger_talent(
+			#"Extinction Event",
+			#"After 100 total infections this run, every 5th shot creates a massive 200-pixel infection explosion", 3,
+			#[_create_extinction_event_trigger()],
+			#TalentManager.TalentTheme.EXPLOSIVE
+		#)
 		#create_stat_talent(
 			#"Evolution", "+0.3 Fire Rate", 2,
 			#[create_fire_rate_boost(0.3)]
@@ -142,6 +148,19 @@ func build_talent_tree() -> Dictionary:
 
 # === INFECTION SPECIAL EFFECT HELPERS ===
 
+func _create_infectious_momentum_trigger() -> TriggerEffectResource:
+	"""Creates infectious momentum trigger - speed buff on infected enemy kills"""
+	var trigger = TriggerEffectResource.new()
+	trigger.trigger_name = "infectious_momentum"
+	trigger.trigger_type = TriggerEffectResource.TriggerType.ON_ENEMY_DEATH
+	trigger.effect_name = "speed_buff_on_infected_kill"
+
+	# Effect parameters
+	trigger.effect_parameters["speed_boost_per_stack"] = 0.03  # 3% per stack
+	trigger.effect_parameters["duration"] = 12.0  # 12 seconds
+	trigger.effect_parameters["max_stacks"] = 10  # Max 30% (10 x 3%)
+
+	return trigger
 
 func _create_extinction_event_trigger() -> TriggerEffectResource:
 	"""Creates extinction event trigger - massive explosion every 5th shot after 100 infections"""
