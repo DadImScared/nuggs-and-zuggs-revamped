@@ -16,6 +16,13 @@ func build_talent_pool():
 			"Evolution", "+0.3 Fire Rate", 2,
 			[create_fire_rate_boost(0.3)]
 		),
+		create_trigger_talent(
+			"Primordial Pulse",
+			"Each tick of infection damage has 20% chance to spread to nearby enemy",
+			2,
+			[_create_primordial_pulse_trigger()],
+			TalentManager.TalentTheme.INFECTION
+		)
 		#create_special_talent(
 			#"Mutation Strain", "Infections stack and mutate for increased damage", 2,
 			#[_create_mutation_effect()],
@@ -33,11 +40,11 @@ func build_talent_pool():
 			#[_create_double_dose_trigger()],
 			#TalentManager.TalentTheme.INFECTION
 		#),
-		create_trigger_talent(
-			"Viral Relay",
-			"Every 3 seconds, infections jump to closest uninfected targets", 2,
-			[_create_viral_relay_trigger()], TalentManager.TalentTheme.INFECTION
-		)
+		#create_trigger_talent(
+			#"Viral Relay",
+			#"Every 3 seconds, infections jump to closest uninfected targets", 2,
+			#[_create_viral_relay_trigger()], TalentManager.TalentTheme.INFECTION
+		#)
 		#create_trigger_talent(
 			#"Viral Frenzy",
 			 #"25% chance per infection tick: +100% fire rate for 8 seconds", 2,
@@ -103,6 +110,18 @@ func build_talent_tree() -> Dictionary:
 	return pesto_talents
 
 # === INFECTION SPECIAL EFFECT HELPERS ===
+
+func _create_primordial_pulse_trigger() -> TriggerEffectResource:
+	"""Creates primordial pulse trigger that spreads on DOT ticks"""
+	var trigger = TriggerEffectResource.new()
+	trigger.trigger_name = "primordial_pulse"
+	trigger.trigger_type = TriggerEffectResource.TriggerType.ON_DOT_TICK
+	trigger.trigger_condition["chance"] = 0.20  # 20% chance per DOT tick
+	trigger.trigger_condition["dot_types"] = ["infect"]  # Only infection DOT ticks
+	trigger.effect_parameters["spread_radius"] = 100.0  # Within 100 pixels
+	trigger.effect_parameters["infection_strength"] = 1.0  # Full strength infection
+	trigger.effect_parameters["max_spreads_per_tick"] = 1  # Only spread to 1 enemy per tick
+	return trigger
 
 func _create_viral_relay_trigger() -> TriggerEffectResource:
 	"""Creates viral relay trigger that jumps infections every 3 seconds"""
