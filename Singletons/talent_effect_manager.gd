@@ -9,7 +9,7 @@ var mega_puddles: Array[Node2D] = []
 var active_transformations: Dictionary = {}
 
 func create_mini_volcano(position: Vector2, damage: float, radius: float, source_bottle_id: String):
-	# Create a smaller volcanic ring at the bottle's position
+	"""Create a smaller volcanic ring at the bottle's position"""
 	var mini_ring = preload("res://Effects/MiniVolcanoRing/volcanic_ring.tscn").instantiate()
 	mini_ring.global_position = position
 	mini_ring.setup_ring(damage, radius, 2.0, source_bottle_id)  # 2 second duration
@@ -18,6 +18,7 @@ func create_mini_volcano(position: Vector2, damage: float, radius: float, source
 	get_tree().current_scene.add_child(mini_ring)
 
 func create_tsunami_wave(origin: Vector2, damage: float):
+	"""Create massive tsunami wave effect"""
 	print("🌊 CREATING TSUNAMI WAVE! 🌊")
 
 	# Create visual wave effect
@@ -36,7 +37,7 @@ func create_tsunami_wave(origin: Vector2, damage: float):
 	_create_splash_particles(origin)
 
 func _create_tsunami_visual(origin: Vector2):
-	# Create expanding wave visual
+	"""Create expanding wave visual"""
 	var wave = ColorRect.new()
 	wave.size = Vector2(50, 50)
 	wave.color = Color.BLUE
@@ -51,6 +52,7 @@ func _create_tsunami_visual(origin: Vector2):
 	tween.tween_callback(wave.queue_free)
 
 func transform_arena(source_bottle: ImprovedBaseSauceBottle):
+	"""Transform arena with permanent effects"""
 	print("🔥 ARENA TRANSFORMATION ACTIVATED! 🔥")
 
 	# Change arena background/theme
@@ -65,146 +67,17 @@ func transform_arena(source_bottle: ImprovedBaseSauceBottle):
 	_transform_arena_visuals()
 
 func transform_arena_to_ketchup_hell(source_bottle: ImprovedBaseSauceBottle):
+	"""Transform arena to tomato apocalypse"""
 	print("💀 TOMATO APOCALYPSE! THE END TIMES! 💀")
 
-	# Ultimate arena transformation
-	transform_arena(source_bottle)
-
-	# Create multiple permanent damage fields
-	for i in range(5):
-		var offset = Vector2(randf_range(-500, 500), randf_range(-500, 500))
-		create_permanent_damage_field(source_bottle.sauce_data.damage * 0.2, offset)
-
-	# Change music/atmosphere
-	_trigger_apocalypse_atmosphere()
-
-func _transform_arena_visuals():
-	# Change background color
-	var camera = get_viewport().get_camera_2d()
-	if camera:
-		camera.modulate = Color(1.2, 0.8, 0.8)  # Reddish tint
-
-	# Add visual effects
-	_create_arena_particle_effects()
-
-func _trigger_apocalypse_atmosphere():
-	# Screen effects
-	create_screen_shake(1.0, 999.0)  # Permanent slight shake
-
-	# Visual effects
-	var screen = ColorRect.new()
-	screen.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	screen.color = Color.RED
-	screen.modulate.a = 0.2
-	get_tree().current_scene.add_child(screen)
-
-func create_permanent_damage_field(damage_per_second: float, offset: Vector2 = Vector2.ZERO):
-	var damage_field = Node2D.new()
-	damage_field.name = "PermanentDamageField"
-	damage_field.global_position = offset
-	get_tree().current_scene.add_child(damage_field)
-	permanent_damage_fields.append(damage_field)
-
-	# Create timer for damage ticks
-	var timer = Timer.new()
-	timer.wait_time = 0.5
-	timer.timeout.connect(_damage_field_tick.bind(damage_per_second))
-	damage_field.add_child(timer)
-	timer.start()
-
-	# Visual indicator
-	_create_damage_field_visual(damage_field, offset)
-
-	print("Permanent damage field created! %.1f DPS to all enemies" % damage_per_second)
-
-func _damage_field_tick(damage: float):
-	var enemies = get_tree().get_nodes_in_group("enemies")
-	for enemy in enemies:
-		if enemy.has_method("take_damage"):
-			enemy.take_damage(damage)
-
-func _create_damage_field_visual(field: Node2D, position: Vector2):
-	# Create subtle visual indicator
-	var indicator = ColorRect.new()
-	indicator.size = Vector2(2000, 2000)  # Cover whole screen
-	indicator.color = Color.RED
-	indicator.modulate.a = 0.05
-	indicator.position = position - indicator.size/2
-	field.add_child(indicator)
-
-	# Pulsing effect
-	var tween = create_tween()
-	tween.set_loops()
-	tween.tween_property(indicator, "modulate:a", 0.1, 1.0)
-	tween.tween_property(indicator, "modulate:a", 0.05, 1.0)
-
-func activate_god_mode(bottle: ImprovedBaseSauceBottle, duration: float = 30.0):
-	print("⚡ GOD MODE ACTIVATED! ⚡")
-
-	# Store original stats
-	var original_stats = {
-		"damage": bottle.sauce_data.damage,
-		"fire_rate": bottle.sauce_data.fire_rate,
-		"range": bottle.sauce_data.range
-	}
-
-	# Make stats infinite
-	bottle.sauce_data.damage = 999999
-	bottle.sauce_data.fire_rate = 50.0
-	bottle.sauce_data.range = 2000.0
-
-	# Visual effects
-	create_god_mode_aura(bottle)
-
-	# Track transformation
-	active_transformations[bottle.bottle_id] = {
-		"type": "god_mode",
-		"original_stats": original_stats,
-		"end_time": Time.get_unix_time_from_system() + duration
-	}
-
-	# Restore after duration
-	get_tree().create_timer(duration).timeout.connect(func():
-		_end_god_mode(bottle, original_stats)
-	)
-
-func _end_god_mode(bottle: ImprovedBaseSauceBottle, original_stats: Dictionary):
-	if is_instance_valid(bottle):
-		bottle.sauce_data.damage = original_stats.damage
-		bottle.sauce_data.fire_rate = original_stats.fire_rate
-		bottle.sauce_data.range = original_stats.range
-
-		if active_transformations.has(bottle.bottle_id):
-			active_transformations.erase(bottle.bottle_id)
-
-		print("God Mode ended for %s" % bottle.bottle_id)
-
-func create_god_mode_aura(bottle: ImprovedBaseSauceBottle):
-	# Create golden aura around bottle
-	var aura = ColorRect.new()
-	aura.size = Vector2(120, 120)
-	aura.color = Color.GOLD
-	aura.modulate.a = 0.4
-	bottle.add_child(aura)
-	aura.position = -aura.size/2
-
-	# Pulsing effect
-	var tween = create_tween()
-	tween.set_loops()
-	tween.tween_property(aura, "modulate:a", 0.8, 0.3)
-	tween.tween_property(aura, "modulate:a", 0.4, 0.3)
-	tween.parallel().tween_property(aura, "rotation", TAU, 2.0)
-
-func create_eternal_flood_mode(bottle: ImprovedBaseSauceBottle):
-	print("🌊 ETERNAL FLOOD ACTIVATED! 🌊")
-
 	# All puddles become permanent and stack
-	active_transformations[bottle.bottle_id] = {
+	active_transformations[source_bottle.bottle_id] = {
 		"type": "eternal_flood",
 		"puddle_stacks": {}
 	}
 
 func create_damage_puddle(position: Vector2, damage: float, duration: float = 5.0, eternal: bool = false):
+	"""Create damage puddle with safe timer handling"""
 	var puddle = _create_puddle_visual(position)
 
 	# Set up damage area
@@ -218,10 +91,12 @@ func create_damage_puddle(position: Vector2, damage: float, duration: float = 5.
 	collision.shape = shape
 	area.add_child(collision)
 
-	# Damage timer
+	# Damage timer with metadata - SAFE approach
 	var timer = Timer.new()
 	timer.wait_time = 0.5
-	timer.timeout.connect(_puddle_damage_tick.bind(area, damage))
+	timer.set_meta("target_area", area)
+	timer.set_meta("damage_amount", damage)
+	timer.timeout.connect(_on_puddle_damage_timer.bind(timer))
 	area.add_child(timer)
 	timer.start()
 
@@ -230,15 +105,29 @@ func create_damage_puddle(position: Vector2, damage: float, duration: float = 5.
 		mega_puddles.append(area)
 		_setup_eternal_puddle(area, damage)
 	else:
-		# Normal puddle cleanup
-		get_tree().create_timer(duration).timeout.connect(func():
-			if is_instance_valid(area):
-				area.queue_free()
-			if is_instance_valid(puddle):
-				puddle.queue_free()
-		)
+		# Normal puddle cleanup with safe timer
+		var cleanup_timer = get_tree().create_timer(duration)
+		cleanup_timer.timeout.connect(_cleanup_puddle.bind(area, puddle))
+
+func _on_puddle_damage_timer(timer: Timer):
+	"""Handle puddle damage timer safely"""
+	if not is_instance_valid(timer):
+		return
+
+	var area = timer.get_meta("target_area", null)
+	var damage = timer.get_meta("damage_amount", 0.0)
+
+	_puddle_damage_tick(area, damage)
+
+func _cleanup_puddle(area: Area2D, puddle: Node2D):
+	"""Clean up puddle safely"""
+	if is_instance_valid(area):
+		area.queue_free()
+	if is_instance_valid(puddle):
+		puddle.queue_free()
 
 func _create_puddle_visual(position: Vector2) -> Node2D:
+	"""Create visual puddle effect"""
 	var puddle_visual = ColorRect.new()
 	puddle_visual.size = Vector2(100, 100)
 	puddle_visual.color = Color.RED
@@ -248,14 +137,31 @@ func _create_puddle_visual(position: Vector2) -> Node2D:
 	return puddle_visual
 
 func _setup_eternal_puddle(area: Area2D, base_damage: float):
-	# Eternal puddles grow and stack damage
+	"""Eternal puddles grow and stack damage - FIXED signal binding"""
 	var growth_timer = Timer.new()
 	growth_timer.wait_time = 2.0
-	growth_timer.timeout.connect(_grow_eternal_puddle.bind(area, base_damage))
+
+	# Store data in metadata instead of binding parameters
+	growth_timer.set_meta("target_area", area)
+	growth_timer.set_meta("base_damage", base_damage)
+
+	# Simple signal connection
+	growth_timer.timeout.connect(_on_eternal_puddle_timer.bind(growth_timer))
 	area.add_child(growth_timer)
 	growth_timer.start()
 
+func _on_eternal_puddle_timer(timer: Timer):
+	"""Handle eternal puddle growth timer safely"""
+	if not is_instance_valid(timer):
+		return
+
+	var area = timer.get_meta("target_area", null)
+	var base_damage = timer.get_meta("base_damage", 0.0)
+
+	_grow_eternal_puddle(area, base_damage)
+
 func _grow_eternal_puddle(area: Area2D, base_damage: float):
+	"""Grow eternal puddle safely"""
 	if not is_instance_valid(area):
 		return
 
@@ -265,13 +171,14 @@ func _grow_eternal_puddle(area: Area2D, base_damage: float):
 		var shape = collision.shape as CircleShape2D
 		shape.radius *= 1.1  # Grow by 10%
 
-		# Increase damage
-		var timer = area.get_child(1) as Timer
-		if timer:
-			timer.timeout.disconnect(_puddle_damage_tick)
-			timer.timeout.connect(_puddle_damage_tick.bind(area, base_damage * 1.1))
+		# Update damage timer safely
+		var damage_timer = area.get_child(1) as Timer
+		if damage_timer:
+			# Update metadata instead of reconnecting signal
+			damage_timer.set_meta("damage_amount", base_damage * 1.1)
 
 func _puddle_damage_tick(area: Area2D, damage: float):
+	"""Handle puddle damage tick"""
 	if not is_instance_valid(area):
 		return
 
@@ -281,6 +188,7 @@ func _puddle_damage_tick(area: Area2D, damage: float):
 			enemy.take_damage(damage)
 
 func create_poison_cloud(position: Vector2, damage: float, radius: float = 100.0):
+	"""Create poison cloud with safe timer handling"""
 	var cloud = _create_cloud_visual(position, radius)
 
 	# Set up damage area
@@ -294,108 +202,177 @@ func create_poison_cloud(position: Vector2, damage: float, radius: float = 100.0
 	collision.shape = shape
 	area.add_child(collision)
 
-	# Poison application timer
+	# Poison application timer with metadata
 	var timer = Timer.new()
 	timer.wait_time = 1.0
-	timer.timeout.connect(_poison_cloud_tick.bind(area, damage))
+	timer.set_meta("target_area", area)
+	timer.set_meta("damage_amount", damage)
+	timer.timeout.connect(_on_poison_cloud_timer.bind(timer))
 	area.add_child(timer)
 	timer.start()
 
-	# Cloud duration
-	get_tree().create_timer(8.0).timeout.connect(func():
-		if is_instance_valid(area):
-			area.queue_free()
-		if is_instance_valid(cloud):
-			cloud.queue_free()
-	)
+	# Cloud duration with safe cleanup
+	var cleanup_timer = get_tree().create_timer(8.0)
+	cleanup_timer.timeout.connect(_cleanup_poison_cloud.bind(area, cloud))
+
+func _on_poison_cloud_timer(timer: Timer):
+	"""Handle poison cloud timer safely"""
+	if not is_instance_valid(timer):
+		return
+
+	var area = timer.get_meta("target_area", null)
+	var damage = timer.get_meta("damage_amount", 0.0)
+
+	_poison_cloud_tick(area, damage)
+
+func _cleanup_poison_cloud(area: Area2D, cloud: Node2D):
+	"""Clean up poison cloud safely"""
+	if is_instance_valid(area):
+		area.queue_free()
+	if is_instance_valid(cloud):
+		cloud.queue_free()
 
 func _create_cloud_visual(position: Vector2, radius: float) -> Node2D:
+	"""Create visual cloud effect"""
 	var cloud_visual = ColorRect.new()
 	cloud_visual.size = Vector2(radius * 2, radius * 2)
-	cloud_visual.color = Color.GREEN
-	cloud_visual.modulate.a = 0.3
+	cloud_visual.color = Color(0.5, 1.0, 0.5, 0.4)
 	cloud_visual.global_position = position - cloud_visual.size/2
 	get_tree().current_scene.add_child(cloud_visual)
 
-	# Swirling animation
-	var tween = create_tween()
+	# Add swirling animation
+	var tween = cloud_visual.create_tween()
 	tween.set_loops()
-	tween.tween_property(cloud_visual, "rotation", TAU, 3.0)
+	tween.tween_property(cloud_visual, "rotation", TAU, 4.0)
 
 	return cloud_visual
 
 func _poison_cloud_tick(area: Area2D, damage: float):
+	"""Handle poison cloud damage tick"""
 	if not is_instance_valid(area):
 		return
 
 	var enemies = area.get_overlapping_bodies()
 	for enemy in enemies:
-		if enemy.is_in_group("enemies") and enemy.has_method("apply_poison"):
-			enemy.apply_poison(damage, 3.0)
+		if enemy.is_in_group("enemies") and enemy.has_method("apply_status_effect"):
+			enemy.apply_status_effect("poison", 3.0, damage * 0.5)
+
+func create_permanent_damage_field(damage_per_second: float):
+	"""Create permanent damage field covering entire arena"""
+	var field_area = Area2D.new()
+	field_area.global_position = Vector2.ZERO
+	get_tree().current_scene.add_child(field_area)
+
+	# Large collision covering entire screen
+	var collision = CollisionShape2D.new()
+	var shape = RectangleShape2D.new()
+	shape.size = Vector2(2000, 2000)
+	collision.shape = shape
+	field_area.add_child(collision)
+
+	# Damage timer with metadata
+	var timer = Timer.new()
+	timer.wait_time = 1.0
+	timer.set_meta("target_area", field_area)
+	timer.set_meta("damage_amount", damage_per_second)
+	timer.timeout.connect(_on_permanent_field_timer.bind(timer))
+	field_area.add_child(timer)
+	timer.start()
+
+	permanent_damage_fields.append(field_area)
+	print("🔥 Permanent damage field created: %.1f DPS" % damage_per_second)
+
+func _on_permanent_field_timer(timer: Timer):
+	"""Handle permanent field damage timer safely"""
+	if not is_instance_valid(timer):
+		return
+
+	var area = timer.get_meta("target_area", null)
+	var damage = timer.get_meta("damage_amount", 0.0)
+
+	_permanent_field_damage_tick(area, damage)
+
+func _permanent_field_damage_tick(area: Area2D, damage: float):
+	"""Handle permanent field damage tick"""
+	if not is_instance_valid(area):
+		return
+
+	var enemies = area.get_overlapping_bodies()
+	for enemy in enemies:
+		if enemy.is_in_group("enemies") and enemy.has_method("take_damage"):
+			enemy.take_damage(damage)
 
 func create_screen_shake(intensity: float, duration: float):
-	# Enhanced screen shake implementation
-	var camera = get_viewport().get_camera_2d()
+	"""Create screen shake effect"""
+	var camera = get_tree().get_first_node_in_group("camera")
 	if not camera:
 		return
 
-	var original_pos = camera.global_position
-	var shake_timer = 0.0
-	var shake_tween = create_tween()
+	var shake_timer = Timer.new()
+	shake_timer.wait_time = 0.05
+	shake_timer.set_meta("shake_intensity", intensity)
+	shake_timer.set_meta("remaining_time", duration)
+	shake_timer.set_meta("target_camera", camera)
+	shake_timer.set_meta("original_position", camera.global_position)
+	shake_timer.timeout.connect(_on_shake_timer.bind(shake_timer))
+	camera.add_child(shake_timer)
+	shake_timer.start()
 
-	while shake_timer < duration:
-		var shake_offset = Vector2(
-			randf_range(-intensity, intensity),
-			randf_range(-intensity, intensity)
-		)
-		shake_tween.tween_property(camera, "global_position", original_pos + shake_offset, 1.0/60.0)
-		shake_timer += 1.0/60.0
+func _on_shake_timer(timer: Timer):
+	"""Handle screen shake timer safely"""
+	if not is_instance_valid(timer):
+		return
 
-	shake_tween.tween_property(camera, "global_position", original_pos, 0.1)
+	var camera = timer.get_meta("target_camera", null)
+	var intensity = timer.get_meta("shake_intensity", 0.0)
+	var remaining_time = timer.get_meta("remaining_time", 0.0)
+	var original_pos = timer.get_meta("original_position", Vector2.ZERO)
 
-func _create_splash_particles(origin: Vector2):
-	# Simple particle effect for tsunami
-	for i in range(20):
+	if not is_instance_valid(camera):
+		timer.queue_free()
+		return
+
+	remaining_time -= timer.wait_time
+	timer.set_meta("remaining_time", remaining_time)
+
+	if remaining_time <= 0:
+		camera.global_position = original_pos
+		timer.queue_free()
+		return
+
+	# Apply shake
+	var shake_offset = Vector2(
+		randf_range(-intensity, intensity),
+		randf_range(-intensity, intensity)
+	)
+	camera.global_position = original_pos + shake_offset
+
+func _create_splash_particles(position: Vector2):
+	"""Create splash particle effects"""
+	for i in range(10):
 		var particle = ColorRect.new()
-		particle.size = Vector2(10, 10)
-		particle.color = Color.CYAN
-		particle.global_position = origin
+		particle.size = Vector2(4, 4)
+		particle.color = Color.BLUE
+		particle.global_position = position + Vector2(randf_range(-20, 20), randf_range(-20, 20))
 		get_tree().current_scene.add_child(particle)
 
-		var direction = Vector2.RIGHT.rotated(randf() * TAU)
-		var distance = randf_range(100, 300)
-
-		var tween = create_tween()
-		tween.tween_property(particle, "global_position", origin + direction * distance, 1.0)
+		# Animate particle
+		var tween = particle.create_tween()
+		var random_direction = Vector2(randf_range(-100, 100), randf_range(-100, 100))
+		tween.parallel().tween_property(particle, "global_position", position + random_direction, 1.0)
 		tween.parallel().tween_property(particle, "modulate:a", 0.0, 1.0)
 		tween.tween_callback(particle.queue_free)
 
-func _create_arena_particle_effects():
-	# Ambient ketchup particles
-	var particle_timer = Timer.new()
-	particle_timer.wait_time = 0.5
-	particle_timer.timeout.connect(_spawn_ambient_particles)
-	add_child(particle_timer)
-	particle_timer.start()
+func _transform_arena_visuals():
+	"""Apply visual transformation to arena"""
+	var arena = get_tree().get_first_node_in_group("arena")
+	if arena:
+		var tween = arena.create_tween()
+		tween.tween_property(arena, "modulate", Color.RED, 2.0)
 
-func _spawn_ambient_particles():
-	var particle = ColorRect.new()
-	particle.size = Vector2(5, 5)
-	particle.color = Color.RED
-	particle.global_position = Vector2(
-		randf_range(-500, 500),
-		randf_range(-500, 500)
-	)
-	get_tree().current_scene.add_child(particle)
-
-	var tween = create_tween()
-	tween.tween_property(particle, "global_position", particle.global_position + Vector2(0, 100), 3.0)
-	tween.parallel().tween_property(particle, "modulate:a", 0.0, 3.0)
-	tween.tween_callback(particle.queue_free)
-
-# Utility functions
-func cleanup_permanent_effects():
-	"""Clean up all permanent effects when run ends"""
+# Debug and utility functions
+func cleanup_all_effects():
+	"""Clean up all temporary effects"""
 	for field in permanent_damage_fields:
 		if is_instance_valid(field):
 			field.queue_free()
@@ -407,11 +384,12 @@ func cleanup_permanent_effects():
 	mega_puddles.clear()
 
 	active_transformations.clear()
+	print("🧹 All talent effects cleaned up")
 
-func get_active_transformation_count() -> int:
-	return active_transformations.size()
-
-func is_transformation_active(bottle_id: String, transformation_type: String) -> bool:
-	if active_transformations.has(bottle_id):
-		return active_transformations[bottle_id].type == transformation_type
-	return false
+func get_active_effects_count() -> Dictionary:
+	"""Get count of active effects for debugging"""
+	return {
+		"permanent_fields": permanent_damage_fields.size(),
+		"mega_puddles": mega_puddles.size(),
+		"transformations": active_transformations.size()
+	}
