@@ -16,13 +16,20 @@ func build_talent_pool():
 			"Evolution", "+0.3 Fire Rate", 2,
 			[create_fire_rate_boost(0.3)]
 		),
-		create_trigger_talent(
-			"Primordial Pulse",
-			"Each tick of infection damage has 20% chance to spread to nearby enemy",
+		Talent.create_effect_talent(
+			"Persistent Strain",
+			"Infections last 50% longer",
 			2,
-			[_create_primordial_pulse_trigger()],
+			[_create_persistent_strain_effect()],
 			TalentManager.TalentTheme.INFECTION
 		)
+		#create_trigger_talent(
+			#"Primordial Pulse",
+			#"Each tick of infection damage has 20% chance to spread to nearby enemy",
+			#2,
+			#[_create_primordial_pulse_trigger()],
+			#TalentManager.TalentTheme.INFECTION
+		#)
 		#create_special_talent(
 			#"Mutation Strain", "Infections stack and mutate for increased damage", 2,
 			#[_create_mutation_effect()],
@@ -182,6 +189,14 @@ func _create_mutation_effect() -> SpecialEffectResource:
 	effect.effect_type = SpecialEffectResource.EffectType.ON_HIT_EFFECT
 	effect.set_parameter("mutation_rate", 1.5)
 	effect.set_parameter("max_stacks", 5)
+	return effect
+
+func _create_persistent_strain_effect() -> SpecialEffectResource:
+	"""Create the Persistent Strain effect"""
+	var effect = SpecialEffectResource.new()
+	effect.effect_name = "infection_duration_boost"
+	effect.effect_type = SpecialEffectResource.EffectType.PASSIVE_EFFECT
+	effect.set_parameter("duration_multiplier", 1.5)  # 50% longer
 	return effect
 
 func _create_epidemic_effect() -> SpecialEffectResource:
