@@ -8,7 +8,8 @@ func _init():
 
 func execute_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: TriggerEffectResource) -> void:
 	# Get parameters from trigger data
-	var spread_radius = trigger_data.effect_parameters.get("spread_radius", 100.0)
+	#var spread_radius = trigger_data.effect_parameters.get("spread_radius", 100.0)
+	var spread_radius = source_bottle.effective_radius
 	var infection_strength = trigger_data.effect_parameters.get("infection_strength", 1.0)
 	var max_spreads = trigger_data.effect_parameters.get("max_spreads_per_tick", 1)
 

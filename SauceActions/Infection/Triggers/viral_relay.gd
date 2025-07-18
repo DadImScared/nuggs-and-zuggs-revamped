@@ -8,7 +8,8 @@ func _init():
 
 func execute_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: TriggerEffectResource) -> void:
 	# Get parameters
-	var jump_range = trigger_data.effect_parameters.get("jump_range", 150.0)
+	#var jump_range = trigger_data.effect_parameters.get("jump_range", 150.0)
+	var jump_range = source_bottle.effective_radius
 	var infection_strength = trigger_data.effect_parameters.get("infection_strength", 0.8)  # 80% of original
 
 	# Find all infected enemies from this bottle

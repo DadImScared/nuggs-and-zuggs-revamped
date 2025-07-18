@@ -14,7 +14,8 @@ func execute_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: Trigg
 
 	# Get parameters
 	var spread_count = trigger_data.effect_parameters.get("spread_count", 2)
-	var spread_radius = trigger_data.effect_parameters.get("spread_radius", 100.0)
+	#var spread_radius = trigger_data.effect_parameters.get("spread_radius", 100.0)
+	var spread_radius = source_bottle.effective_radius
 
 	print("💉 Double Dose: Triggered on infected enemy hit!")
 
