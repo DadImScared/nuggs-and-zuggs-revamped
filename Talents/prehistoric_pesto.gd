@@ -7,6 +7,13 @@ func _init():
 
 func build_talent_pool():
 	var pesto_talents = [
+			create_trigger_talent(
+			"Mutation Catalyst",
+			"Each enemy infected has 10% chance to permanently increase infection damage by 0.1% for the rest of the run",
+			2,
+			[_create_mutation_catalyst_trigger()],
+			TalentManager.TalentTheme.INFECTION
+		),
 		create_special_talent(
 			"Viral Spread", "Infection immediately spreads to 3 nearby enemies", 2,
 			[_create_viral_spread_effect()],
@@ -16,11 +23,11 @@ func build_talent_pool():
 			"Evolution", "+0.3 Fire Rate", 2,
 			[create_fire_rate_boost(0.3)]
 		),
-		create_trigger_talent(
-			"Pathogen Dividend",
-			"Each time an infected enemy dies, there's a 10% chance to grant +5 XP", 2,
-			[_create_pathogen_dividend()], TalentManager.TalentTheme.INFECTION
-		)
+		#create_trigger_talent(
+			#"Pathogen Dividend",
+			#"Each time an infected enemy dies, there's a 10% chance to grant +5 XP", 2,
+			#[_create_pathogen_dividend()], TalentManager.TalentTheme.INFECTION
+		#)
 		#create_stat_talent(
 			#"Enhanced Transmission",
 			#"Infection spread radius increased by 50%",
@@ -128,6 +135,16 @@ func build_talent_tree() -> Dictionary:
 	return pesto_talents
 
 # === INFECTION SPECIAL EFFECT HELPERS ===
+
+func _create_mutation_catalyst_trigger() -> TriggerEffectResource:
+	"""Creates mutation catalyst trigger that permanently boosts damage on infection ticks"""
+	var trigger = TriggerEffectResource.new()
+	trigger.trigger_name = "mutation_catalyst"
+	trigger.trigger_type = TriggerEffectResource.TriggerType.ON_DOT_TICK
+	trigger.trigger_condition["chance"] = 0.001  # 0.1% chance per DOT tick
+	trigger.trigger_condition["dot_types"] = ["infect"]  # Only infection DOT ticks
+	trigger.effect_parameters["damage_boost_percent"] = 0.001  # 0.1% = 0.001
+	return trigger
 
 func _create_enhanced_transmission() -> StatModifier:
 	"""Enhanced Transmission - Infection spread radius increased by 50%"""
