@@ -9,7 +9,7 @@ func build_talent_pool():
 	var pesto_talents = [
 			create_trigger_talent(
 			"Mutation Catalyst",
-			"Each enemy infected has 10% chance to permanently increase infection damage by 0.1% for the rest of the run",
+			"Each infection tick has 0.01% chance to permanently increase damage by 0.1% for the rest of the run",
 			2,
 			[_create_mutation_catalyst_trigger()],
 			TalentManager.TalentTheme.INFECTION
@@ -19,10 +19,16 @@ func build_talent_pool():
 			[_create_viral_spread_effect()],
 			TalentManager.TalentTheme.INFECTION
 		),
-		create_stat_talent(
-			"Evolution", "+0.3 Fire Rate", 2,
-			[create_fire_rate_boost(0.3)]
-		),
+		create_trigger_talent(
+			"Extinction Event",
+			"After 100 total infections this run, every 5th shot creates a massive 200-pixel infection explosion", 3,
+			[_create_extinction_event_trigger()],
+			TalentManager.TalentTheme.EXPLOSIVE
+		)
+		#create_stat_talent(
+			#"Evolution", "+0.3 Fire Rate", 2,
+			#[create_fire_rate_boost(0.3)]
+		#),
 		#create_trigger_talent(
 			#"Pathogen Dividend",
 			#"Each time an infected enemy dies, there's a 10% chance to grant +5 XP", 2,
@@ -135,6 +141,27 @@ func build_talent_tree() -> Dictionary:
 	return pesto_talents
 
 # === INFECTION SPECIAL EFFECT HELPERS ===
+
+
+func _create_extinction_event_trigger() -> TriggerEffectResource:
+	"""Creates extinction event trigger - massive explosion every 5th shot after 100 infections"""
+	var trigger = TriggerEffectResource.new()
+	trigger.trigger_name = "extinction_event"
+	trigger.trigger_type = TriggerEffectResource.TriggerType.ON_SHOT_COUNT
+	trigger.effect_name = "massive_infection_explosion"
+
+	# Trigger conditions - shot interval + infection threshold
+	trigger.trigger_condition["interval"] = 5  # Every 5th shot
+	trigger.trigger_condition["infection_threshold"] = 100  # Need 100 total infections first
+
+	# Effect parameters
+	trigger.effect_parameters["explosion_radius"] = 200.0
+	trigger.effect_parameters["damage_multiplier"] = 2.0
+	trigger.effect_parameters["infection_chance"] = 0.8
+	trigger.effect_parameters["infection_duration"] = 4.0
+	trigger.effect_parameters["infection_damage_ratio"] = 0.5
+
+	return trigger
 
 func _create_mutation_catalyst_trigger() -> TriggerEffectResource:
 	"""Creates mutation catalyst trigger that permanently boosts damage on infection ticks"""

@@ -18,6 +18,7 @@ var dot_duration: float = 3.0
 var projectile_speed: float = 500.0
 var piercing_count: int = 0
 var lifesteal_percent: float = 0.0
+var total_infections_this_run = 0
 
 func gain_xp(amount: int):
 	xp += amount

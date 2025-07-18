@@ -44,6 +44,11 @@ func _apply_infection_to_enemy(enemy: Node2D, intensity: float, duration: float,
 		# Set infection color
 		if "active_effects" in enemy and "infect" in enemy.active_effects:
 			enemy.active_effects["infect"]["color"] = color
+				# INCREMENT GLOBAL INFECTION COUNTER FOR EXTINCTION EVENT
+		#if not "total_infections_this_run" in PlayerStats:
+			#PlayerStats.total_infections_this_run = 0
+#
+		#PlayerStats.total_infections_this_run += 1
 
 		print("🦠 Applied infection to enemy: intensity=%.1f, duration=%.1fs" % [intensity, duration])
 

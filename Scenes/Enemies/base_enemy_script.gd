@@ -225,6 +225,13 @@ func apply_status_effect(effect_name: String, duration: float, intensity: float,
 	var actual_duration = duration
 	var spread_radius = 120
 
+	if effect_name == "infect":
+		if not "total_infections_this_run" in PlayerStats:
+			PlayerStats.total_infections_this_run = 0
+
+		PlayerStats.total_infections_this_run += 1
+		print("🦠 Infection applied! Total this run: %d" % PlayerStats.total_infections_this_run)
+
 	if source_bottle and source_bottle.special_effects:
 		for effect in source_bottle.special_effects:
 			# Persistent Strain - duration boost
