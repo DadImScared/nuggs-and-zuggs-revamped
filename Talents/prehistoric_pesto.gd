@@ -16,12 +16,17 @@ func build_talent_pool():
 			"Evolution", "+0.3 Fire Rate", 2,
 			[create_fire_rate_boost(0.3)]
 		),
-		create_stat_talent(
-			"Enhanced Transmission",
-			"Infection spread radius increased by 50%",
-			2,  # Foundation tier
-			[_create_enhanced_transmission()]
+		create_trigger_talent(
+			"Pathogen Dividend",
+			"Each time an infected enemy dies, there's a 10% chance to grant +5 XP", 2,
+			[_create_pathogen_dividend()], TalentManager.TalentTheme.INFECTION
 		)
+		#create_stat_talent(
+			#"Enhanced Transmission",
+			#"Infection spread radius increased by 50%",
+			#2,  # Foundation tier
+			#[_create_enhanced_transmission()]
+		#)
 		#Talent.create_effect_talent(
 			#"Persistent Strain",
 			#"Infections last 50% longer",
@@ -131,6 +136,14 @@ func _create_enhanced_transmission() -> StatModifier:
 	modifier.mode = StatModifier.ModifierMode.MULTIPLY
 	modifier.multiply = 1.5  # 50% increase
 	return modifier
+
+func _create_pathogen_dividend() -> TriggerEffectResource:
+	var trigger = TriggerEffectResource.new()
+	trigger.trigger_name = "pathogen_dividend"
+	trigger.trigger_type = TriggerEffectResource.TriggerType.ON_ENEMY_DEATH
+	trigger.trigger_condition["chance"] = 0.10
+	trigger.effect_parameters["xp_reward"] = 5
+	return trigger
 
 func _create_primordial_pulse_trigger() -> TriggerEffectResource:
 	"""Creates primordial pulse trigger that spreads on DOT ticks"""

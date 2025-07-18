@@ -131,6 +131,27 @@ func _physics_process(delta: float) -> void:
 
 	move_and_slide()
 
+func _process_death_triggers():
+	"""Process ON_ENEMY_DEATH triggers for all bottles that contributed damage"""
+	# Create death event data
+	var death_data = {
+		"enemy_position": global_position,
+		"enemy_health": max_health,
+		"damage_sources": damage_sources
+	}
+
+	# Notify all bottles that damaged this enemy about the death
+	for bottle_id in damage_sources.keys():
+		var bottle = InventoryManager.get_bottle_by_id(bottle_id)
+		if bottle:
+			# Execute any ON_ENEMY_DEATH triggers on this bottle
+			TriggerActionManager.execute_event_trigger(
+				bottle,
+				TriggerEffectResource.TriggerType.ON_ENEMY_DEATH,
+				death_data
+			)
+			print("💀 Processing death triggers for bottle: %s" % bottle.sauce_data.sauce_name)
+
 # FIXED: Complete status effects processing including infection!
 func process_status_effects(delta: float):
 	var effects_to_remove = []
@@ -403,7 +424,7 @@ func take_damage_from_source(damage_amount: float, source_bottle_id: String):
 	if health <= 0:
 		if "infect" in active_effects:
 			spread_infection_on_death()
-
+		_process_death_triggers()
 		var enemy_name = enemy_resource.enemy_name if enemy_resource else "Enemy"
 		print("%s died! Took %.1f total damage" % [enemy_name, total_damage_taken])
 		queue_free()

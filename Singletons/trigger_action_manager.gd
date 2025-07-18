@@ -113,6 +113,7 @@ func execute_event_trigger(source_bottle: ImprovedBaseSauceBottle, event_type: T
 
 			if trigger_name in trigger_actions:
 				var action = trigger_actions[trigger_name]
+				trigger_effect.effect_parameters["event_data"] = event_data
 				action.execute_trigger(source_bottle, trigger_effect)
 				action.update_trigger_timing(source_bottle, trigger_effect)
 
