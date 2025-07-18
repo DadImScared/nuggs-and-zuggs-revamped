@@ -16,13 +16,19 @@ func build_talent_pool():
 			"Evolution", "+0.3 Fire Rate", 2,
 			[create_fire_rate_boost(0.3)]
 		),
-		Talent.create_effect_talent(
-			"Persistent Strain",
-			"Infections last 50% longer",
-			2,
-			[_create_persistent_strain_effect()],
-			TalentManager.TalentTheme.INFECTION
+		create_stat_talent(
+			"Enhanced Transmission",
+			"Infection spread radius increased by 50%",
+			2,  # Foundation tier
+			[_create_enhanced_transmission()]
 		)
+		#Talent.create_effect_talent(
+			#"Persistent Strain",
+			#"Infections last 50% longer",
+			#2,
+			#[_create_persistent_strain_effect()],
+			#TalentManager.TalentTheme.INFECTION
+		#)
 		#create_trigger_talent(
 			#"Primordial Pulse",
 			#"Each tick of infection damage has 20% chance to spread to nearby enemy",
@@ -117,6 +123,14 @@ func build_talent_tree() -> Dictionary:
 	return pesto_talents
 
 # === INFECTION SPECIAL EFFECT HELPERS ===
+
+func _create_enhanced_transmission() -> StatModifier:
+	"""Enhanced Transmission - Infection spread radius increased by 50%"""
+	var modifier = StatModifier.new()
+	modifier.stat_name = "base_radius"
+	modifier.mode = StatModifier.ModifierMode.MULTIPLY
+	modifier.multiply = 1.5  # 50% increase
+	return modifier
 
 func _create_primordial_pulse_trigger() -> TriggerEffectResource:
 	"""Creates primordial pulse trigger that spreads on DOT ticks"""

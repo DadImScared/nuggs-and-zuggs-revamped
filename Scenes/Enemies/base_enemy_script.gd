@@ -199,8 +199,25 @@ func is_debuff_effect(effect_name: String) -> bool:
 
 func apply_status_effect(effect_name: String, duration: float, intensity: float, source_bottle_id: String = "unknown"):
 	# Apply enemy resistances
+	var source_bottle = InventoryManager.get_bottle_by_id(source_bottle_id)
 	var actual_intensity = intensity
 	var actual_duration = duration
+	var spread_radius = 120
+
+	if source_bottle and source_bottle.special_effects:
+		for effect in source_bottle.special_effects:
+			# Persistent Strain - duration boost
+			if effect.effect_name == "infection_duration_boost":
+				var duration_multiplier = effect.get_parameter("duration_multiplier", 1.5)
+				actual_duration = duration * duration_multiplier
+				print("🦠 Persistent Strain: Duration %.1fs → %.1fs" % [duration, actual_duration])
+
+			# Enhanced Transmission - radius boost
+			elif effect.effect_name == "infection_radius_boost":
+				var radius_multiplier = effect.get_parameter("radius_multiplier", 1.5)
+				spread_radius = spread_radius * radius_multiplier
+				print("🦠 Enhanced Transmission: Spread radius %.0f → %.0f" % [120.0, spread_radius])
+
 
 	if enemy_resource:
 		match effect_name:
@@ -221,7 +238,8 @@ func apply_status_effect(effect_name: String, duration: float, intensity: float,
 		"duration": actual_duration,
 		"intensity": actual_intensity,
 		"timer": 0.0,
-		"source_bottle_id": source_bottle_id
+		"source_bottle_id": source_bottle_id,
+		"spread_radius": spread_radius
 	}
 
 	# Apply immediate visual/movement effects

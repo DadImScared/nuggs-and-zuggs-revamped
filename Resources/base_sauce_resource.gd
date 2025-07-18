@@ -13,6 +13,7 @@ extends Resource
 @export var projectile_count: int = 1
 @export var projectile_speed: float = 300.0
 @export var pierce_count: int = 0
+@export var base_radius: float = 120.0
 
 # Effect properties
 @export var effect_chance: float = 0.1
@@ -35,6 +36,7 @@ extends Resource
 @export var range_per_level: float = 10.0
 @export var effect_chance_per_level: float = 0.05
 @export var effect_intensity_per_level: float = 0.1
+@export var radius_per_level: float = 2
 
 enum SpecialEffectType {
 	NONE,
@@ -66,6 +68,9 @@ enum SpecialEffectType {
 	FERMENT,     	# Effects that improve over time,
 	VOLCANIC_RING,	# Creates expanding damage rings
 }
+
+func get_current_effect_radius(level):
+	return base_radius + (radius_per_level * (level - 1))
 
 # Get current stats with level modifiers applied
 func get_current_damage(level: int = 1) -> float:

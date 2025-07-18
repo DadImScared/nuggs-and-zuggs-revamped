@@ -405,6 +405,7 @@ func apply_specific_talent(bottle_id: String, talent: Talent):
 	# Apply the talent directly
 	talent.apply_to_bottle(bottle)
 	bottle.active_talents.append(talent)
+	bottle.recalculate_all_effective_stats()
 
 	# Update chosen upgrades display
 	var full_talent = "L%d: %s" % [bottle.current_level, talent.talent_name]

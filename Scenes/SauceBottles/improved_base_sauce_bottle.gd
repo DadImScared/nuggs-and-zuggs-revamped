@@ -53,6 +53,7 @@ var effective_range: float = 0.0
 var effective_projectile_count: int = 1
 var effective_effect_chance: float = 0
 var effective_effect_intensity: float = 0
+var effective_radius: float = 120.0
 
 
 func _ready() -> void:
@@ -304,6 +305,7 @@ func recalculate_all_effective_stats():
 	var base_range = sauce_data.get_current_range(current_level)
 	var base_effect_chance = sauce_data.get_current_effect_chance(current_level)
 	var base_effect_intensity = sauce_data.get_current_effect_intensity(current_level)
+	var base_effect_radius = sauce_data.get_current_effect_radius(current_level)
 
 	# Apply all modifiers from stat_modifier_history
 	for modifier in stat_modifier_history:
@@ -313,6 +315,10 @@ func recalculate_all_effective_stats():
 			"range": base_range = modifier.apply_to_value(base_range)
 			"effect_chance": base_effect_chance = modifier.apply_to_value(base_effect_chance)
 			"effect_intensity": base_effect_intensity = modifier.apply_to_value(base_effect_intensity)
+			"base_radius":
+
+				base_effect_radius = modifier.apply_to_value(base_effect_radius)
+				print("in radius?", base_effect_radius)
 
 	# Store in effective variables
 	effective_damage = base_damage
@@ -320,12 +326,14 @@ func recalculate_all_effective_stats():
 	effective_range = base_range
 	effective_effect_chance = base_effect_chance
 	effective_effect_intensity = base_effect_intensity
+	effective_radius = base_effect_radius
 	print("Final effective stats:")
 	print("  Damage: %.1f" % effective_damage)
 	print("  Fire Rate: %.1f" % effective_fire_rate)
 	print("  Range: %.1f" % effective_range)
 	print("  Effect Chance: %.2f" % effective_effect_chance)
 	print("  Effect Intensity: %.2f" % effective_effect_intensity)
+	print("  Effect radius: %.2f" % effective_radius)
 	print("=======================================")
 
 
@@ -382,6 +390,7 @@ func modify_stat(modifier: StatModifier):
 		return
 
 	var current_value = sauce_data.get(modifier.stat_name)
+
 	if current_value == null:
 		print("Warning: Unknown stat '%s'" % modifier.stat_name)
 		return

@@ -393,3 +393,26 @@ func get_active_effects_count() -> Dictionary:
 		"mega_puddles": mega_puddles.size(),
 		"transformations": active_transformations.size()
 	}
+
+func get_enemies_in_radius_for_infection(position: Vector2, radius: float, source_bottle: ImprovedBaseSauceBottle) -> Array:
+	"""Get enemies in radius specifically for infection spreading - automatically applies Enhanced Transmission"""
+	var enhanced_radius = radius
+
+	# Check for Enhanced Transmission talent on the source bottle
+	if source_bottle and source_bottle.special_effects:
+		for effect in source_bottle.special_effects:
+			if effect.effect_name == "enhanced_transmission":
+				var radius_multiplier = effect.get_parameter("radius_multiplier", 1.5)
+				enhanced_radius = radius * radius_multiplier
+				print("🦠 Enhanced Transmission: Infection spread radius %.0f → %.0f" % [radius, enhanced_radius])
+				break
+
+	# Find all enemies in the enhanced radius
+	var enemies_in_radius = []
+	var all_enemies = get_tree().get_nodes_in_group("enemies")
+
+	for enemy in all_enemies:
+		if is_instance_valid(enemy) and position.distance_to(enemy.global_position) <= enhanced_radius:
+			enemies_in_radius.append(enemy)
+
+	return enemies_in_radius
