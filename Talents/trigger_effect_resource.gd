@@ -17,7 +17,8 @@ enum TriggerType {
 	ON_TIMER,         # Every N seconds
 	ON_RANDOM_CHANCE,  # Random probability per shot
 	ON_HIT,
-	ON_DOT_TICK
+	ON_DOT_TICK,
+	PASSIVE,          # Always-on stat or effect modifier
 }
 
 # Factory methods for common triggers

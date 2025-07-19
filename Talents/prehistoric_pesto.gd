@@ -7,18 +7,18 @@ func _init():
 
 func build_talent_pool():
 	var pesto_talents = [
-			create_trigger_talent(
-			"Mutation Catalyst",
-			"Each infection tick has 0.01% chance to permanently increase damage by 0.1% for the rest of the run",
-			2,
-			[_create_mutation_catalyst_trigger()],
-			TalentManager.TalentTheme.INFECTION
-		),
-		create_special_talent(
-			"Viral Spread", "Infection immediately spreads to 3 nearby enemies", 2,
-			[_create_viral_spread_effect()],
-			TalentManager.TalentTheme.INFECTION
-		),
+			#create_trigger_talent(
+			#"Mutation Catalyst",
+			#"Each infection tick has 0.01% chance to permanently increase damage by 0.1% for the rest of the run",
+			#2,
+			#[_create_mutation_catalyst_trigger()],
+			#TalentManager.TalentTheme.INFECTION
+		#),
+		#create_special_talent(
+			#"Viral Spread", "Infection immediately spreads to 3 nearby enemies", 2,
+			#[_create_viral_spread_effect()],
+			#TalentManager.TalentTheme.INFECTION
+		#),
 		create_trigger_talent(
 			"Plague Bearer",
 			"Infection Aura",
@@ -33,12 +33,12 @@ func build_talent_pool():
 			[create_virulent_aura_enhancement()],
 			TalentManager.TalentTheme.INFECTION
 		),
-		create_trigger_talent(
-			"Infectious Momentum",
-			"Each enemy killed while infected increases movement speed by 3% for 12 seconds (stacks up to 30%)", 2,
-			[_create_infectious_momentum_trigger()],
-			TalentManager.TalentTheme.INFECTION
-		),
+		#create_trigger_talent(
+			#"Infectious Momentum",
+			#"Each enemy killed while infected increases movement speed by 3% for 12 seconds (stacks up to 30%)", 2,
+			#[_create_infectious_momentum_trigger()],
+			#TalentManager.TalentTheme.INFECTION
+		#),
 		#create_trigger_talent(
 			#"Extinction Event",
 			#"After 100 total infections this run, every 5th shot creates a massive 200-pixel infection explosion", 3,
@@ -60,13 +60,18 @@ func build_talent_pool():
 			#2,  # Foundation tier
 			#[_create_enhanced_transmission()]
 		#)
+		Talent.create_trigger_talent(
+			"Triple Dose", "Adds 2 more enemies to spread count", 3,
+			[create_triple_dose_resource()],
+			TalentManager.TalentTheme.INFECTION
+		),
 		#Talent.create_effect_talent(
 			#"Persistent Strain",
 			#"Infections last 50% longer",
 			#2,
 			#[_create_persistent_strain_effect()],
 			#TalentManager.TalentTheme.INFECTION
-		#)
+		#),
 		#create_trigger_talent(
 			#"Primordial Pulse",
 			#"Each tick of infection damage has 20% chance to spread to nearby enemy",
@@ -84,23 +89,23 @@ func build_talent_pool():
 			#[_create_infection_tsunami_trigger()],
 			#TalentManager.TalentTheme.INFECTION
 		#),
-		#create_trigger_talent(
-			#"Double Dose",
-			#"20% chance: hitting infected enemy spreads to 2 nearby",
-			#2,
-			#[_create_double_dose_trigger()],
-			#TalentManager.TalentTheme.INFECTION
-		#),
+		create_trigger_talent(
+			"Double Dose",
+			"20% chance: hitting infected enemy spreads to 2 nearby",
+			2,
+			[_create_double_dose_trigger()],
+			TalentManager.TalentTheme.INFECTION
+		),
 		#create_trigger_talent(
 			#"Viral Relay",
 			#"Every 3 seconds, infections jump to closest uninfected targets", 2,
 			#[_create_viral_relay_trigger()], TalentManager.TalentTheme.INFECTION
 		#)
-		create_trigger_talent(
-			"Viral Frenzy",
-			 "25% chance per infection tick: +100% fire rate for 8 seconds", 2,
-			[_create_viral_frenzy_trigger()], TalentManager.TalentTheme.INFECTION
-		)
+		#create_trigger_talent(
+			#"Viral Frenzy",
+			 #"25% chance per infection tick: +100% fire rate for 8 seconds", 2,
+			#[_create_viral_frenzy_trigger()], TalentManager.TalentTheme.INFECTION
+		#)
 	]
 
 	return pesto_talents
@@ -182,6 +187,16 @@ func create_virulent_aura_enhancement() -> TriggerEffectResource:
 	}
 	return enhancement
 
+func create_triple_dose_resource() -> TriggerEffectResource:
+	var enhancement = TriggerEffectResource.new()
+	enhancement.trigger_name = "triple_dose"
+	enhancement.trigger_type
+	enhancement.trigger_condition["cooldown"] = 999.0  # Never triggers on its own
+	enhancement.enhances = ["double_dose"]
+	enhancement.effect_parameters = {
+		"spread_count_multiplier": 1.5
+	}
+	return enhancement
 
 func _create_infectious_momentum_trigger() -> TriggerEffectResource:
 	"""Creates infectious momentum trigger - speed buff on infected enemy kills"""
