@@ -66,7 +66,8 @@ enum SpecialEffectType {
 	GLAZE_POOL,     # Creates growing damage zones
 	CARAMELIZE,     # Makes enemies brittle (bonus damage)
 	FERMENT,     	# Effects that improve over time,
-	VOLCANIC_RING,	# Creates expanding damage rings
+	VOLCANIC_RING,	# Creates expanding damage rings,
+	FOSSILIZE,      # Freezes enemies in amber (Apple Butter)
 }
 
 func get_current_effect_radius(level):

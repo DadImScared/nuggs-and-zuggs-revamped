@@ -38,7 +38,7 @@ var active_talents: Array[Talent] = []
 var stat_modifier_history: Array[StatModifier] = []
 var special_effects: Array[SpecialEffectResource] = []
 var trigger_effects: Array[TriggerEffectResource] = [
-	PrehistoricPestoTalents.new().create_basic_infection()
+	#PrehistoricPestoTalents.new().create_basic_infection()
 ]
 var transformation_effects: Dictionary = {}
 

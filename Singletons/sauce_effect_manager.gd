@@ -1,5 +1,21 @@
 extends Node
 
+# NEW: Effect callback registry for custom effects
+var effect_callbacks: Dictionary = {}
+
+# NEW: Initialize callback system
+func _ready():
+	_register_effect_callbacks()
+
+# NEW: Register custom effect callbacks
+func _register_effect_callbacks():
+	"""Register custom effect callbacks - effects not registered here use legacy system"""
+	# Example: Replace burn with enhanced version
+	# effect_callbacks[BaseSauceResource.SpecialEffectType.BURN] = StatusEffectApplier.EffectCallbacks.enhanced_burn_effect
+
+	# Add custom effects here as you create them
+	# effect_callbacks[BaseSauceResource.SpecialEffectType.CUSTOM_1] = my_custom_callback
+
 func apply_effect(
 	projectile: Area2D, enemy: Node2D, sauce_resource: BaseSauceResource,
 	sauce_level: int = 1, source_bottle_id: String = "unknown",
@@ -26,7 +42,22 @@ func apply_effect(
 	if randf() > current_effect_chance:
 		return
 
-		# NEW: Try modular sauce action system first - SIMPLIFIED!
+	# NEW: Check if we have a custom callback for this effect
+	var effect_type = sauce_resource.special_effect_type
+	if effect_callbacks.has(effect_type):
+		print("🆕 Using custom callback for: %s" % BaseSauceResource.SpecialEffectType.keys()[effect_type])
+
+		# Create context and use callback system
+		var context = StatusEffectApplier.EffectContext.new(
+			projectile, enemy, source_bottle,
+			sauce_resource.effect_duration, current_effect_intensity
+		)
+
+		var callback = effect_callbacks[effect_type]
+		StatusEffectApplier.apply_effect_with_callback(context, callback)
+		return
+
+	# Try modular sauce action system first
 	var handled_by_modular = SauceActionManager.apply_sauce_action(
 		sauce_resource.special_effect_type,
 		projectile,
@@ -38,7 +69,7 @@ func apply_effect(
 		print("✅ Sauce action handled by modular system: %s" % BaseSauceResource.SpecialEffectType.keys()[sauce_resource.special_effect_type])
 		return
 
-	# FALLBACK: Use legacy effect system for actions not yet migrated
+	# FALLBACK: Use your existing legacy effect system
 	print("⚠️ Using legacy effect system for: %s" % BaseSauceResource.SpecialEffectType.keys()[sauce_resource.special_effect_type])
 
 	match sauce_resource.special_effect_type:
@@ -78,6 +109,37 @@ func apply_effect(
 			_apply_mark_effect(enemy, sauce_resource, sauce_level, source_bottle_id)
 		BaseSauceResource.SpecialEffectType.VOLCANIC_RING:
 			_apply_volcanic_ring_effect(projectile, enemy, source_bottle)
+
+# NEW: Utility functions for the callback system
+func register_custom_effect(effect_type: BaseSauceResource.SpecialEffectType, callback: Callable):
+	"""Register a custom effect callback - will override legacy behavior for that effect"""
+	effect_callbacks[effect_type] = callback
+	print("🆕 Registered custom callback for: ", BaseSauceResource.SpecialEffectType.keys()[effect_type])
+
+func apply_custom_effect(
+	projectile: Area2D,
+	enemy: Node2D,
+	source_bottle: Node,
+	custom_callback: Callable,
+	override_intensity: float = -1.0,
+	override_duration: float = -1.0
+):
+	"""Apply a custom effect directly"""
+	var sauce_resource = source_bottle.sauce_data if source_bottle else null
+	if not sauce_resource:
+		return
+
+	var intensity = override_intensity if override_intensity >= 0 else sauce_resource.get_current_effect_intensity(1)
+	var duration = override_duration if override_duration >= 0 else sauce_resource.effect_duration
+
+	var context = StatusEffectApplier.EffectContext.new(
+		projectile, enemy, source_bottle, duration, intensity
+	)
+
+	StatusEffectApplier.apply_effect_with_callback(context, custom_callback)
+
+# ALL YOUR EXISTING LEGACY FUNCTIONS STAY THE SAME BELOW THIS LINE
+# No changes needed to any of your existing effect functions
 
 func _apply_volcanic_ring_effect(projectile, enemy, bottle: ImprovedBaseSauceBottle):
 	var effect_intensity = bottle.effective_effect_intensity

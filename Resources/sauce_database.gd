@@ -13,7 +13,8 @@ static var _all_sauces = {
 	"worcestershire": preload("res://Resources/worcestershire.tres"),
 	"mesozoic_mayo": preload("res://Resources/mesozoic_miracle_whip.tres"),
 	"prehistoric_pesto": preload("res://Resources/prehistoric_pesto.tres"),
-	"jurasic_jalapeno": preload("res://Resources/jurassic_jalapeno.tres")
+	"jurasic_jalapeno": preload("res://Resources/jurassic_jalapeno.tres"),
+	"archaean_apple_butter": preload("res://Resources/archaean_apple_butter.tres")
 }
 
 # Get sauce by name - static method

@@ -133,9 +133,11 @@ func handle_enemy_hit(enemy: Node2D):
 	elif enemy.has_method("take_damage"):
 		enemy.take_damage(final_damage, source_bottle_id)
 
+	# Trigger system integration
 	if source_bottle:
 		TriggerActionManager.execute_hit_trigger(source_bottle, enemy, self)
-	# Apply on-hit effects
+
+	# Apply on-hit effects (talents)
 	_apply_on_hit_effects(enemy)
 
 	# Visual effects
