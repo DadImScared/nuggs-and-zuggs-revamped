@@ -186,10 +186,22 @@ func apply_multiplier_with_tracking(enhanced_data: EnhancedTriggerData, base_key
 		print("❌ Parameter %s not found!" % base_key)
 
 func apply_direct_with_tracking(enhanced_data: EnhancedTriggerData, param_key: String, param_value, enhancement_name: String):
-	"""Add parameter with source tracking"""
-	enhanced_data.effect_parameters[param_key] = param_value
-	enhanced_data.add_enhancement_source(param_key, enhancement_name, "set", param_value, param_value)
-	print("  ✨ Added %s: %s (from %s)" % [param_key.capitalize(), str(param_value), enhancement_name])
+	"""Add parameter with source tracking - auto-adds if parameter already exists"""
+
+	# Check if this parameter already exists in the base trigger
+	var existing_value = get_parameter_value_from_enhanced(enhanced_data, param_key)
+
+	if existing_value != null:
+		# Parameter exists - ADD to it instead of replacing
+		var new_value = existing_value + param_value
+		set_parameter_value_in_enhanced(enhanced_data, param_key, new_value)
+		enhanced_data.add_enhancement_source(param_key, enhancement_name, "add", param_value, new_value)
+		print("  ➕ %s: %.2f → %.2f (+%.2f from %s)" % [param_key.capitalize(), existing_value, new_value, param_value, enhancement_name])
+	else:
+		# Parameter doesn't exist - SET it as new parameter
+		enhanced_data.effect_parameters[param_key] = param_value
+		enhanced_data.add_enhancement_source(param_key, enhancement_name, "set", param_value, param_value)
+		print("  ✨ Added %s: %s (from %s)" % [param_key.capitalize(), str(param_value), enhancement_name])
 
 func get_parameter_value_from_enhanced(enhanced_data: EnhancedTriggerData, key: String):
 	"""Get parameter value from enhanced data"""
