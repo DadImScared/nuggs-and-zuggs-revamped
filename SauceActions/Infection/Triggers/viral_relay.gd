@@ -6,7 +6,7 @@ func _init():
 	trigger_name = "viral_relay"
 	trigger_description = "Every 3 seconds, infections jump to closest uninfected targets"
 
-func execute_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: TriggerEffectResource) -> void:
+func execute_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: EnhancedTriggerData) -> void:
 	# Get parameters
 	#var jump_range = trigger_data.effect_parameters.get("jump_range", 150.0)
 	var jump_range = source_bottle.effective_radius

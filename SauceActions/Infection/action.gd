@@ -8,6 +8,7 @@ func _init():
 
 func apply_action(projectile: Area2D, enemy: Node2D, source_bottle: ImprovedBaseSauceBottle) -> void:
 	"""Main entry point - matches BaseSauceAction interface"""
+	return
 	var intensity = source_bottle.effective_effect_intensity
 	var duration = source_bottle.sauce_data.effect_duration
 	var final_duration = _get_modified_duration(duration, source_bottle)

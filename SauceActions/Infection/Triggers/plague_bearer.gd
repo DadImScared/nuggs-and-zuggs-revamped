@@ -41,19 +41,19 @@ func refresh_enhancements(bottle: ImprovedBaseSauceBottle, base_trigger_data: Tr
 		enhanced_data.trigger_condition.get("chance", 0.1) * 100
 	])
 
-func execute_trigger(bottle: ImprovedBaseSauceBottle, trigger_data: TriggerEffectResource):
+func execute_trigger(bottle: ImprovedBaseSauceBottle, trigger_data: EnhancedTriggerData):
 	if not is_trigger_active:
 		activate_plague_bearer(bottle, trigger_data)
 
-func activate_plague_bearer(bottle: ImprovedBaseSauceBottle, trigger_data: TriggerEffectResource):
+func activate_plague_bearer(bottle: ImprovedBaseSauceBottle, trigger_data: EnhancedTriggerData):
 	is_trigger_active = true
 	current_bottle = bottle
 
 	# Store original data for future refreshes
-	store_original_trigger_data(trigger_data)
+	#store_original_trigger_data(trigger_data)
 
 	# Apply enhancements
-	var enhanced_data = apply_enhancements(bottle, trigger_data)
+	var enhanced_data = trigger_data
 	current_trigger_data = enhanced_data
 
 	# ... rest of existing activate logic stays the same ...
@@ -164,11 +164,11 @@ func get_enemies_in_radius(center: Vector2, radius: float) -> Array:
 	return enemies
 
 # Override base class methods
-func should_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: TriggerEffectResource) -> bool:
+func should_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: EnhancedTriggerData) -> bool:
 	# Only trigger once to activate the ongoing effect
 	return not is_trigger_active
 
-func update_trigger_timing(source_bottle: ImprovedBaseSauceBottle, trigger_data: TriggerEffectResource) -> void:
+func update_trigger_timing(source_bottle: ImprovedBaseSauceBottle, trigger_data: EnhancedTriggerData) -> void:
 	# Mark as triggered so it doesn't trigger again
 	source_bottle.last_trigger_times[trigger_name] = Time.get_ticks_msec() / 1000.0
 

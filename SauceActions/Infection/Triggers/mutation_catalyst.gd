@@ -6,7 +6,7 @@ func _init():
 	trigger_name = "mutation_catalyst"
 	trigger_description = "Each enemy infected has 10% chance to permanently increase infection damage by 0.1% for the rest of the run"
 
-func execute_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: TriggerEffectResource) -> void:
+func execute_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: EnhancedTriggerData) -> void:
 	# Get parameters from trigger data
 	var damage_boost_percent = trigger_data.effect_parameters.get("damage_boost_percent", 0.001)  # 0.1% = 0.001
 

@@ -5,7 +5,7 @@ func _init():
 	trigger_name = "infection_tsunami"
 	trigger_description = "Every 15 seconds, all infections pulse simultaneously and spread"
 
-func execute_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: TriggerEffectResource) -> void:
+func execute_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: EnhancedTriggerData) -> void:
 	# Get parameters
 	var pulse_radius = trigger_data.effect_parameters.get("pulse_radius", 120.0)
 	var spread_chance = trigger_data.effect_parameters.get("spread_chance", 0.8)

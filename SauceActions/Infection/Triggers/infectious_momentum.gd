@@ -6,7 +6,7 @@ func _init():
 	trigger_name = "infectious_momentum"
 	trigger_description = "Each enemy killed while infected increases movement speed by 3% for 12 seconds (stacks up to 30%)"
 
-func execute_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: TriggerEffectResource) -> void:
+func execute_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: EnhancedTriggerData) -> void:
 	"""Execute Infectious Momentum using the new buff system"""
 
 	# Get parameters from trigger data

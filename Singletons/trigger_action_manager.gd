@@ -54,14 +54,14 @@ func process_trigger_effects(source_bottle: ImprovedBaseSauceBottle) -> void:
 
 		if trigger_name in trigger_actions:
 			var action = trigger_actions[trigger_name]
-
+			var enhance_trigger = action.apply_enhancements(source_bottle, trigger_effect)
 			# Check if trigger condition is met
-			if action.should_trigger(source_bottle, trigger_effect):
+			if action.should_trigger(source_bottle, enhance_trigger):
 				# Execute the trigger
-				action.execute_trigger(source_bottle, trigger_effect)
+				action.execute_trigger(source_bottle, enhance_trigger)
 
 				# Update timing for timer-based triggers
-				action.update_trigger_timing(source_bottle, trigger_effect)
+				action.update_trigger_timing(source_bottle, enhance_trigger)
 		else:
 			print("⚠️ No trigger action registered for: %s" % trigger_name)
 
@@ -73,16 +73,16 @@ func execute_hit_trigger(source_bottle: ImprovedBaseSauceBottle, hit_enemy: Node
 
 			if trigger_name in trigger_actions:
 				var action = trigger_actions[trigger_name]
-
+				var enhance_trigger = action.apply_enhancements(source_bottle, trigger_effect)
 				# Check if this specific hit should trigger the effect
-				if action.should_trigger_on_hit(source_bottle, trigger_effect, hit_enemy, projectile):
+				if action.should_trigger_on_hit(source_bottle, enhance_trigger, hit_enemy, projectile):
 					# Add hit context to trigger data
-					trigger_effect.effect_parameters["hit_enemy"] = hit_enemy
-					trigger_effect.effect_parameters["hit_projectile"] = projectile
+					enhance_trigger.effect_parameters["hit_enemy"] = hit_enemy
+					enhance_trigger.effect_parameters["hit_projectile"] = projectile
 
 					# Execute the trigger
-					action.execute_trigger(source_bottle, trigger_effect)
-					action.update_trigger_timing(source_bottle, trigger_effect)
+					action.execute_trigger(source_bottle, enhance_trigger)
+					action.update_trigger_timing(source_bottle, enhance_trigger)
 			else:
 				print("⚠️ No trigger action registered for hit trigger: %s" % trigger_name)
 

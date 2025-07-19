@@ -6,7 +6,7 @@ func _init():
 	trigger_name = "primordial_pulse"
 	trigger_description = "Each tick of infection damage has 20% chance to spread to nearby enemy"
 
-func execute_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: TriggerEffectResource) -> void:
+func execute_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: EnhancedTriggerData) -> void:
 	# Get parameters from trigger data
 	#var spread_radius = trigger_data.effect_parameters.get("spread_radius", 100.0)
 	var spread_radius = source_bottle.effective_radius

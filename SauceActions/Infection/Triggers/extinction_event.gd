@@ -5,7 +5,7 @@ func _init():
 	trigger_name = "extinction_event"
 	trigger_description = "Massive infection explosion every 5th shot after 100 total infections"
 
-func execute_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: TriggerEffectResource) -> void:
+func execute_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: EnhancedTriggerData) -> void:
 	var explosion_radius = trigger_data.effect_parameters.get("explosion_radius", 200.0)
 	var damage_multiplier = trigger_data.effect_parameters.get("damage_multiplier", 2.0)
 	var infection_chance = trigger_data.effect_parameters.get("infection_chance", 0.8)
@@ -49,7 +49,7 @@ func execute_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: Trigg
 	print("💥 EXTINCTION EVENT! Hit %d enemies with %.1f damage at %s" % [enemies_hit, explosion_damage, explosion_position])
 	log_trigger_executed(source_bottle, trigger_data)
 
-func should_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: TriggerEffectResource) -> bool:
+func should_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: EnhancedTriggerData) -> bool:
 	# Check infection threshold first
 	var infection_threshold = trigger_data.trigger_condition.get("infection_threshold", 100)
 

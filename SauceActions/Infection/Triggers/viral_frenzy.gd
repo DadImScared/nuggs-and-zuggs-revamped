@@ -5,7 +5,7 @@ func _init():
 	trigger_name = "viral_frenzy"
 	trigger_description = "25% chance per infection tick: gain +100% fire rate for 8 seconds"
 
-func execute_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: TriggerEffectResource) -> void:
+func execute_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: EnhancedTriggerData) -> void:
 	"""Execute Viral Frenzy using the new buff system"""
 
 	# Get parameters

@@ -5,7 +5,7 @@ func _init():
 	trigger_name = "double_dose"
 	trigger_description = "20% chance when hitting infected enemy: spread to 2 nearby enemies"
 
-func execute_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: TriggerEffectResource) -> void:
+func execute_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: EnhancedTriggerData) -> void:
 	# Get the enemy that was hit from the trigger data
 	var hit_enemy = trigger_data.effect_parameters.get("hit_enemy")
 	if not hit_enemy or not is_instance_valid(hit_enemy):
@@ -14,9 +14,9 @@ func execute_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: Trigg
 
 	# Get parameters
 	#var spread_count = trigger_data.effect_parameters.get("spread_count", 2)
-	var enhanced_data = apply_enhancements(source_bottle, trigger_data)
-	var spread_count = enhanced_data.effect_parameters.get("spread_count", 2)
-	print("enhanced data ----- ", enhanced_data.effect_parameters)
+	#var enhanced_data = apply_enhancements(source_bottle, trigger_data)
+	var spread_count = trigger_data.effect_parameters.get("spread_count", 2)
+	print("enhanced data ----- ", trigger_data.effect_parameters)
 	#var spread_radius = trigger_data.effect_parameters.get("spread_radius", 100.0)
 	var spread_radius = source_bottle.effective_radius
 

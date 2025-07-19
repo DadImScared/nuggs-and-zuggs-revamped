@@ -166,6 +166,14 @@ func build_talent_tree() -> Dictionary:
 	return pesto_talents
 
 # === INFECTION SPECIAL EFFECT HELPERS ===
+func create_basic_infection() -> TriggerEffectResource:
+	var trigger = TriggerEffectResource.new()
+	trigger.trigger_name = "infect"
+	trigger.trigger_type = TriggerEffectResource.TriggerType.ON_HIT
+	trigger.trigger_condition["chance"] = 0.2
+	trigger.trigger_condition["radius"] = 150
+	trigger.trigger_condition["duration"] = 5
+	return trigger
 
 func _create_plague_bearer_resource() -> TriggerEffectResource:
 	var trigger = TriggerEffectResource.new()

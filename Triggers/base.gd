@@ -18,11 +18,11 @@ func is_active() -> bool:
 	return false
 
 # Main method that child classes implement
-func execute_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: TriggerEffectResource) -> void:
+func execute_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: EnhancedTriggerData) -> void:
 	push_error("execute_trigger() must be implemented by child class")
 
 # Check if trigger condition is met
-func should_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: TriggerEffectResource) -> bool:
+func should_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: EnhancedTriggerData) -> bool:
 	match trigger_data.trigger_type:
 		TriggerEffectResource.TriggerType.ON_SHOT_COUNT:
 			var interval = trigger_data.trigger_condition.get("interval", 5)
@@ -50,13 +50,13 @@ func should_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: Trigge
 	return false
 
 # Update trigger timing for timer-based triggers
-func update_trigger_timing(source_bottle: ImprovedBaseSauceBottle, trigger_data: TriggerEffectResource) -> void:
+func update_trigger_timing(source_bottle: ImprovedBaseSauceBottle, trigger_data: EnhancedTriggerData) -> void:
 	if trigger_data.trigger_type == TriggerEffectResource.TriggerType.ON_TIMER:
 		var current_time = Time.get_ticks_msec() / 1000.0
 		source_bottle.last_trigger_times[trigger_name] = current_time
 
 # Debug logging
-func log_trigger_executed(source_bottle: ImprovedBaseSauceBottle, trigger_data: TriggerEffectResource) -> void:
+func log_trigger_executed(source_bottle: ImprovedBaseSauceBottle, trigger_data: EnhancedTriggerData) -> void:
 	print("⚡ %s trigger executed for bottle %s" % [trigger_name, source_bottle.bottle_id])
 
 # Utility functions
@@ -70,7 +70,7 @@ func get_enemies_in_radius(center: Vector2, radius: float) -> Array[Node2D]:
 
 	return enemies
 
-func should_trigger_on_dot_tick(source_bottle: ImprovedBaseSauceBottle, trigger_data: TriggerEffectResource, affected_enemy: Node2D, dot_type: String, damage_dealt: float) -> bool:
+func should_trigger_on_dot_tick(source_bottle: ImprovedBaseSauceBottle, trigger_data: EnhancedTriggerData, affected_enemy: Node2D, dot_type: String, damage_dealt: float) -> bool:
 	"""Check if ON_DOT_TICK trigger should activate for this specific DOT tick"""
 
 	# Only process ON_DOT_TICK triggers
@@ -94,7 +94,7 @@ func should_trigger_on_dot_tick(source_bottle: ImprovedBaseSauceBottle, trigger_
 
 	return true  # All conditions met
 
-func should_trigger_on_hit(source_bottle: ImprovedBaseSauceBottle, trigger_data: TriggerEffectResource, hit_enemy: Node2D, projectile: Area2D = null) -> bool:
+func should_trigger_on_hit(source_bottle: ImprovedBaseSauceBottle, trigger_data: EnhancedTriggerData, hit_enemy: Node2D, projectile: Area2D = null) -> bool:
 	"""Check if ON_HIT trigger should activate for this specific hit"""
 
 	# Default implementation - child classes can override for specific conditions

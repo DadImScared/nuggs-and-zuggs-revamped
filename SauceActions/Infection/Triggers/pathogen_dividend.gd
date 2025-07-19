@@ -5,7 +5,7 @@ func _init() -> void:
 	trigger_name = "pathogen_dividend"
 	trigger_description = "gain xp on enemy death if infected"
 
-func execute_trigger(bottle: ImprovedBaseSauceBottle, trigger_data: TriggerEffectResource):
+func execute_trigger(bottle: ImprovedBaseSauceBottle, trigger_data: EnhancedTriggerData):
 	var xp_reward = trigger_data.effect_parameters.get("xp_reward", 5)
 	var death_data = trigger_data.effect_parameters.get("event_data", {})
 	var enemy_position = death_data.get("enemy_position", Vector2.ZERO)
