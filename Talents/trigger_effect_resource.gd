@@ -7,6 +7,8 @@ extends Resource
 @export var trigger_condition: Dictionary = {}
 @export var effect_parameters: Dictionary = {}
 
+@export var enhances = []
+
 enum TriggerType {
 	ON_SHOT_COUNT,    # Every N shots
 	ON_CRITICAL_HIT,  # When landing a crit

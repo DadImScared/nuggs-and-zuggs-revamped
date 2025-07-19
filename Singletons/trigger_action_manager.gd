@@ -49,6 +49,9 @@ func process_trigger_effects(source_bottle: ImprovedBaseSauceBottle) -> void:
 	for trigger_effect in source_bottle.trigger_effects:
 		var trigger_name = trigger_effect.trigger_name
 
+		if trigger_effect.enhances.size() > 0:
+			continue  # This is an enhancement, not a standalone trigger
+
 		if trigger_name in trigger_actions:
 			var action = trigger_actions[trigger_name]
 
@@ -212,3 +215,42 @@ func _register_trigger_from_file(file_path: String) -> bool:
 	trigger_actions[trigger_name] = trigger_instance
 	print("  ✅ Registered: %s from %s" % [trigger_name, file_path])
 	return true
+
+func refresh_active_triggers(bottle: ImprovedBaseSauceBottle):
+	"""Called when new talents are added - refreshes any active triggers with new enhancements"""
+	print("🔄 Refreshing active triggers for bottle: %s" % bottle.sauce_data.sauce_name)
+
+	# Find all active trigger actions and refresh them
+	for trigger_effect in bottle.trigger_effects:
+		var trigger_name = trigger_effect.trigger_name
+
+		# Skip enhancement talents - they don't have their own actions
+		if trigger_effect.enhances.size() > 0:
+			continue
+
+		if trigger_name in trigger_actions:
+			var action = trigger_actions[trigger_name]
+
+			# Check if this trigger is currently active and can be refreshed
+			if action.has_method("refresh_enhancements") and action.has_method("is_active"):
+				if action.is_active():
+					print("🔄 Refreshing active trigger: %s" % trigger_name)
+					action.refresh_enhancements(bottle, trigger_effect)
+				else:
+					print("ℹ️ Trigger %s not active, no refresh needed" % trigger_name)
+			else:
+				print("ℹ️ Trigger %s doesn't support refresh" % trigger_name)
+
+func get_active_triggers(bottle: ImprovedBaseSauceBottle) -> Array:
+	"""Get list of currently active triggers for debugging"""
+	var active_triggers = []
+
+	for trigger_effect in bottle.trigger_effects:
+		var trigger_name = trigger_effect.trigger_name
+
+		if trigger_name in trigger_actions:
+			var action = trigger_actions[trigger_name]
+			if action.has_method("is_active") and action.is_active():
+				active_triggers.append(trigger_name)
+
+	return active_triggers

@@ -25,6 +25,13 @@ func build_talent_pool():
 			2,
 			[_create_plague_bearer_resource()],
 			TalentManager.TalentTheme.INFECTION
+		),
+		Talent.create_trigger_talent(
+			"Virulent Aura",
+			"Plague Bearer radius increased by 50%",
+			3,
+			[create_virulent_aura_enhancement()],
+			TalentManager.TalentTheme.INFECTION
 		)
 		#create_trigger_talent(
 			#"Infectious Momentum",
@@ -161,7 +168,20 @@ func _create_plague_bearer_resource() -> TriggerEffectResource:
 	trigger.trigger_type = TriggerEffectResource.TriggerType.ON_TIMER
 	trigger.trigger_condition["cooldown"] = 3.0  # Every 3 seconds
 	trigger.trigger_condition["chance"] = 0.2
+	trigger.trigger_condition["radius"] = 50
 	return trigger
+
+func create_virulent_aura_enhancement() -> TriggerEffectResource:
+	var enhancement = TriggerEffectResource.new()
+	enhancement.trigger_name = "virulent_aura"
+	enhancement.trigger_type = TriggerEffectResource.TriggerType.ON_TIMER
+	enhancement.trigger_condition["cooldown"] = 999.0  # Never triggers on its own
+	enhancement.enhances = ["plague_bearer"]  # Only affects plague bearer
+	enhancement.effect_parameters = {
+		"radius_multiplier": 1.5  # 50% bigger radius
+	}
+	return enhancement
+
 
 func _create_infectious_momentum_trigger() -> TriggerEffectResource:
 	"""Creates infectious momentum trigger - speed buff on infected enemy kills"""

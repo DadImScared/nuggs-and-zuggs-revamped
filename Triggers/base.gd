@@ -4,6 +4,18 @@ extends Resource
 # Base properties
 @export var trigger_name: String
 @export var trigger_description: String
+var original_trigger_data: TriggerEffectResource
+
+func store_original_trigger_data(trigger_data: TriggerEffectResource):
+	"""Store the original trigger data so we can reapply enhancements later"""
+	original_trigger_data = trigger_data.duplicate()
+
+func refresh_enhancements(bottle: ImprovedBaseSauceBottle, base_trigger_data: TriggerEffectResource) -> void:
+	print("⚠️ Trigger %s doesn't implement refresh_enhancements()" % trigger_name)
+
+# Virtual method that child classes should override to report if they're active
+func is_active() -> bool:
+	return false
 
 # Main method that child classes implement
 func execute_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: TriggerEffectResource) -> void:
@@ -113,3 +125,84 @@ func _is_enemy_infected(enemy: Node2D) -> bool:
 		return "infect" in enemy.active_effects
 
 	return false
+
+func apply_enhancements(bottle: ImprovedBaseSauceBottle, base_trigger_data: TriggerEffectResource) -> EnhancedTriggerData:
+	"""Generic enhancement system with source tracking"""
+	var enhanced_data = EnhancedTriggerData.new(base_trigger_data)
+
+	print("🔍 Looking for enhancements for: %s" % trigger_name)
+	print("🔍 Bottle has %d total trigger effects:" % bottle.trigger_effects.size())
+
+	for i in range(bottle.trigger_effects.size()):
+		var trigger_effect = bottle.trigger_effects[i]
+		print("  [%d] %s - enhances: %s" % [i, trigger_effect.trigger_name, str(trigger_effect.enhances)])
+
+	# Find all enhancements that target this trigger
+	var enhancements_applied = 0
+	for trigger_effect in bottle.trigger_effects:
+		if trigger_effect.enhances.size() > 0 and trigger_name in trigger_effect.enhances:
+			apply_single_enhancement_with_tracking(enhanced_data, trigger_effect)
+			enhancements_applied += 1
+			print("🔧 Enhancement: %s applied to %s" % [trigger_effect.trigger_name, trigger_name])
+
+	if enhancements_applied > 0:
+		print("✨ %s enhanced with %d bonuses" % [trigger_name, enhancements_applied])
+		print(enhanced_data.get_tooltip_text())  # Show detailed breakdown
+
+	return enhanced_data
+
+func apply_single_enhancement_with_tracking(enhanced_data: EnhancedTriggerData, enhancement: TriggerEffectResource):
+	"""Apply enhancement with full source tracking"""
+	var params = enhancement.effect_parameters
+	var enhancement_name = enhancement.trigger_name.replace("_", " ").capitalize()
+
+	for param_key in params.keys():
+		var param_value = params[param_key]
+
+		# Handle multipliers
+		if param_key.ends_with("_multiplier"):
+			var base_key = param_key.replace("_multiplier", "")
+			apply_multiplier_with_tracking(enhanced_data, base_key, param_value, enhancement_name)
+
+		# Handle direct additions
+		else:
+			apply_direct_with_tracking(enhanced_data, param_key, param_value, enhancement_name)
+
+func apply_multiplier_with_tracking(enhanced_data: EnhancedTriggerData, base_key: String, multiplier: float, enhancement_name: String):
+	print("🔍 Looking for parameter: %s" % base_key)
+	print("🔍 trigger_condition keys: %s" % str(enhanced_data.trigger_condition.keys()))
+	print("🔍 effect_parameters keys: %s" % str(enhanced_data.effect_parameters.keys()))
+
+	var current_value = get_parameter_value_from_enhanced(enhanced_data, base_key)
+	print("🔍 Found value for %s: %s" % [base_key, str(current_value)])
+
+	if current_value != null:
+		print("✅ Applying multiplier")
+		var new_value = current_value * multiplier
+		set_parameter_value_in_enhanced(enhanced_data, base_key, new_value)
+		enhanced_data.add_enhancement_source(base_key, enhancement_name, "multiply", multiplier, new_value)
+		print("  🔢 %s: %.2f → %.2f (×%.2f from %s)" % [base_key.capitalize(), current_value, new_value, multiplier, enhancement_name])
+	else:
+		print("❌ Parameter %s not found!" % base_key)
+
+func apply_direct_with_tracking(enhanced_data: EnhancedTriggerData, param_key: String, param_value, enhancement_name: String):
+	"""Add parameter with source tracking"""
+	enhanced_data.effect_parameters[param_key] = param_value
+	enhanced_data.add_enhancement_source(param_key, enhancement_name, "set", param_value, param_value)
+	print("  ✨ Added %s: %s (from %s)" % [param_key.capitalize(), str(param_value), enhancement_name])
+
+func get_parameter_value_from_enhanced(enhanced_data: EnhancedTriggerData, key: String):
+	"""Get parameter value from enhanced data"""
+	if enhanced_data.trigger_condition.has(key):
+		return enhanced_data.trigger_condition[key]
+	elif enhanced_data.effect_parameters.has(key):
+		return enhanced_data.effect_parameters[key]
+	else:
+		return null
+
+func set_parameter_value_in_enhanced(enhanced_data: EnhancedTriggerData, key: String, value):
+	"""Set parameter value in enhanced data"""
+	if enhanced_data.trigger_condition.has(key):
+		enhanced_data.trigger_condition[key] = value
+	else:
+		enhanced_data.effect_parameters[key] = value

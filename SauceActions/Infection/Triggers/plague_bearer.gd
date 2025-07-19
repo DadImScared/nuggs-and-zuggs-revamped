@@ -6,11 +6,40 @@ var visual_node: PlagueBearerVisualNode
 var infection_timer: Timer
 var is_trigger_active: bool = false
 var current_bottle: ImprovedBaseSauceBottle
-var current_trigger_data: TriggerEffectResource
+var current_trigger_data: EnhancedTriggerData
 
 func _init() -> void:
 	trigger_name = "plague_bearer"
 	trigger_description = "Enemies within 50 units have 10% chance per second to get infected"
+
+func is_active() -> bool:
+	return is_trigger_active
+
+func refresh_enhancements(bottle: ImprovedBaseSauceBottle, base_trigger_data: TriggerEffectResource) -> void:
+	if not is_trigger_active:
+		print("⚠️ Trying to refresh inactive Plague Bearer")
+		return
+
+	print("🔄 Refreshing Plague Bearer enhancements")
+	store_original_trigger_data(base_trigger_data)
+	# Reapply enhancements with current bottle state
+	var enhanced_data = apply_enhancements(bottle, original_trigger_data)
+	var old_radius = current_trigger_data.trigger_condition.get("radius", 50.0)
+	var new_radius = enhanced_data.trigger_condition.get("radius", 50.0)
+	print(new_radius, " new radius----------")
+	# Update stored data
+	current_trigger_data = enhanced_data
+
+	# Update visual if radius changed
+	if visual_node and is_instance_valid(visual_node) and abs(old_radius - new_radius) > 0.1:
+		print("🔄 Updating visual radius: %.0f → %.0f" % [old_radius, new_radius])
+		visual_node.update_radius(new_radius)
+		visual_node.queue_redraw()
+
+	print("🔄 Plague Bearer refresh complete - radius: %.0f, chance: %.1f%%" % [
+		new_radius,
+		enhanced_data.trigger_condition.get("chance", 0.1) * 100
+	])
 
 func execute_trigger(bottle: ImprovedBaseSauceBottle, trigger_data: TriggerEffectResource):
 	if not is_trigger_active:
@@ -19,22 +48,30 @@ func execute_trigger(bottle: ImprovedBaseSauceBottle, trigger_data: TriggerEffec
 func activate_plague_bearer(bottle: ImprovedBaseSauceBottle, trigger_data: TriggerEffectResource):
 	is_trigger_active = true
 	current_bottle = bottle
-	current_trigger_data = trigger_data
 
-	# Create visual node and attach to player for smooth movement
+	# Store original data for future refreshes
+	store_original_trigger_data(trigger_data)
+
+	# Apply enhancements
+	var enhanced_data = apply_enhancements(bottle, trigger_data)
+	current_trigger_data = enhanced_data
+
+	# ... rest of existing activate logic stays the same ...
+
+	var radius = enhanced_data.trigger_condition.get("radius", 50.0)
+	var chance = enhanced_data.trigger_condition.get("chance", 0.1)
+
+	# Create visual with enhanced radius
 	visual_node = PlagueBearerVisualNode.new()
 	var player = Engine.get_main_loop().current_scene.get_node("Player")
 	if player:
 		player.add_child(visual_node)
-		visual_node.position = Vector2.ZERO  # Position relative to player
+		visual_node.position = Vector2.ZERO
 	else:
-		# Fallback to scene if player not found
 		var scene = Engine.get_main_loop().current_scene
 		scene.add_child(visual_node)
 		visual_node.global_position = bottle.global_position
 
-	# Setup visual properties
-	var radius = trigger_data.trigger_condition.get("radius", 50.0)
 	visual_node.setup_visual(radius)
 
 	# Create infection timer
@@ -45,20 +82,18 @@ func activate_plague_bearer(bottle: ImprovedBaseSauceBottle, trigger_data: Trigg
 	infection_timer.timeout.connect(_on_infection_timer_timeout)
 	infection_timer.start()
 
-	print("🦠 Plague Bearer: Activated with %d unit radius" % radius)
+	print("🦠 Plague Bearer: Activated with %.0f radius, %.1f%% chance" % [radius, chance * 100])
 
 func _on_infection_timer_timeout():
 	if not current_bottle or not current_trigger_data or not is_instance_valid(visual_node):
 		deactivate_plague_bearer()
 		return
 
-	# No need to update visual position - it's attached to player and moves automatically
-
 	# Get player position for infection logic
 	var player = Engine.get_main_loop().current_scene.get_node("Player")
 	var center_position = player.global_position if player else current_bottle.global_position
 
-	# Execute infection logic
+	# Use the enhanced values from current_trigger_data
 	var infection_radius = current_trigger_data.trigger_condition.get("radius", 50.0)
 	var infection_chance = current_trigger_data.trigger_condition.get("chance", 0.1)
 
@@ -66,11 +101,25 @@ func _on_infection_timer_timeout():
 	var infections_this_tick = 0
 
 	for enemy in enemies:
+		# Apply slow effect if the talent has it
+		if current_trigger_data.effect_parameters.has("slow_strength"):
+			var slow_strength = current_trigger_data.effect_parameters.get("slow_strength", 0.3)
+			var slow_duration = current_trigger_data.effect_parameters.get("slow_duration", 2.0)
+
+			if enemy.has_method("apply_status_effect"):
+				enemy.apply_status_effect(
+					"slow",
+					slow_duration,
+					slow_strength,
+					current_bottle.bottle_id + "_slow"
+				)
+
+		# Try to infect uninfected enemies
 		if "infect" not in enemy.active_effects and randf() < infection_chance:
 			if enemy.has_method("apply_status_effect"):
 				enemy.apply_status_effect(
 					"infect",
-					current_bottle.get_modified_duration(current_bottle.sauce_data.effect_duration),
+					current_trigger_data.effect_parameters.get("duration", 4.0),
 					current_bottle.effective_effect_intensity or 0.2,
 					current_bottle.bottle_id
 				)
@@ -85,7 +134,7 @@ func _on_infection_timer_timeout():
 	visual_node.set_infection_intensity(min(infections_this_tick / 3.0, 1.0))
 
 	if infections_this_tick > 0:
-		print("🦠 Plague Bearer: Infected %d enemies this tick" % infections_this_tick)
+		print("🦠 Plague Bearer: Infected %d enemies this tick (%.0f radius, %.1f%% chance)" % [infections_this_tick, infection_radius, infection_chance * 100])
 
 func deactivate_plague_bearer():
 	is_trigger_active = false
@@ -126,6 +175,65 @@ func update_trigger_timing(source_bottle: ImprovedBaseSauceBottle, trigger_data:
 # Clean up when trigger is removed
 func cleanup():
 	deactivate_plague_bearer()
+
+# Check if bottle has talents that enhance plague bearer
+func check_for_plague_bearer_enhancements(bottle: ImprovedBaseSauceBottle, base_trigger_data: TriggerEffectResource) -> TriggerEffectResource:
+	# Create a copy of the base trigger data to modify
+	var enhanced_data = TriggerEffectResource.new()
+	enhanced_data.trigger_name = base_trigger_data.trigger_name
+	enhanced_data.trigger_type = base_trigger_data.trigger_type
+	enhanced_data.trigger_condition = base_trigger_data.trigger_condition.duplicate()
+	enhanced_data.effect_parameters = base_trigger_data.effect_parameters.duplicate()
+
+	# Get base values
+	var base_radius = enhanced_data.trigger_condition.get("radius", 50.0)
+	var base_chance = enhanced_data.trigger_condition.get("chance", 0.1)
+
+	# Check for enhancement talents by looking at bottle's talents
+	var has_virulent_aura = bottle_has_talent(bottle, "virulent_aura")
+	var has_contagious_miasma = bottle_has_talent(bottle, "contagious_miasma")
+	var has_pandemic_zone = bottle_has_talent(bottle, "pandemic_zone")
+	var has_plague_lord = bottle_has_talent(bottle, "plague_lord")
+
+	# Apply enhancements
+	if has_virulent_aura:
+		enhanced_data.trigger_condition["radius"] = base_radius * 1.5  # +50% radius
+		print("🦠 Virulent Aura: Radius increased to %.0f" % enhanced_data.trigger_condition["radius"])
+
+	if has_contagious_miasma:
+		enhanced_data.trigger_condition["chance"] = base_chance * 1.5  # +50% chance
+		print("🦠 Contagious Miasma: Chance increased to %.1f%%" % (enhanced_data.trigger_condition["chance"] * 100))
+
+	if has_pandemic_zone:
+		enhanced_data.trigger_condition["radius"] = base_radius * 2.0  # +100% radius
+		enhanced_data.trigger_condition["chance"] = base_chance * 1.5  # +50% chance
+		print("🦠 Pandemic Zone: Radius doubled, chance increased!")
+
+	if has_plague_lord:
+		enhanced_data.effect_parameters["slow_strength"] = 0.4  # 40% slow
+		enhanced_data.effect_parameters["slow_duration"] = 2.0  # 2 seconds
+		print("🦠 Plague Lord: Added 40% slow effect")
+
+	return enhanced_data
+
+# Helper function to check if bottle has a specific talent
+func bottle_has_talent(bottle: ImprovedBaseSauceBottle, talent_name: String) -> bool:
+	# Check trigger effects for the talent
+	for trigger_effect in bottle.trigger_effects:
+		if trigger_effect.trigger_name == talent_name:
+			return true
+
+	# Check special effects for the talent
+	for special_effect in bottle.special_effects:
+		if special_effect.effect_name == talent_name:
+			return true
+
+	# Check stat modifiers for the talent (if they have names)
+	for stat_modifier in bottle.stat_modifier_history:
+		if stat_modifier.has_method("get_talent_name") and stat_modifier.get_talent_name() == talent_name:
+			return true
+
+	return false
 
 # =============================================================================
 # VISUAL NODE CLASS - Handles all visual effects
@@ -186,7 +294,7 @@ class PlagueBearerVisualNode extends Node2D:
 		miasma_material.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
 		miasma_material.emission_sphere_radius = radius
 
-		miasma_effect.process_material = material
+		miasma_effect.process_material = miasma_material
 		miasma_effect.amount = 50
 		miasma_effect.lifetime = 4.0
 		miasma_effect.emitting = false
@@ -322,3 +430,19 @@ class PlagueBearerVisualNode extends Node2D:
 
 		# Adjust overall opacity
 		modulate.a = 0.5 + clamped_intensity * 0.5
+
+	func update_radius(new_radius: float):
+		if radius != new_radius:
+			radius = new_radius
+
+			# Update particle emission shapes
+			if infection_particles and infection_particles.process_material:
+				infection_particles.process_material.emission_ring_radius = radius * 0.8
+				infection_particles.process_material.emission_ring_inner_radius = radius * 0.2
+
+			if miasma_effect and miasma_effect.process_material:
+				miasma_effect.process_material.emission_sphere_radius = radius
+
+			# Redraw circles with new radius
+			queue_redraw()
+			print("🎨 Plague Bearer visual radius updated to: ", radius)
