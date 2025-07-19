@@ -38,7 +38,7 @@ func build_talent_pool():
 			"Each enemy killed while infected increases movement speed by 3% for 12 seconds (stacks up to 30%)", 2,
 			[_create_infectious_momentum_trigger()],
 			TalentManager.TalentTheme.INFECTION
-		)
+		),
 		#create_trigger_talent(
 			#"Extinction Event",
 			#"After 100 total infections this run, every 5th shot creates a massive 200-pixel infection explosion", 3,
@@ -96,11 +96,11 @@ func build_talent_pool():
 			#"Every 3 seconds, infections jump to closest uninfected targets", 2,
 			#[_create_viral_relay_trigger()], TalentManager.TalentTheme.INFECTION
 		#)
-		#create_trigger_talent(
-			#"Viral Frenzy",
-			 #"25% chance per infection tick: +100% fire rate for 8 seconds", 2,
-			#[_create_viral_frenzy_trigger()], TalentManager.TalentTheme.INFECTION
-		#)
+		create_trigger_talent(
+			"Viral Frenzy",
+			 "25% chance per infection tick: +100% fire rate for 8 seconds", 2,
+			[_create_viral_frenzy_trigger()], TalentManager.TalentTheme.INFECTION
+		)
 	]
 
 	return pesto_talents
@@ -270,7 +270,7 @@ func _create_viral_frenzy_trigger() -> TriggerEffectResource:
 	var trigger = TriggerEffectResource.new()
 	trigger.trigger_name = "viral_frenzy"
 	trigger.trigger_type = TriggerEffectResource.TriggerType.ON_DOT_TICK
-	trigger.trigger_condition["chance"] = 0.01  # 25% chance per DOT tick
+	trigger.trigger_condition["chance"] = 0.01  #1% chance per DOT tick
 	trigger.trigger_condition["dot_types"] = ["infect"]  # Only infection ticks
 	trigger.effect_parameters["fire_rate_boost"] = 1.0  # 100% boost
 	trigger.effect_parameters["duration"] = 8.0  # 8 seconds
