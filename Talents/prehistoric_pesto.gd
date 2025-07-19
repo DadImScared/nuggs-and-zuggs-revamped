@@ -32,13 +32,13 @@ func build_talent_pool():
 			3,
 			[create_virulent_aura_enhancement()],
 			TalentManager.TalentTheme.INFECTION
+		),
+		create_trigger_talent(
+			"Infectious Momentum",
+			"Each enemy killed while infected increases movement speed by 3% for 12 seconds (stacks up to 30%)", 2,
+			[_create_infectious_momentum_trigger()],
+			TalentManager.TalentTheme.INFECTION
 		)
-		#create_trigger_talent(
-			#"Infectious Momentum",
-			#"Each enemy killed while infected increases movement speed by 3% for 12 seconds (stacks up to 30%)", 2,
-			#[_create_infectious_momentum_trigger()],
-			#TalentManager.TalentTheme.INFECTION
-		#)
 		#create_trigger_talent(
 			#"Extinction Event",
 			#"After 100 total infections this run, every 5th shot creates a massive 200-pixel infection explosion", 3,
