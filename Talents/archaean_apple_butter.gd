@@ -38,6 +38,13 @@ func _create_amber_amplifier_trigger() -> TriggerEffectResource:
 	trigger.effect_parameters["max_enemies"] = 10
 	return trigger
 
+func _create_temporal_debt_trigger() -> TriggerEffectResource:
+	var trigger = TriggerEffectResource.new()
+	trigger.trigger_name = "temporal_debt_collection"
+	trigger.trigger_type = TriggerEffectResource.TriggerType.ON_HIT
+	trigger.trigger_condition["chance"] = 1.0  # Always check hits
+	trigger.effect_parameters["bonus_per_second"] = 0.05  # 5% per second
+	return trigger
 
 func build_talent_pool():
 	var apple_butter_talents = [
@@ -52,11 +59,18 @@ func build_talent_pool():
 		create_trigger_talent(
 			"Amber Amplifier",
 			"+20% damage per fossilized enemy alive (max +200%)",
-			3,
+			2,
 			[_create_amber_amplifier_trigger()],
 			TalentManager.TalentTheme.DAMAGE
 		),
+		create_trigger_talent(
+			"Temporal Debt Collection",
+			"Every second without fossilizing, gain +5% fossilization chance. Resets on success.",
+			2,
+			[_create_temporal_debt_trigger()],
+			TalentManager.TalentTheme.DEFENSIVE
+		)
 		#create_stat_talent("shot", "ww", 2, []),
-		create_stat_talent("shot", "ww", 2, [])
+		#create_stat_talent("shot", "ww", 2, [])
 	]
 	return apple_butter_talents
