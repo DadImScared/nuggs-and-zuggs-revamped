@@ -1,3 +1,4 @@
+# SauceActions/Fossilization/Triggers/fossilize.gd
 class_name FossilizeTrigger
 extends BaseTriggerAction
 
@@ -13,134 +14,124 @@ func execute_trigger(bottle: ImprovedBaseSauceBottle, data: EnhancedTriggerData)
 		print("⚠️ Fossilize: No valid enemy to fossilize")
 		return
 
-	# Create fossilize callback
-	var my_callback = func(context: StatusEffectApplier.EffectContext):
-		var cb_enemy = context.enemy
-		var original_speed = cb_enemy.move_speed
-		var original_color = cb_enemy.modulate
-		var amber_color = Color(1.0, 0.8, 0.3, 0.6)
-		cb_enemy.modulate = amber_color
+	# Read parameters from trigger effect resource
+	var duration = data.effect_parameters.get("duration", 2.5)
+	var amber_color = data.effect_parameters.get("amber_color", Color(1.0, 0.8, 0.3, 0.6))
+	var max_stacks = data.effect_parameters.get("max_stacks", 1)
+	var stack_value = data.effect_parameters.get("stack_value", 0.15)
+	var tick_damage = data.effect_parameters.get("tick_damage", 8.0)  # Damage per tick per stack
+	var tick_interval = data.effect_parameters.get("tick_interval", 1.0)  # Every 1 second
 
-		# Apply effect
-		cb_enemy.move_speed *= 0.1
+	# Create all effect callbacks
+	var visual_cleanup = Callable()
+	var mechanical_cleanup = Callable()
+	var immediate_effect = Callable()
+	var tick_effect = Callable()
 
-		var amber_shell = _create_amber_shell(cb_enemy, amber_color, context.duration)
+	# Visual effects - only on first stack
+	if enemy.has_method("get_total_stack_count") and enemy.get_total_stack_count("fossilize") == 0:
+		var amber_shell = _create_amber_shell(enemy, amber_color)
+		_create_fossilization_particles(enemy.global_position, amber_color)
 
-		# Create fossilization particles
-		_create_fossilization_effects(cb_enemy.global_position, amber_color)
-
-		# Create cleanup
-		var cleanup = func():
-			if is_instance_valid(cb_enemy):
-				cb_enemy.move_speed = original_speed
-				cb_enemy.modulate = original_color
+		visual_cleanup = func():
 			if is_instance_valid(amber_shell):
 				amber_shell.queue_free()
-				print("🔶 Removed amber shell")
+			print("🔶 All fossilize stacks removed - amber shell destroyed")
 
-		# Create status effect with cleanup
-		print(cb_enemy.name, " cb -enemy ---------------------")
-		cb_enemy.apply_status_effect("fossilize", context.duration, context.intensity, context.get_bottle_id(), cleanup)
+	# Immediate effect - runs every time a stack is added
+	immediate_effect = func():
+		if not is_instance_valid(enemy):
+			return
 
-	# Apply the fossilize effect using the callback system
-	SauceEffectManager.apply_custom_effect(
-		projectile,
-		enemy,
-		bottle,
-		my_callback,
-		bottle.effective_effect_intensity,  # custom intensity
-		bottle.sauce_data.effect_duration   # custom duration
+		var total_slow = enemy.get_total_stacked_value("fossilize")
+		var slow_multiplier = 1.0 - total_slow
+		enemy.move_speed = enemy.base_speed * max(slow_multiplier, 0.1)
+
+		var current_stacks = enemy.get_total_stack_count("fossilize")
+		print("🔶 Fossilize: %d stacks, %.0f%% speed reduction" % [current_stacks, total_slow * 100])
+
+	# Tick effect - deals damage over time based on stacks
+	tick_effect = func():
+		if not is_instance_valid(enemy):
+			return
+
+		var total_stacks = enemy.get_total_stack_count("fossilize")
+		var damage = tick_damage * total_stacks
+		enemy.take_damage_from_source(damage, bottle.bottle_id)
+		print("🔶 Fossilize tick: %.1f damage (%d stacks)" % [damage, total_stacks])
+
+	# Mechanical cleanup - runs when individual stacks expire
+	mechanical_cleanup = func():
+		if not is_instance_valid(enemy):
+			return
+
+		var remaining_slow = enemy.get_total_stacked_value("fossilize")
+		if remaining_slow > 0:
+			var slow_multiplier = 1.0 - remaining_slow
+			enemy.move_speed = enemy.original_speed * max(slow_multiplier, 0.1)
+			print("🔶 Fossilize stack expired: %.0f%% speed reduction remaining" % (remaining_slow * 100))
+		else:
+			enemy.move_speed = enemy.original_speed
+			print("🔶 All fossilize stacks expired - speed fully restored")
+
+	# Apply stacking fossilize effect with DOT
+	var stacks_applied = enemy.apply_stacking_effect(
+		"fossilize",
+		stack_value,
+		max_stacks,
+		bottle.bottle_id,
+		duration,
+		{
+			"visual_cleanup": visual_cleanup,
+			"mechanical_cleanup": mechanical_cleanup,
+			"immediate_effect": immediate_effect,
+			"tick_effect": tick_effect,
+			"tick_interval": tick_interval
+		}
 	)
 
-# Keep all your existing helper functions unchanged
-func _create_amber_effect(enemy: Node2D, amber_color: Color, duration: float):
-	"""Create the amber coating visual effect"""
-	if not enemy.has_method("get_sprite"):
-		return
+	# Log the application
+	var total_slow_percent = enemy.get_total_stacked_value("fossilize") * 100
+	print("🔶 Fossilize applied! Stack %d/%d (%.0f%% total slow)" % [
+		stacks_applied,
+		max_stacks,
+		total_slow_percent
+	])
 
-	var sprite = enemy.get_sprite()
-	if not sprite:
-		return
-
-	# Store original modulate to restore later
-	var original_modulate = sprite.modulate
-	enemy.set_meta("original_modulate", original_modulate)
-
-	# Apply amber tint
-	sprite.modulate = amber_color
-
-	# Create amber shell effect
-	_create_amber_shell(enemy, amber_color, duration)
-
-	# Set up timer to remove effect
-	_setup_amber_removal_timer(enemy, sprite, original_modulate, duration)
-
-func _create_amber_shell(enemy: Node2D, amber_color: Color, duration: float):
-	"""Create an amber shell overlay around the enemy"""
+func _create_amber_shell(enemy: Node2D, amber_color: Color) -> Node:
+	"""Create amber shell overlay around the enemy"""
 	var amber_shell = ColorRect.new()
 	amber_shell.size = Vector2(32, 32)
 	amber_shell.position = Vector2(-16, -16)
 	amber_shell.color = amber_color
 	amber_shell.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	amber_shell.scale = Vector2(1.2, 1.2)
-
-	enemy.add_child(amber_shell)
 	amber_shell.name = "AmberShell"
 
-	# Add pulsing effect
+	# Add to enemy
+	enemy.add_child(amber_shell)
+
+	# Create pulsing animation
 	var tween = amber_shell.create_tween()
 	tween.set_loops()
 	tween.tween_property(amber_shell, "modulate:a", 0.3, 0.5)
 	tween.tween_property(amber_shell, "modulate:a", 0.8, 0.5)
 
-func _setup_amber_removal_timer(enemy: Node2D, sprite: Node2D, original_modulate: Color, duration: float):
-	"""Set up timer to remove amber effect after duration"""
-	var timer = Timer.new()
-	timer.wait_time = duration
-	timer.one_shot = true
+	return amber_shell
 
-	timer.set_meta("target_enemy", enemy)
-	timer.set_meta("target_sprite", sprite)
-	timer.set_meta("original_modulate", original_modulate)
-
-	timer.timeout.connect(_on_amber_timer_timeout.bind(timer))
-
-	enemy.add_child(timer)
-	timer.start()
-
-func _on_amber_timer_timeout(timer: Timer):
-	"""Clean up amber effect when timer expires"""
-	if not is_instance_valid(timer):
-		return
-
-	var enemy = timer.get_meta("target_enemy", null)
-	var sprite = timer.get_meta("target_sprite", null)
-	var original_modulate = timer.get_meta("original_modulate", Color.WHITE)
-
-	# Restore original appearance
-	if is_instance_valid(sprite):
-		sprite.modulate = original_modulate
-
-	# Remove amber shell
-	if is_instance_valid(enemy):
-		var amber_shell = enemy.get_node_or_null("AmberShell")
-		if amber_shell:
-			amber_shell.queue_free()
-
-	timer.queue_free()
-	print("🔶 Amber effect removed")
-
-func _create_fossilization_effects(position: Vector2, amber_color: Color):
-	"""Create particle effects for fossilization"""
+func _create_fossilization_particles(position: Vector2, amber_color: Color):
+	"""Create particle effects when fossilization occurs"""
 	for i in range(8):
 		var particle = ColorRect.new()
 		particle.size = Vector2(4, 4)
 		particle.color = amber_color
 		particle.position = position + Vector2(randf_range(-16, 16), randf_range(-16, 16))
 
+		# Add to scene
 		var scene = Engine.get_main_loop().current_scene
 		scene.add_child(particle)
 
+		# Animate and auto-cleanup
 		var tween = particle.create_tween()
 		tween.parallel().tween_property(particle, "position", particle.position + Vector2(randf_range(-32, 32), randf_range(-32, 32)), 0.5)
 		tween.parallel().tween_property(particle, "modulate:a", 0.0, 0.5)

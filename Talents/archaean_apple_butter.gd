@@ -12,6 +12,8 @@ func create_basic_fossilization() -> TriggerEffectResource:
 	trigger.trigger_condition["chance"] = 0.15  # 15% chance
 	trigger.effect_parameters["duration"] = 2.5  # 2.5 seconds frozen
 	trigger.effect_parameters["amber_color"] = Color(1.0, 0.8, 0.3, 0.6)  # Translucent amber
+	trigger.effect_parameters["max_stacks"] = 1  # Default: no stacking
+	trigger.effect_parameters["stack_value"] = 0.15  # 15% additional slow per stack
 	return trigger
 
 func build_talent_pool():

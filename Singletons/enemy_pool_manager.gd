@@ -35,7 +35,7 @@ func load_enemy_types():
 	basic_enemy.enemy_color = Color.RED
 	basic_enemy.spawn_weight = 100
 	basic_enemy.scene_path = "res://Scenes/enemy.tscn"
-	basic_enemies.append(basic_enemy)
+	#basic_enemies.append(basic_enemy)
 
 	print("Loaded %d enemy types:" % basic_enemies.size())
 	for enemy in basic_enemies:

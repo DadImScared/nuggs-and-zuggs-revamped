@@ -1,3 +1,4 @@
+# Scenes/Enemies/base_enemy_script.gd
 extends CharacterBody2D
 
 signal died(xp_amount: int, damage_sources: Dictionary)
@@ -72,7 +73,7 @@ func setup_from_resource():
 	# Scale stats to player level
 	scale_to_player_level()
 
-	# FIXED: Apply scale modifier from resource
+	# Apply scale modifier from resource
 	scale = Vector2.ONE * enemy_resource.scale_modifier
 
 	# Apply color if we have one and the resource wants us to
@@ -111,6 +112,7 @@ func _process(delta):
 
 	process_status_effects(delta)
 	process_debuff_periodic_xp(delta)
+	_process_stacking_effects(delta)  # Process stacking effects
 
 func _physics_process(delta: float) -> void:
 	if external_velocity_override:
@@ -153,7 +155,6 @@ func _process_death_triggers():
 			)
 			print("💀 Processing death triggers for bottle: %s" % bottle.sauce_data.sauce_name)
 
-# FIXED: Complete status effects processing including infection!
 func process_status_effects(delta: float):
 	var effects_to_remove = []
 
@@ -179,7 +180,6 @@ func process_status_effects(delta: float):
 					take_damage_from_source(poison_damage, source_id)
 					effect.timer = 0.0
 			"infect":
-				# FIXED: Add missing infection damage processing!
 				effect.tick_timer = effect.get("tick_timer", 0.0) + delta
 				if effect.tick_timer >= 0.5:
 					effect.tick_timer = 0.0
@@ -247,7 +247,6 @@ func apply_status_effect(effect_name: String, duration: float, intensity: float,
 				spread_radius = spread_radius * radius_multiplier
 				print("🦠 Enhanced Transmission: Spread radius %.0f → %.0f" % [120.0, spread_radius])
 
-
 	if enemy_resource:
 		match effect_name:
 			"slow":
@@ -269,7 +268,7 @@ func apply_status_effect(effect_name: String, duration: float, intensity: float,
 		"timer": 0.0,
 		"source_bottle_id": source_bottle_id,
 		"spread_radius": spread_radius,
-		"cleanup": cleanup_callback
+		"cleanup": cleanup_callback  # Store cleanup callback
 	}
 
 	# Apply immediate visual/movement effects
@@ -293,13 +292,13 @@ func apply_status_effect(effect_name: String, duration: float, intensity: float,
 
 func remove_status_effect(effect_name: String):
 	if effect_name in active_effects:
-		# NEW: Execute cleanup if it exists
+		# Execute cleanup if it exists
 		var effect_data = active_effects[effect_name]
 		if effect_data.has("cleanup") and effect_data.cleanup.is_valid():
 			effect_data.cleanup.call()
 			print("🧹 Executed cleanup for: %s" % effect_name)
 
-		# Your existing removal logic stays exactly the same
+		# Existing removal logic
 		match effect_name:
 			"slow":
 				move_speed = original_speed
@@ -317,6 +316,101 @@ func remove_status_effect(effect_name: String):
 			elif animated_sprite:
 				animated_sprite.modulate = Color.WHITE
 
+# ENHANCED: Stacking system with cleanup support
+func apply_stacking_effect(effect_name: String, base_value: float, max_stacks: int, source_bottle_id: String, duration: float = 10.0, effect_data: Dictionary = {}) -> int:
+	"""
+	Universal stacking system with per-bottle tracking and cleanup support
+	Returns current stack count after application
+	"""
+	# Create unique effect key: effect_name + bottle_id
+	var unique_effect_key = effect_name + "_" + source_bottle_id
+
+	# Initialize effect if it doesn't exist
+	if not stacking_effects.has(unique_effect_key):
+		stacking_effects[unique_effect_key] = {
+			"stacks": 0,
+			"base_value": base_value,
+			"max_stacks": max_stacks,
+			"source_bottle_id": source_bottle_id,
+			"effect_type": effect_name,
+			"duration": duration,
+			"timer": 0.0,
+			"effect_data": effect_data  # Store cleanup and other data
+		}
+
+	var effect = stacking_effects[unique_effect_key]
+
+	# Add stack (up to max)
+	effect.stacks = min(effect.stacks + 1, max_stacks)
+	effect.timer = 0.0  # Reset duration
+	effect.base_value = max(effect.base_value, base_value)  # Use highest base value
+
+	# Update effect_data if provided
+	if not effect_data.is_empty():
+		effect.effect_data = effect_data
+
+	# Apply the stacking effect
+	_apply_stack_behavior(effect.effect_type, effect, source_bottle_id)
+
+	print("📈 %s gained %s stack %d/%d from bottle %s (%.1f base value)" % [
+		name, effect_name, effect.stacks, max_stacks, source_bottle_id, base_value
+	])
+
+	return effect.stacks
+
+func _process_stacking_effects(delta: float):
+	"""Process stacking effect timers and tick effects"""
+	var effects_to_remove = []
+
+	for effect_key in stacking_effects.keys():
+		var effect = stacking_effects[effect_key]
+		effect.timer += delta
+
+		# GENERIC: Handle tick effects if provided
+		if effect.has("effect_data") and effect.effect_data.has("tick_effect"):
+			var tick_effect = effect.effect_data.tick_effect
+			var tick_interval = effect.effect_data.get("tick_interval", 1.0)  # Default 1 second
+
+			# Initialize tick timer if not exists
+			if not effect.has("tick_timer"):
+				effect.tick_timer = 0.0
+
+			effect.tick_timer += delta
+
+			# Execute tick effect
+			if effect.tick_timer >= tick_interval and tick_effect.is_valid():
+				tick_effect.call()
+				effect.tick_timer = 0.0  # Reset tick timer
+
+		# Remove if expired
+		if effect.timer >= effect.duration:
+			_cleanup_stack_behavior(effect.effect_type, effect, effect.source_bottle_id)
+			effects_to_remove.append(effect_key)
+
+	# Clean up expired effects
+	for effect_key in effects_to_remove:
+		stacking_effects.erase(effect_key)
+
+func _cleanup_stack_behavior(effect_name: String, effect_data: Dictionary, source_bottle_id: String):
+	"""Clean up when stacking effect expires - fully generic"""
+
+	# GENERIC: Handle visual cleanup for any stacking effect
+	if effect_data.has("effect_data") and effect_data.effect_data.has("visual_cleanup"):
+		var visual_cleanup = effect_data.effect_data.visual_cleanup
+		if visual_cleanup.is_valid():
+			# Only run visual cleanup when this is the LAST stack
+			if get_total_stack_count(effect_name) == 1:  # About to become 0
+				visual_cleanup.call()
+				print("🧹 Executed visual cleanup for: %s" % effect_name)
+
+	# GENERIC: Handle mechanical cleanup if provided
+	if effect_data.has("effect_data") and effect_data.effect_data.has("mechanical_cleanup"):
+		var mechanical_cleanup = effect_data.effect_data.mechanical_cleanup
+		if mechanical_cleanup.is_valid():
+			mechanical_cleanup.call()
+			print("🧹 Executed mechanical cleanup for: %s" % effect_name)
+
+# Rest of your existing functions...
 func scale_to_player_level():
 	if PlayerStats.level < 2:
 		max_health = base_health
@@ -332,74 +426,6 @@ func scale_to_player_level():
 	move_speed = base_speed + (base_speed * speed_scale)
 	xp_on_kill = base_xp_reward + (base_xp_reward * xp_scale)
 	damage = base_damage + (base_damage * damage_scale)
-
-func spread_infection_on_death():
-	var infection_radius = 60.0
-	var nearby_enemies = get_nearby_enemies_for_infection(infection_radius)
-	var infection_effect = active_effects["infect"]
-
-	for nearby_enemy in nearby_enemies:
-		if nearby_enemy != self and nearby_enemy.has_method("apply_status_effect"):
-			if not ("infect" in nearby_enemy.active_effects):
-				nearby_enemy.apply_status_effect(
-					"infect",
-					infection_effect.duration,
-					infection_effect.intensity,
-					infection_effect.get("source_bottle_id", "unknown")
-				)
-
-				if "color" in infection_effect:
-					nearby_enemy.active_effects["infect"]["color"] = infection_effect.color
-
-				var color = infection_effect.get("color", Color.GREEN)
-				InfectionVisuals.create_infection_death_spread_visual(
-					global_position,
-					nearby_enemy.global_position,
-					color
-				)
-				#VisualEffectManager.create_infection_spread_visual(
-					#global_position,
-					#nearby_enemy.global_position,
-					#color
-				#)
-
-func get_nearby_enemies_for_infection(radius: float) -> Array[Node2D]:
-	var enemies: Array[Node2D] = []
-	var bodies = get_tree().get_nodes_in_group("enemies")
-
-	for body in bodies:
-		if body != self and body.global_position.distance_to(global_position) <= radius:
-			enemies.append(body)
-
-	return enemies
-
-func _apply_stack_behavior(effect_name: String, effect_data: Dictionary, source_bottle_id: String):
-	"""Apply the actual stacking behavior based on effect name"""
-	var stacked_value = effect_data.base_value * effect_data.stacks
-
-	match effect_name:
-		#"mutation_infection":
-			#_apply_mutation_stacking(stacked_value, effect_data, source_bottle_id)
-		#
-		#"stacking_burn":
-			#_apply_burn_stacking(stacked_value, effect_data, source_bottle_id)
-		#
-		#"vulnerability_mark":
-			#_apply_vulnerability_stacking(stacked_value, effect_data, source_bottle_id)
-		#
-		#"slow_buildup":
-			#_apply_slow_stacking(stacked_value, effect_data, source_bottle_id)
-		#
-		#"damage_amplification":
-			#_apply_damage_amplification(stacked_value, effect_data, source_bottle_id)
-
-		_:  # Default behavior - modify existing status effect if it exists
-			_apply_generic_stacking(effect_name, stacked_value, effect_data, source_bottle_id)
-
-
-func apply_external_velocity(new_velocity: Vector2):
-	external_velocity = new_velocity
-	external_velocity_override = true
 
 func take_damage_from_source(damage_amount: float, source_bottle_id: String):
 	"""Enhanced damage function that applies stacking multipliers"""
@@ -448,6 +474,45 @@ func take_damage_from_source(damage_amount: float, source_bottle_id: String):
 		queue_free()
 		emit_signal("died", xp_on_kill, damage_sources)
 
+# Helper functions for stacking system
+func get_total_stack_count(effect_name: String) -> int:
+	"""Get total stack count across all bottles for an effect type"""
+	var total_stacks = 0
+	for key in stacking_effects.keys():
+		if key.begins_with(effect_name + "_"):
+			total_stacks += stacking_effects[key].stacks
+	return total_stacks
+
+func get_total_stacked_value(effect_name: String) -> float:
+	"""Get total stacked value across all bottles for an effect type"""
+	var total_value = 0.0
+	for key in stacking_effects.keys():
+		if key.begins_with(effect_name + "_"):
+			var effect = stacking_effects[key]
+			total_value += effect.base_value * effect.stacks
+	return total_value
+
+# Include all your other existing functions...
+func _apply_stack_behavior(effect_name: String, effect_data: Dictionary, source_bottle_id: String):
+	"""Apply immediate effects when stacks are added - fully generic"""
+
+	# GENERIC: Call immediate effect callback if provided
+	if effect_data.has("effect_data") and effect_data.effect_data.has("immediate_effect"):
+		var immediate_effect = effect_data.effect_data.immediate_effect
+		if immediate_effect.is_valid():
+			immediate_effect.call()
+			print("⚡ Applied immediate effect for: %s" % effect_name)
+
+func _apply_generic_stacking(effect_name: String, stacked_value: float, effect_data: Dictionary, source_bottle_id: String):
+	pass  # Can be empty now
+
+func apply_external_velocity(new_velocity: Vector2):
+	external_velocity = new_velocity
+	external_velocity_override = true
+
+func take_damage(damage_amount: float):
+	take_damage_from_source(damage_amount, "unknown")
+
 func play_hit_animation():
 	if not animated_sprite or is_playing_hit_animation:
 		return
@@ -467,8 +532,36 @@ func _on_animation_finished():
 		if animated_sprite.sprite_frames and animated_sprite.sprite_frames.has_animation(move_anim):
 			animated_sprite.play(move_anim)
 
-func take_damage(damage_amount: float):
-	take_damage_from_source(damage_amount, "unknown")
+func spread_infection_on_death():
+	var infection_radius = 60.0
+	var nearby_enemies = get_nearby_enemies_for_infection(infection_radius)
+	var infection_effect = active_effects["infect"]
+
+	for nearby_enemy in nearby_enemies:
+		if nearby_enemy != self and nearby_enemy.has_method("apply_status_effect"):
+			if not ("infect" in nearby_enemy.active_effects):
+				nearby_enemy.apply_status_effect(
+					"infect",
+					infection_effect.duration,
+					infection_effect.intensity,
+					infection_effect.get("source_bottle_id", "unknown")
+				)
+
+func get_nearby_enemies_for_infection(radius: float) -> Array[Node2D]:
+	var enemies: Array[Node2D] = []
+	var bodies = get_tree().get_nodes_in_group("enemies")
+
+	for body in bodies:
+		if body != self and body.global_position.distance_to(global_position) <= radius:
+			enemies.append(body)
+
+	return enemies
+
+func _execute_dot_tick_trigger(source_bottle_id: String, dot_type: String, damage_dealt: float):
+	"""Execute DOT tick triggers when DOT effects deal damage"""
+	var source_bottle = InventoryManager.get_bottle_by_id(source_bottle_id)
+	if source_bottle:
+		TriggerActionManager.execute_dot_tick_trigger(source_bottle, self, dot_type, damage_dealt)
 
 # XP Distribution helper functions
 func get_pure_debuff_sources() -> Array[String]:
@@ -498,184 +591,6 @@ func get_all_debuff_sources() -> Array[String]:
 				all_sources.append(source_id)
 	return all_sources
 
-func apply_stacking_effect(effect_name: String, base_value: float, max_stacks: int, source_bottle_id: String, duration: float = 10.0) -> int:
-	"""
-	Universal stacking system with per-bottle tracking
-	Returns current stack count after application
-	"""
-	# Create unique effect key: effect_name + bottle_id
-	var unique_effect_key = effect_name + "_" + source_bottle_id
-
-	# Initialize effect if it doesn't exist
-	if not stacking_effects.has(unique_effect_key):
-		stacking_effects[unique_effect_key] = {
-			"stacks": 0,
-			"base_value": base_value,
-			"max_stacks": max_stacks,
-			"source_bottle_id": source_bottle_id,
-			"effect_type": effect_name,
-			"duration": duration,
-			"timer": 0.0
-		}
-
-	var effect = stacking_effects[unique_effect_key]
-
-	# Add stack (up to max)
-	effect.stacks = min(effect.stacks + 1, max_stacks)
-	effect.timer = 0.0  # Reset duration
-	effect.base_value = max(effect.base_value, base_value)  # Use highest base value
-
-	# Apply the stacking effect
-	_apply_stack_behavior(effect.effect_type, effect, source_bottle_id)
-
-	print("📈 %s gained %s stack %d/%d from bottle %s (%.1f base value)" % [
-		name, effect_name, effect.stacks, max_stacks, source_bottle_id, base_value
-	])
-
-	return effect.stacks
-
-func get_stack_count(effect_name: String, source_bottle_id: String = "") -> int:
-	"""Get current stack count for an effect from a specific bottle"""
-	if source_bottle_id == "":
-		# Return total stacks across all bottles for this effect type
-		return get_total_stack_count(effect_name)
-
-	var unique_effect_key = effect_name + "_" + source_bottle_id
-	if stacking_effects.has(unique_effect_key):
-		return stacking_effects[unique_effect_key].stacks
-	return 0
-
-func get_total_stack_count(effect_name: String) -> int:
-	"""Get total stack count across all bottles for an effect type"""
-	var total_stacks = 0
-	for key in stacking_effects.keys():
-		if key.begins_with(effect_name + "_"):
-			total_stacks += stacking_effects[key].stacks
-	return total_stacks
-
-func get_stacked_value(effect_name: String, source_bottle_id: String = "") -> float:
-	"""Get the current stacked value from a specific bottle"""
-	if source_bottle_id == "":
-		# Return total value across all bottles
-		return get_total_stacked_value(effect_name)
-
-	var unique_effect_key = effect_name + "_" + source_bottle_id
-	if stacking_effects.has(unique_effect_key):
-		var effect = stacking_effects[unique_effect_key]
-		return effect.base_value * effect.stacks
-	return 0.0
-
-func get_total_stacked_value(effect_name: String) -> float:
-	"""Get total stacked value across all bottles for an effect type"""
-	var total_value = 0.0
-	for key in stacking_effects.keys():
-		if key.begins_with(effect_name + "_"):
-			var effect = stacking_effects[key]
-			total_value += effect.base_value * effect.stacks
-	return total_value
-
-func remove_stacking_effect(effect_name: String, source_bottle_id: String = ""):
-	"""Remove a stacking effect from a specific bottle or all bottles"""
-	if source_bottle_id == "":
-		# Remove all effects of this type
-		var keys_to_remove = []
-		for key in stacking_effects.keys():
-			if key.begins_with(effect_name + "_"):
-				_cleanup_stack_behavior(stacking_effects[key].effect_type, stacking_effects[key], stacking_effects[key].source_bottle_id)
-				keys_to_remove.append(key)
-
-		for key in keys_to_remove:
-			stacking_effects.erase(key)
-	else:
-		# Remove specific bottle's effect
-		var unique_effect_key = effect_name + "_" + source_bottle_id
-		if stacking_effects.has(unique_effect_key):
-			_cleanup_stack_behavior(effect_name, stacking_effects[unique_effect_key], source_bottle_id)
-			stacking_effects.erase(unique_effect_key)
-
-func _process_stacking_effects(delta: float):
-	"""Process stacking effect timers - call this from your existing _process function"""
-	var effects_to_remove = []
-
-	for effect_key in stacking_effects.keys():
-		var effect = stacking_effects[effect_key]
-		effect.timer += delta
-
-		# Remove if expired
-		if effect.timer >= effect.duration:
-			_cleanup_stack_behavior(effect.effect_type, effect, effect.source_bottle_id)
-			effects_to_remove.append(effect_key)
-
-	# Clean up expired effects
-	for effect_key in effects_to_remove:
-		stacking_effects.erase(effect_key)
-
-func _apply_generic_stacking(effect_name: String, stacked_value: float, effect_data: Dictionary, source_bottle_id: String):
-	"""Generic stacking - modify existing status effect intensity"""
-	# Try to find matching status effect
-	var status_effect_name = effect_name.replace("stacking_", "")
-
-	if status_effect_name in active_effects:
-		var total_value = get_total_stacked_value(effect_name)
-		active_effects[status_effect_name]["intensity"] = total_value
-		active_effects[status_effect_name]["is_stacking"] = true
-		active_effects[status_effect_name]["total_stacks"] = get_total_stack_count(effect_name)
-		active_effects[status_effect_name]["contributing_bottles"] = _get_contributing_bottles(effect_name)
-		active_effects[status_effect_name]["timer"] = 0.0
-
-func _get_contributing_bottles(effect_name: String) -> Array[String]:
-	"""Get list of bottle IDs contributing to an effect"""
-	var bottles: Array[String] = []
-	for key in stacking_effects.keys():
-		if key.begins_with(effect_name + "_"):
-			var bottle_id = key.substr(effect_name.length() + 1)  # Remove "effect_name_" prefix
-			bottles.append(bottle_id)
-	return bottles
-
-func _cleanup_stack_behavior(effect_name: String, effect_data: Dictionary, source_bottle_id: String):
-	"""Clean up when stacking effect expires"""
-	match effect_name:
-		"vulnerability_mark":
-			# Recalculate total vulnerability from remaining bottles
-			var remaining_vulnerability = get_total_stacked_value("vulnerability_mark")
-			if remaining_vulnerability > 0:
-				set_meta("vulnerability_multiplier", 1.0 + remaining_vulnerability)
-			else:
-				remove_meta("vulnerability_multiplier")
-
-		"slow_buildup":
-			# Recalculate total slow from remaining bottles
-			var remaining_slow = get_total_stacked_value("slow_buildup")
-			if remaining_slow > 0:
-				var slow_multiplier = 1.0 - remaining_slow
-				move_speed = original_speed * max(slow_multiplier, 0.1)
-			else:
-				move_speed = original_speed
-
-		"damage_amplification":
-			# Recalculate total amplification from remaining bottles
-			var remaining_amplification = get_total_stacked_value("damage_amplification")
-			if remaining_amplification > 0:
-				set_meta("damage_amplification", remaining_amplification)
-			else:
-				remove_meta("damage_amplification")
-
-	# Reset visual effects only if no stacking effects remain
-	if not has_any_visual_effects():
-		if animated_sprite and enemy_resource and enemy_resource.apply_color_tint:
-			animated_sprite.modulate = enemy_resource.enemy_color
-		elif animated_sprite:
-			animated_sprite.modulate = Color.WHITE
-
 func has_any_visual_effects() -> bool:
 	"""Check if enemy has any effects that should maintain visual changes"""
 	return not active_effects.is_empty() or not stacking_effects.is_empty()
-
-func _execute_dot_tick_trigger(source_bottle_id: String, dot_type: String, damage_dealt: float):
-	"""Execute DOT tick triggers when DOT effects deal damage"""
-	var source_bottle = InventoryManager.get_bottle_by_id(source_bottle_id)
-	if source_bottle:
-		TriggerActionManager.execute_dot_tick_trigger(source_bottle, self, dot_type, damage_dealt)
-	else:
-		# Bottle might not exist anymore, which is fine
-		pass

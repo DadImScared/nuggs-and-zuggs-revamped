@@ -1,6 +1,5 @@
-[gd_scene load_steps=13 format=4 uid="uid://bhbxsh4rrxaqo"]
+[gd_scene load_steps=12 format=4 uid="uid://bhbxsh4rrxaqo"]
 
-[ext_resource type="PackedScene" uid="uid://dw66kcl6em5ar" path="res://Scenes/enemy.tscn" id="1_3dryh"]
 [ext_resource type="PackedScene" uid="uid://pauhynd1wg0o" path="res://Scenes/player.tscn" id="1_ebmjs"]
 [ext_resource type="Script" uid="uid://cqfhbqouv0ruy" path="res://Scenes/game.gd" id="1_wowpa"]
 [ext_resource type="Script" uid="uid://b1s0j3i4fxcac" path="res://Scenes/UI/ui_manager.gd" id="2_wrm1d"]
@@ -4836,9 +4835,6 @@ sources/0 = SubResource("TileSetAtlasSource_i6g32")
 
 [node name="Game" type="Node2D"]
 script = ExtResource("1_wowpa")
-
-[node name="Enemy" parent="." instance=ExtResource("1_3dryh")]
-position = Vector2(45, 42)
 
 [node name="Player" parent="." instance=ExtResource("1_ebmjs")]
 z_index = 19
