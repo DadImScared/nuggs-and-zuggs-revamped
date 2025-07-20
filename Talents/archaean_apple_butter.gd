@@ -46,6 +46,15 @@ func _create_temporal_debt_trigger() -> TriggerEffectResource:
 	trigger.effect_parameters["bonus_per_second"] = 0.05  # 5% per second
 	return trigger
 
+func _create_amber_preservation_trigger() -> TriggerEffectResource:
+	var trigger = TriggerEffectResource.new()
+	trigger.trigger_name = "amber_preservation_protocol"
+	trigger.trigger_type = TriggerEffectResource.TriggerType.ON_ENEMY_DEATH
+	trigger.effect_parameters["seeker_count"] = [3, 5]  # 3-5 seekers
+	trigger.effect_parameters["seeker_range"] = 200.0  # Seeker flight range
+	trigger.effect_parameters["seeker_fossilize_chance"] = 1  # 60% fossilize chance per seeker
+	return trigger
+
 func build_talent_pool():
 	var apple_butter_talents = [
 		# Future talents will go here
@@ -63,14 +72,19 @@ func build_talent_pool():
 			[_create_amber_amplifier_trigger()],
 			TalentManager.TalentTheme.DAMAGE
 		),
+		#create_trigger_talent(
+			#"Temporal Debt Collection",
+			#"Every second without fossilizing, gain +5% fossilization chance. Resets on success.",
+			#2,
+			#[_create_temporal_debt_trigger()],
+			#TalentManager.TalentTheme.DEFENSIVE
+		#),
 		create_trigger_talent(
-			"Temporal Debt Collection",
-			"Every second without fossilizing, gain +5% fossilization chance. Resets on success.",
+			"Amber Preservation Protocol",
+			"Fossilized enemies shatter into 3-5 amber seekers that fly out and fossilize on hit (60% chance)",
 			2,
-			[_create_temporal_debt_trigger()],
-			TalentManager.TalentTheme.DEFENSIVE
+			[_create_amber_preservation_trigger()],
+			TalentManager.TalentTheme.DAMAGE
 		)
-		#create_stat_talent("shot", "ww", 2, []),
-		#create_stat_talent("shot", "ww", 2, [])
 	]
 	return apple_butter_talents
