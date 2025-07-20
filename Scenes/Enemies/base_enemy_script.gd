@@ -340,6 +340,11 @@ func apply_stacking_effect(effect_name: String, base_value: float, max_stacks: i
 
 	var effect = stacking_effects[unique_effect_key]
 
+	# Check if we're at max stacks
+	if effect.stacks >= max_stacks:
+		print("⚠️ %s at max stacks (%d/%d)" % [effect_name, effect.stacks, max_stacks])
+		return effect.stacks
+
 	# Add stack (up to max)
 	effect.stacks = min(effect.stacks + 1, max_stacks)
 	effect.timer = 0.0  # Reset duration
@@ -349,7 +354,7 @@ func apply_stacking_effect(effect_name: String, base_value: float, max_stacks: i
 	if not effect_data.is_empty():
 		effect.effect_data = effect_data
 
-	# Apply the stacking effect
+	# Apply the stacking effect (this calls immediate_effect)
 	_apply_stack_behavior(effect.effect_type, effect, source_bottle_id)
 
 	print("📈 %s gained %s stack %d/%d from bottle %s (%.1f base value)" % [
@@ -382,14 +387,20 @@ func _process_stacking_effects(delta: float):
 				tick_effect.call()
 				effect.tick_timer = 0.0  # Reset tick timer
 
-		# Remove if expired
+		# Check if expired
 		if effect.timer >= effect.duration:
-			_cleanup_stack_behavior(effect.effect_type, effect, effect.source_bottle_id)
-			effects_to_remove.append(effect_key)
+			effects_to_remove.append({
+				"key": effect_key,
+				"effect_type": effect.effect_type,
+				"effect": effect,
+				"source_bottle_id": effect.source_bottle_id
+			})
 
-	# Clean up expired effects
-	for effect_key in effects_to_remove:
-		stacking_effects.erase(effect_key)
+	# Remove expired effects FIRST, then run cleanup
+	for effect_info in effects_to_remove:
+		stacking_effects.erase(effect_info.key)
+		# NOW run cleanup after the stack is actually removed
+		_cleanup_stack_behavior(effect_info.effect_type, effect_info.effect, effect_info.source_bottle_id)
 
 func _cleanup_stack_behavior(effect_name: String, effect_data: Dictionary, source_bottle_id: String):
 	"""Clean up when stacking effect expires - fully generic"""
@@ -398,8 +409,8 @@ func _cleanup_stack_behavior(effect_name: String, effect_data: Dictionary, sourc
 	if effect_data.has("effect_data") and effect_data.effect_data.has("visual_cleanup"):
 		var visual_cleanup = effect_data.effect_data.visual_cleanup
 		if visual_cleanup.is_valid():
-			# Only run visual cleanup when this is the LAST stack
-			if get_total_stack_count(effect_name) == 1:  # About to become 0
+			# Check if this is the LAST stack (already removed, so count should be 0)
+			if get_total_stack_count(effect_name) == 0:
 				visual_cleanup.call()
 				print("🧹 Executed visual cleanup for: %s" % effect_name)
 
@@ -496,7 +507,7 @@ func get_total_stacked_value(effect_name: String) -> float:
 func _apply_stack_behavior(effect_name: String, effect_data: Dictionary, source_bottle_id: String):
 	"""Apply immediate effects when stacks are added - fully generic"""
 
-	# GENERIC: Call immediate effect callback if provided
+	# GENERIC: Call immediate effect callback if provided (this runs AFTER stack is counted)
 	if effect_data.has("effect_data") and effect_data.effect_data.has("immediate_effect"):
 		var immediate_effect = effect_data.effect_data.immediate_effect
 		if immediate_effect.is_valid():

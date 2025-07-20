@@ -68,10 +68,10 @@ func execute_trigger(bottle: ImprovedBaseSauceBottle, data: EnhancedTriggerData)
 		var remaining_slow = enemy.get_total_stacked_value("fossilize")
 		if remaining_slow > 0:
 			var slow_multiplier = 1.0 - remaining_slow
-			enemy.move_speed = enemy.original_speed * max(slow_multiplier, 0.1)
+			enemy.move_speed = enemy.base_speed * max(slow_multiplier, 0.1)
 			print("🔶 Fossilize stack expired: %.0f%% speed reduction remaining" % (remaining_slow * 100))
 		else:
-			enemy.move_speed = enemy.original_speed
+			enemy.move_speed = enemy.base_speed
 			print("🔶 All fossilize stacks expired - speed fully restored")
 
 	# Apply stacking fossilize effect with DOT

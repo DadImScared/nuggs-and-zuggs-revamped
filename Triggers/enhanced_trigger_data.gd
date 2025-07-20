@@ -60,7 +60,7 @@ func get_tooltip_text() -> String:
 
 	for param_key in enhancement_sources.keys():
 		var info = enhancement_sources[param_key]
-		tooltip += "\n🔧 %s: %.2f\n" % [param_key.capitalize(), info["final_value"]]
+		tooltip += "\n🔧 %s: %s\n" % [param_key.capitalize(), info["final_value"]]
 
 		for source in info["sources"]:
 			tooltip += "  • %s\n" % source
