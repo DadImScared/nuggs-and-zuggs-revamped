@@ -55,6 +55,26 @@ func _create_amber_preservation_trigger() -> TriggerEffectResource:
 	trigger.effect_parameters["seeker_fossilize_chance"] = 1  # 60% fossilize chance per seeker
 	return trigger
 
+func _create_fossilization_overflow_trigger() -> TriggerEffectResource:
+	"""When hitting already-fossilized enemies, create amber explosion that spreads fossilization"""
+	var trigger = TriggerEffectResource.new()
+	trigger.trigger_name = "fossilization_overflow"
+	trigger.trigger_type = TriggerEffectResource.TriggerType.ON_HIT
+	trigger.trigger_condition["chance"] = 1.0  # Always check hits
+
+	# Explosion parameters
+	trigger.effect_parameters["explosion_radius"] = 120.0
+	trigger.effect_parameters["explosion_damage_multiplier"] = 1.3  # 200% damage
+	trigger.effect_parameters["spread_fossilize_chance"] = 0.5  # 80% chance to fossilize hit enemies
+	trigger.effect_parameters["amber_color"] = Color(1.0, 0.8, 0.3, 0.8)
+
+	# Fossilization parameters for spread effect
+	trigger.effect_parameters["fossilize_duration"] = 2.5
+	trigger.effect_parameters["fossilize_tick_damage"] = 6.0
+	trigger.effect_parameters["max_fossilize_stacks"] = 3  # Lower than normal for balance
+
+	return trigger
+
 func build_talent_pool():
 	var apple_butter_talents = [
 		# Future talents will go here
@@ -66,12 +86,19 @@ func build_talent_pool():
 			TalentManager.TalentTheme.DAMAGE
 		),
 		create_trigger_talent(
-			"Amber Amplifier",
-			"+20% damage per fossilized enemy alive (max +200%)",
-			2,
-			[_create_amber_amplifier_trigger()],
-			TalentManager.TalentTheme.DAMAGE
+			"Fossilization Overflow",
+			"Hitting already-fossilized enemies creates amber explosions that deal 200% damage and spread fossilization to nearby enemies (80% chance).",
+			2,  # Tier 2 talent
+			[_create_fossilization_overflow_trigger()],
+			TalentManager.TalentTheme.EXPLOSIVE
 		),
+		#create_trigger_talent(
+			#"Amber Amplifier",
+			#"+20% damage per fossilized enemy alive (max +200%)",
+			#2,
+			#[_create_amber_amplifier_trigger()],
+			#TalentManager.TalentTheme.DAMAGE
+		#),
 		#create_trigger_talent(
 			#"Temporal Debt Collection",
 			#"Every second without fossilizing, gain +5% fossilization chance. Resets on success.",
