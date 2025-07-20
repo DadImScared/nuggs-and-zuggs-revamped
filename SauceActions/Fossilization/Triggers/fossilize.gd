@@ -14,29 +14,40 @@ func execute_trigger(bottle: ImprovedBaseSauceBottle, data: EnhancedTriggerData)
 		return
 
 	# Create fossilize callback
-	var fossilize_callback = func(context: StatusEffectApplier.EffectContext):
-		var duration = context.duration
+	var my_callback = func(context: StatusEffectApplier.EffectContext):
+		var cb_enemy = context.enemy
+		var original_speed = cb_enemy.move_speed
+		var original_color = cb_enemy.modulate
 		var amber_color = Color(1.0, 0.8, 0.3, 0.6)
+		cb_enemy.modulate = amber_color
 
-		# Apply fossilization status effect
-		if context.enemy.has_method("apply_status_effect"):
-			context.enemy.apply_status_effect("fossilize", duration, context.intensity, context.get_bottle_id())
-			print("🔶 Fossilized enemy for %.1f seconds!" % duration)
+		# Apply effect
+		cb_enemy.move_speed *= 0.1
 
-			# Create amber visual effect
-			_create_amber_effect(context.enemy, amber_color, duration)
+		var amber_shell = _create_amber_shell(cb_enemy, amber_color, context.duration)
 
-			# Create fossilization sound/particles
-			_create_fossilization_effects(context.enemy.global_position, amber_color)
-		else:
-			print("⚠️ Enemy doesn't support status effects")
+		# Create fossilization particles
+		_create_fossilization_effects(cb_enemy.global_position, amber_color)
+
+		# Create cleanup
+		var cleanup = func():
+			if is_instance_valid(cb_enemy):
+				cb_enemy.move_speed = original_speed
+				cb_enemy.modulate = original_color
+			if is_instance_valid(amber_shell):
+				amber_shell.queue_free()
+				print("🔶 Removed amber shell")
+
+		# Create status effect with cleanup
+		print(cb_enemy.name, " cb -enemy ---------------------")
+		cb_enemy.apply_status_effect("fossilize", context.duration, context.intensity, context.get_bottle_id(), cleanup)
 
 	# Apply the fossilize effect using the callback system
 	SauceEffectManager.apply_custom_effect(
 		projectile,
 		enemy,
 		bottle,
-		fossilize_callback,
+		my_callback,
 		bottle.effective_effect_intensity,  # custom intensity
 		bottle.sauce_data.effect_duration   # custom duration
 	)

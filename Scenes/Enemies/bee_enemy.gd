@@ -224,7 +224,7 @@ func process_debuff_periodic_xp(delta: float):
 func is_pure_debuff_effect(effect_name: String) -> bool:
 	return effect_name in ["slow", "freeze", "sticky"]
 
-func apply_status_effect(effect_name: String, duration: float, intensity: float, source_bottle_id: String = "unknown"):
+func apply_status_effect(effect_name: String, duration: float, intensity: float, source_bottle_id: String = "unknown", cb = Callable()):
 	# Apply bee resistances
 	var actual_intensity = intensity
 	var actual_duration = duration

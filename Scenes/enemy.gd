@@ -84,7 +84,7 @@ func process_status_effects(delta: float):
 	for effect_name in effects_to_remove:
 		remove_status_effect(effect_name)
 
-func apply_status_effect(effect_name: String, duration: float, intensity: float, source_bottle_id: String = "unknown"):
+func apply_status_effect(effect_name: String, duration: float, intensity: float, source_bottle_id: String = "unknown", cb = Callable()):
 	print("source bottle id ", source_bottle_id, "effect name", effect_name)
 	active_effects[effect_name] = {
 		"duration": duration,

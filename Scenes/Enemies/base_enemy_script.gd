@@ -219,7 +219,7 @@ func is_dot_effect(effect_name: String) -> bool:
 func is_debuff_effect(effect_name: String) -> bool:
 	return is_pure_debuff_effect(effect_name) or is_dot_effect(effect_name)
 
-func apply_status_effect(effect_name: String, duration: float, intensity: float, source_bottle_id: String = "unknown"):
+func apply_status_effect(effect_name: String, duration: float, intensity: float, source_bottle_id: String = "unknown", cleanup_callback: Callable = Callable()):
 	# Apply enemy resistances
 	var source_bottle = InventoryManager.get_bottle_by_id(source_bottle_id)
 	var actual_intensity = intensity
@@ -268,7 +268,8 @@ func apply_status_effect(effect_name: String, duration: float, intensity: float,
 		"intensity": actual_intensity,
 		"timer": 0.0,
 		"source_bottle_id": source_bottle_id,
-		"spread_radius": spread_radius
+		"spread_radius": spread_radius,
+		"cleanup": cleanup_callback
 	}
 
 	# Apply immediate visual/movement effects
@@ -291,21 +292,30 @@ func apply_status_effect(effect_name: String, duration: float, intensity: float,
 			animated_sprite.modulate = Color(0.8, 1.2, 0.8) # Bright green
 
 func remove_status_effect(effect_name: String):
-	active_effects.erase(effect_name)
+	if effect_name in active_effects:
+		# NEW: Execute cleanup if it exists
+		var effect_data = active_effects[effect_name]
+		if effect_data.has("cleanup") and effect_data.cleanup.is_valid():
+			effect_data.cleanup.call()
+			print("🧹 Executed cleanup for: %s" % effect_name)
 
-	# Remove effect consequences
-	match effect_name:
-		"slow", "freeze", "sticky":
-			move_speed = original_speed
-		"burn", "poison", "infect":
-			pass # Visual effects will fade naturally
+		# Your existing removal logic stays exactly the same
+		match effect_name:
+			"slow":
+				move_speed = original_speed
+			"freeze":
+				move_speed = original_speed
+			"sticky":
+				move_speed = original_speed
 
-	if active_effects.is_empty():
-		# Return to original color when no effects
-		if enemy_resource and enemy_resource.apply_color_tint:
-			animated_sprite.modulate = enemy_resource.enemy_color
-		else:
-			animated_sprite.modulate = Color.WHITE
+		active_effects.erase(effect_name)
+
+		# Reset visual effects if no other effects remain
+		if active_effects.is_empty():
+			if animated_sprite and enemy_resource and enemy_resource.apply_color_tint:
+				animated_sprite.modulate = enemy_resource.enemy_color
+			elif animated_sprite:
+				animated_sprite.modulate = Color.WHITE
 
 func scale_to_player_level():
 	if PlayerStats.level < 2:
