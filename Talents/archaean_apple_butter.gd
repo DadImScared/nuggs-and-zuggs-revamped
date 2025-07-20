@@ -29,6 +29,16 @@ func _create_sedimentary_layers_enhancement() -> TriggerEffectResource:
 
 	return enhancement
 
+func _create_amber_amplifier_trigger() -> TriggerEffectResource:
+	var trigger = TriggerEffectResource.new()
+	trigger.trigger_name = "amber_amplifier"
+	trigger.trigger_type = TriggerEffectResource.TriggerType.PASSIVE
+	trigger.effect_parameters["radius"] = 400.0
+	trigger.effect_parameters["damage_per_enemy"] = 0.20
+	trigger.effect_parameters["max_enemies"] = 10
+	return trigger
+
+
 func build_talent_pool():
 	var apple_butter_talents = [
 		# Future talents will go here
@@ -39,7 +49,14 @@ func build_talent_pool():
 			[_create_sedimentary_layers_enhancement()],
 			TalentManager.TalentTheme.DAMAGE
 		),
-		create_stat_talent("shot", "ww", 2, []),
+		create_trigger_talent(
+			"Amber Amplifier",
+			"+20% damage per fossilized enemy alive (max +200%)",
+			3,
+			[_create_amber_amplifier_trigger()],
+			TalentManager.TalentTheme.DAMAGE
+		),
+		#create_stat_talent("shot", "ww", 2, []),
 		create_stat_talent("shot", "ww", 2, [])
 	]
 	return apple_butter_talents
