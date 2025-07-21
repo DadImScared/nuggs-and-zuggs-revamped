@@ -7,8 +7,8 @@ extends Area2D
 @export var pulse_interval: float = 1.0
 @export var total_duration: float = 5.0
 @export var spread_fossilize_chance: float = 0.5
-@export var base_damage: float = 5.0  # Fixed flat damage per pulse
-@export var xp_contribution_multiplier: float = 0.1  # Only 10% XP credit
+@export var base_damage: float = 0.15  # 15% of source bottle damage (between 0.25 and 0.40)
+@export var xp_contribution_multiplier: float = 0.05  # Only 5% XP credit (was 1%)
 
 # Internal state
 var pulse_count: int = 0
@@ -21,6 +21,9 @@ var collision_shape: CollisionShape2D
 var sprite: Sprite2D
 var pulse_timer: Timer
 var source_bottle: ImprovedBaseSauceBottle  # The bottle that created this crystal
+
+# Create a BaseAmberTrigger instance to handle fossilization
+var ambient_tween: Tween  # Store reference to control the ambient pulsing
 
 # Create a BaseAmberTrigger instance to handle fossilization
 var amber_trigger: BaseAmberTrigger
@@ -172,20 +175,14 @@ func execute_pulse():
 	print("💎 [%s] === PULSE %d/%d COMPLETED - Damaged %d enemies ===" % [crystal_id, pulse_count, max_pulses, enemies_damaged])
 
 func apply_pulse_effects(enemy: Node):
-	# Apply fixed damage instead of percentage based
+	# Apply scaled damage
 	var damage = calculate_pulse_damage()
 
 	print("💎 [%s] Applying %.1f damage to enemy" % [crystal_id, damage])
 
-	# Apply damage with reduced XP contribution
-	if enemy.has_method("apply_damage"):
-		enemy.apply_damage(damage)
-
-		# Give partial XP credit to the source bottle
-		if source_bottle and enemy.has_method("register_damage_source"):
-			var xp_credit = damage * xp_contribution_multiplier
-			enemy.register_damage_source(source_bottle, xp_credit)
-			print("💎 [%s] Registered %.1f XP credit (%.0f%% of damage)" % [crystal_id, xp_credit, xp_contribution_multiplier * 100])
+	# Apply damage using crystal bottle ID (gets no XP - it's a utility effect)
+	if enemy.has_method("take_damage_from_source"):
+		enemy.take_damage_from_source(damage, "amber_crystal_utility")
 	elif enemy.has_method("take_damage"):
 		enemy.take_damage(damage)
 
@@ -195,9 +192,11 @@ func apply_pulse_effects(enemy: Node):
 		print("💎 [%s] Fossilization triggered (%.1f%% chance)" % [crystal_id, spread_fossilize_chance * 100])
 
 func calculate_pulse_damage() -> float:
-	# Crystal does flat damage, not percentage based
-	# This prevents scaling issues with high damage bottles
-	return base_damage
+	# Crystal does percentage of source bottle damage for proper scaling
+	if source_bottle:
+		return source_bottle.effective_damage * base_damage  # 15% of bottle damage
+	else:
+		return 3.0  # Fallback if no source bottle
 
 func apply_fossilization_to_enemy(enemy: Node):
 	print("💎 [%s] Applying fossilization to enemy" % crystal_id)
@@ -207,7 +206,7 @@ func apply_fossilization_to_enemy(enemy: Node):
 	fossilize_trigger_resource.trigger_name = "fossilize"
 	fossilize_trigger_resource.trigger_type = TriggerEffectResource.TriggerType.ON_HIT
 	fossilize_trigger_resource.effect_parameters["duration"] = 2.5
-	fossilize_trigger_resource.effect_parameters["tick_damage"] = 3.0  # Reduced tick damage
+	fossilize_trigger_resource.effect_parameters["tick_damage"] = source_bottle.effective_damage * 0.06 if source_bottle else 1.5  # 6% of bottle damage for DOT
 	fossilize_trigger_resource.effect_parameters["amber_color"] = Color(1.0, 0.8, 0.3, 0.6)
 	fossilize_trigger_resource.effect_parameters["max_stacks"] = 1  # Only one stack from crystals
 	fossilize_trigger_resource.effect_parameters["trigger_source"] = "amber_crystal"
@@ -215,13 +214,20 @@ func apply_fossilization_to_enemy(enemy: Node):
 	# Create EnhancedTriggerData
 	var fossilize_trigger_data = EnhancedTriggerData.new(fossilize_trigger_resource)
 
-	# Use the actual source bottle if available, otherwise create minimal bottle
-	var bottle_to_use = source_bottle
-	if not bottle_to_use:
-		bottle_to_use = ImprovedBaseSauceBottle.new()
-		bottle_to_use.bottle_id = "amber_crystal"
-		bottle_to_use.base_damage = base_damage
-		bottle_to_use.effective_damage = base_damage
+	# FIXED: Create a minimal bottle with crystal's own weak damage values
+	# Don't inherit the source bottle's powerful damage
+	var bottle_to_use = ImprovedBaseSauceBottle.new()
+	bottle_to_use.bottle_id = "amber_crystal"
+
+	# Create minimal sauce data with scaled damage from source bottle
+	var crystal_sauce_data = BaseSauceResource.new()
+	crystal_sauce_data.damage = source_bottle.effective_damage * 0.06 if source_bottle else 1.5  # 6% for DOT calculations
+	crystal_sauce_data.sauce_name = "Amber Crystal"
+
+	bottle_to_use.sauce_data = crystal_sauce_data
+	bottle_to_use.effective_damage = source_bottle.effective_damage * 0.06 if source_bottle else 1.5  # Match DOT damage
+
+	print("💎 [%s] Created scaled bottle - Crystal pulse: %.1f (15%%), DOT: %.1f (6%%) of source: %.1f" % [crystal_id, calculate_pulse_damage(), bottle_to_use.effective_damage, source_bottle.effective_damage if source_bottle else 0.0])
 
 	# Use the amber trigger's fossilization method
 	amber_trigger.apply_fossilization_to_enemy(enemy, bottle_to_use, fossilize_trigger_data, 1)
@@ -251,15 +257,31 @@ func create_pulse_visual():
 		crystal_tween.tween_property(sprite, "scale", Vector2(1.0, 1.0), 0.1)
 
 func create_pulse_visual_feedback():
-	# Subtle ambient pulsing for the crystal itself
+	# FIXED: More controlled ambient pulsing that doesn't loop infinitely
 	if sprite:
-		var ambient_tween = create_tween()
-		ambient_tween.set_loops()
-		ambient_tween.tween_property(sprite, "modulate", Color(1.2, 1.0, 0.5, 1.0), 1.0)
-		ambient_tween.tween_property(sprite, "modulate", Color(1.0, 0.8, 0.3, 1.0), 1.0)
+		# Create tween once and store reference
+		ambient_tween = create_tween()
+
+		# Set up a gentle, limited ambient pulse (3 cycles only)
+		ambient_tween.set_loops(3)  # Limit to 3 cycles instead of infinite
+		ambient_tween.tween_property(sprite, "modulate", Color(1.2, 1.0, 0.5, 1.0), 0.8)
+		ambient_tween.tween_property(sprite, "modulate", Color(1.0, 0.8, 0.3, 1.0), 0.8)
+
+		# When ambient pulsing is done, set to stable color
+		ambient_tween.finished.connect(_on_ambient_pulse_finished)
+
+func _on_ambient_pulse_finished():
+	# Set crystal to stable amber color when ambient pulsing is done
+	if sprite and is_instance_valid(sprite):
+		sprite.modulate = Color(1.0, 0.8, 0.3, 1.0)
 
 func _on_lifetime_expired():
 	print("💎 [%s] Crystal lifetime expired - destroying" % crystal_id)
+
+	# Stop any ongoing tweens to prevent errors
+	if ambient_tween and ambient_tween.is_valid():
+		ambient_tween.kill()
+
 	create_destruction_effect()
 	queue_free()
 

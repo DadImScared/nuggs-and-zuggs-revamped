@@ -6,6 +6,7 @@ extends BaseAmberTrigger
 var detection_radius: float = 400.0
 var cooldown_duration: float = 2.0
 var min_fossilized_enemies: int = 3
+var max_spawn_distance: float = 250.0  # Maximum distance from player to spawn crystal
 
 # Cooldown tracking
 var last_crystal_spawn_time: int = 0
@@ -45,7 +46,7 @@ func execute_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: Enhan
 		print("💎 Crystalline Bloom: Could not find player position")
 		return
 
-	# Find a good enemy position to spawn the crystal at
+	# FIXED: Find a good spawn position that stays near the player
 	var spawn_position = _get_crystal_spawn_position(player_position)
 
 	_spawn_crystal_at_position(spawn_position, source_bottle, trigger_data)
@@ -77,26 +78,42 @@ func _get_player_position() -> Vector2:
 	return Vector2.ZERO
 
 func _get_crystal_spawn_position(player_position: Vector2) -> Vector2:
-	"""Find a good position to spawn the crystal - preferably near fossilized enemies"""
+	"""FIXED: Find a good position to spawn the crystal - keep it reasonably close to player"""
 	var nearby_enemies = get_nearby_enemies(player_position, detection_radius)
 	var fossilized_enemies = []
 
-	# Collect all fossilized enemies
+	# Collect all fossilized enemies within reasonable distance
 	for enemy in nearby_enemies:
 		if is_instance_valid(enemy) and is_enemy_fossilized(enemy):
-			fossilized_enemies.append(enemy)
+			var distance_to_player = enemy.global_position.distance_to(player_position)
+
+			# Only consider enemies within reasonable range
+			if distance_to_player <= max_spawn_distance:
+				fossilized_enemies.append(enemy)
 
 	if fossilized_enemies.is_empty():
-		print("💎 No fossilized enemies found - spawning at player position")
-		return player_position
+		print("💎 No nearby fossilized enemies - spawning near player")
+		# Spawn in a random direction around the player, but close by
+		var random_angle = randf() * TAU  # Random angle in radians
+		var spawn_distance = randf_range(80.0, 150.0)  # 80-150 pixels from player
+		var offset = Vector2(cos(random_angle), sin(random_angle)) * spawn_distance
+		return player_position + offset
 
-	# Find the center point of fossilized enemies
+	# Find the center point of nearby fossilized enemies
 	var center_position = Vector2.ZERO
 	for enemy in fossilized_enemies:
 		center_position += enemy.global_position
 	center_position /= fossilized_enemies.size()
 
-	print("💎 Spawning crystal at center of %d fossilized enemies" % fossilized_enemies.size())
+	# FIXED: Clamp the spawn position to stay within reasonable distance of player
+	var distance_to_player = center_position.distance_to(player_position)
+	if distance_to_player > max_spawn_distance:
+		# Move the spawn position closer to the player
+		var direction_to_center = (center_position - player_position).normalized()
+		center_position = player_position + (direction_to_center * max_spawn_distance)
+		print("💎 Clamped crystal spawn position to stay within %.0fpx of player" % max_spawn_distance)
+
+	print("💎 Spawning crystal at center of %d nearby fossilized enemies (%.0fpx from player)" % [fossilized_enemies.size(), center_position.distance_to(player_position)])
 	return center_position
 
 func _count_fossilized_enemies_near_player(player_position: Vector2) -> int:
@@ -135,7 +152,7 @@ func _spawn_crystal_at_position(position: Vector2, source_bottle: ImprovedBaseSa
 	# Add to scene
 	Engine.get_main_loop().current_scene.add_child(crystal)
 
-	print("💎 Amber Crystal spawned at position %s by %s" % [str(position), source_bottle.sauce_data.sauce_name])
+	print("💎 Amber Crystal spawned at position %s by %s (%.0fpx from player)" % [str(position), source_bottle.sauce_data.sauce_name, position.distance_to(_get_player_position())])
 
 	# Optional: Create spawn visual effect
 	create_fossilization_particles(position, DEFAULT_AMBER_COLOR)

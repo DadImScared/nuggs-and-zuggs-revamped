@@ -43,7 +43,7 @@ func _create_amber_explosion(position: Vector2, radius: float, damage_multiplier
 	create_fossilization_particles(position, amber_color)
 
 	# Calculate explosion damage
-	var explosion_damage = source_bottle.effective_damage * damage_multiplier
+	var explosion_damage = source_bottle.effective_damage * 0.25
 
 	# Get nearby enemies using base class method
 	var nearby_enemies = get_nearby_enemies(position, radius)
@@ -75,7 +75,7 @@ func _create_amber_explosion(position: Vector2, radius: float, damage_multiplier
 			fossilize_trigger_resource.trigger_type = TriggerEffectResource.TriggerType.ON_HIT
 			fossilize_trigger_resource.effect_parameters["trigger_source"] = "overflow_explosion"
 			fossilize_trigger_resource.effect_parameters["duration"] = DEFAULT_FOSSILIZE_DURATION
-			fossilize_trigger_resource.effect_parameters["tick_damage"] = DEFAULT_TICK_DAMAGE
+			fossilize_trigger_resource.effect_parameters["tick_damage"] = source_bottle.effective_damage * 0.12
 			fossilize_trigger_resource.effect_parameters["amber_color"] = amber_color
 			fossilize_trigger_resource.effect_parameters["max_stacks"] = 3  # Overflow has lower limit
 			fossilize_trigger_resource.effect_parameters["distance_factor"] = falloff_multiplier
