@@ -98,7 +98,7 @@ func setup_timers():
 		pulse_timer.autostart = false  # Don't autostart
 		pulse_timer.timeout.connect(_on_pulse_timer_timeout)
 		pulse_timer.start()  # Manually start
-		print("💎 [%s] Pulse timer configured: %.1fs interval, repeating, will pulse %d times" % [crystal_id, pulse_interval, max_pulses])
+		#print("💎 [%s] Pulse timer configured: %.1fs interval, repeating, will pulse %d times" % [crystal_id, pulse_interval, max_pulses])
 	else:
 		print("💎 [%s] ERROR: No pulse timer found in scene!" % crystal_id)
 		print("💎 Available children:")
@@ -124,22 +124,22 @@ func setup_timers():
 	lifetime_timer.autostart = true
 	add_child(lifetime_timer)
 
-	print("💎 [%s] Amber Crystal spawned - will pulse up to %d times over %.1f seconds" % [crystal_id, max_pulses, total_duration])
+	#print("💎 [%s] Amber Crystal spawned - will pulse up to %d times over %.1f seconds" % [crystal_id, max_pulses, total_duration])
 
 func _on_pulse_timer_timeout():
 	# Check if we've reached max pulses
 	if pulse_count >= max_pulses:
 		pulse_timer.stop()
-		print("💎 [%s] Reached max pulses (%d) - stopping timer" % [crystal_id, max_pulses])
+		#print("💎 [%s] Reached max pulses (%d) - stopping timer" % [crystal_id, max_pulses])
 		return
 
 	pulse_count += 1
-	print("💎 [%s] === PULSE %d/%d STARTING ===" % [crystal_id, pulse_count, max_pulses])
+	#print("💎 [%s] === PULSE %d/%d STARTING ===" % [crystal_id, pulse_count, max_pulses])
 
 	execute_pulse()
 
 func execute_pulse():
-	print("💎 [%s] Crystal pulse %d/%d - detecting enemies in %.0fpx radius" % [crystal_id, pulse_count, max_pulses, pulse_radius])
+	#print("💎 [%s] Crystal pulse %d/%d - detecting enemies in %.0fpx radius" % [crystal_id, pulse_count, max_pulses, pulse_radius])
 
 	# Get nearby enemies using the amber trigger's method (uses scene tree, not collision)
 	var nearby_enemies = amber_trigger.get_nearby_enemies(global_position, pulse_radius)
@@ -148,7 +148,7 @@ func execute_pulse():
 		print("💎 [%s] No enemies in pulse range" % crystal_id)
 		return
 
-	print("💎 [%s] Pulse hitting %d enemies" % [crystal_id, nearby_enemies.size()])
+	#print("💎 [%s] Pulse hitting %d enemies" % [crystal_id, nearby_enemies.size()])
 
 	# Apply effects to each enemy
 	var enemies_damaged = 0
@@ -172,7 +172,7 @@ func execute_pulse():
 
 	# Visual pulse effect
 	create_pulse_visual()
-	print("💎 [%s] === PULSE %d/%d COMPLETED - Damaged %d enemies ===" % [crystal_id, pulse_count, max_pulses, enemies_damaged])
+	#print("💎 [%s] === PULSE %d/%d COMPLETED - Damaged %d enemies ===" % [crystal_id, pulse_count, max_pulses, enemies_damaged])
 
 func apply_pulse_effects(enemy: Node):
 	# Apply scaled damage
