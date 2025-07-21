@@ -1,3 +1,4 @@
+# Scenes/amber_crystal.gd
 class_name AmberCrystal
 extends Area2D
 
@@ -6,11 +7,14 @@ extends Area2D
 @export var pulse_interval: float = 1.0
 @export var total_duration: float = 5.0
 @export var spread_fossilize_chance: float = 0.5
-@export var base_damage: float = 1.0
+@export var base_damage: float = 5.0  # Fixed flat damage per pulse
+@export var xp_contribution_multiplier: float = 0.1  # Only 10% XP credit
 
 # Internal state
 var pulse_count: int = 0
 var max_pulses: int = 5
+var crystal_id: String  # Unique ID for debugging
+var enemies_hit_this_crystal: Dictionary = {}  # Track enemies to prevent multiple hits
 
 # References
 var collision_shape: CollisionShape2D
@@ -22,14 +26,22 @@ var source_bottle: ImprovedBaseSauceBottle  # The bottle that created this cryst
 var amber_trigger: BaseAmberTrigger
 
 func _ready():
+	# Generate unique ID for this crystal
+	crystal_id = "Crystal_" + str(randi())
+	print("💎 [%s] Crystal _ready() called" % crystal_id)
+
 	# Create the amber trigger helper first
 	amber_trigger = BaseAmberTrigger.new()
+
+	# Calculate actual max pulses based on duration and interval
+	max_pulses = int(total_duration / pulse_interval)
 
 	# Defer ALL setup to avoid physics query conflicts and ensure proper order
 	setup_everything_deferred.call_deferred()
 
 func setup_everything_deferred():
 	"""Set up everything after physics queries are done"""
+	print("💎 [%s] Setting up crystal systems" % crystal_id)
 	setup_crystal()
 	setup_timers()
 	create_pulse_visual_feedback()
@@ -41,7 +53,7 @@ func setup_crystal():
 	pulse_timer = get_node_or_null("Timer")
 
 	# Debug logging
-	print("💎 Crystal setup - Found children:")
+	print("💎 [%s] Crystal setup - Found children:" % crystal_id)
 	for child in get_children():
 		print("💎   - %s (%s)" % [child.name, child.get_class()])
 
@@ -66,26 +78,32 @@ func setup_crystal():
 		tween.parallel().tween_property(sprite, "modulate:a", 1.0, 0.3)
 
 func setup_timers():
+	print("💎 [%s] Setting up timers..." % crystal_id)
+
 	# Try to get timer reference again
 	if not pulse_timer:
 		pulse_timer = get_node_or_null("Timer")
 
 	# Configure existing pulse timer
 	if pulse_timer:
+		# Disconnect any existing connections to prevent duplicates
+		if pulse_timer.timeout.is_connected(_on_pulse_timer_timeout):
+			pulse_timer.timeout.disconnect(_on_pulse_timer_timeout)
+
 		pulse_timer.wait_time = pulse_interval
 		pulse_timer.one_shot = false  # Make sure it repeats!
 		pulse_timer.autostart = false  # Don't autostart
 		pulse_timer.timeout.connect(_on_pulse_timer_timeout)
 		pulse_timer.start()  # Manually start
-		print("💎 Pulse timer configured: %.1fs interval, repeating, starting now" % pulse_interval)
+		print("💎 [%s] Pulse timer configured: %.1fs interval, repeating, will pulse %d times" % [crystal_id, pulse_interval, max_pulses])
 	else:
-		print("💎 ERROR: No pulse timer found in scene!")
+		print("💎 [%s] ERROR: No pulse timer found in scene!" % crystal_id)
 		print("💎 Available children:")
 		for child in get_children():
 			print("💎   - %s (%s)" % [child.name, child.get_class()])
 
 		# Create a timer manually as fallback
-		print("💎 Creating timer manually as fallback")
+		print("💎 [%s] Creating timer manually as fallback" % crystal_id)
 		pulse_timer = Timer.new()
 		pulse_timer.name = "ManualPulseTimer"
 		pulse_timer.wait_time = pulse_interval
@@ -93,7 +111,7 @@ func setup_timers():
 		pulse_timer.timeout.connect(_on_pulse_timer_timeout)
 		add_child(pulse_timer)
 		pulse_timer.start()
-		print("💎 Manual timer created and started")
+		print("💎 [%s] Manual timer created and started" % crystal_id)
 
 	# Create lifetime timer for auto-destruction
 	var lifetime_timer = Timer.new()
@@ -103,79 +121,96 @@ func setup_timers():
 	lifetime_timer.autostart = true
 	add_child(lifetime_timer)
 
-	print("💎 Amber Crystal spawned - will pulse %d times over %.1f seconds" % [max_pulses, total_duration])
+	print("💎 [%s] Amber Crystal spawned - will pulse up to %d times over %.1f seconds" % [crystal_id, max_pulses, total_duration])
 
 func _on_pulse_timer_timeout():
+	# Check if we've reached max pulses
+	if pulse_count >= max_pulses:
+		pulse_timer.stop()
+		print("💎 [%s] Reached max pulses (%d) - stopping timer" % [crystal_id, max_pulses])
+		return
+
 	pulse_count += 1
-	print("💎 Pulse timer triggered - pulse %d/%d" % [pulse_count, max_pulses])
+	print("💎 [%s] === PULSE %d/%d STARTING ===" % [crystal_id, pulse_count, max_pulses])
 
 	execute_pulse()
 
-	# Stop pulsing if we've reached max pulses
-	if pulse_count >= max_pulses:
-		pulse_timer.stop()
-		print("💎 Crystal completed all %d pulses - timer stopped" % max_pulses)
-
 func execute_pulse():
-	print("💎 Crystal pulse %d/%d - detecting enemies in %.0fpx radius" % [pulse_count, max_pulses, pulse_radius])
+	print("💎 [%s] Crystal pulse %d/%d - detecting enemies in %.0fpx radius" % [crystal_id, pulse_count, max_pulses, pulse_radius])
 
 	# Get nearby enemies using the amber trigger's method (uses scene tree, not collision)
 	var nearby_enemies = amber_trigger.get_nearby_enemies(global_position, pulse_radius)
 
 	if nearby_enemies.is_empty():
-		print("💎 No enemies in pulse range")
+		print("💎 [%s] No enemies in pulse range" % crystal_id)
 		return
 
-	print("💎 Pulse hitting %d enemies" % nearby_enemies.size())
+	print("💎 [%s] Pulse hitting %d enemies" % [crystal_id, nearby_enemies.size()])
 
 	# Apply effects to each enemy
-	for enemy in nearby_enemies:
+	var enemies_damaged = 0
+	for i in range(nearby_enemies.size()):
+		var enemy = nearby_enemies[i]
 		if not is_instance_valid(enemy):
 			continue
 
+		# Check if we've already hit this enemy with this crystal
+		var enemy_id = enemy.get_instance_id()
+		if enemies_hit_this_crystal.has(enemy_id):
+			print("💎 [%s] Enemy already hit by this crystal - skipping" % crystal_id)
+			continue
+
+		print("💎 [%s] [%d/%d] Processing enemy at position %s" % [crystal_id, i+1, nearby_enemies.size(), str(enemy.global_position)])
 		apply_pulse_effects(enemy)
+		enemies_damaged += 1
+
+		# Mark this enemy as hit by this crystal
+		enemies_hit_this_crystal[enemy_id] = true
 
 	# Visual pulse effect
 	create_pulse_visual()
+	print("💎 [%s] === PULSE %d/%d COMPLETED - Damaged %d enemies ===" % [crystal_id, pulse_count, max_pulses, enemies_damaged])
 
 func apply_pulse_effects(enemy: Node):
-	# Always apply damage to ALL enemies in range
+	# Apply fixed damage instead of percentage based
 	var damage = calculate_pulse_damage()
 
-	# Use a special damage source that gives no XP
-	var damage_source = "amber_crystal_no_xp"
+	print("💎 [%s] Applying %.1f damage to enemy" % [crystal_id, damage])
 
-	if enemy.has_method("take_damage_from_source"):
-		enemy.take_damage_from_source(damage, damage_source)
+	# Apply damage with reduced XP contribution
+	if enemy.has_method("apply_damage"):
+		enemy.apply_damage(damage)
+
+		# Give partial XP credit to the source bottle
+		if source_bottle and enemy.has_method("register_damage_source"):
+			var xp_credit = damage * xp_contribution_multiplier
+			enemy.register_damage_source(source_bottle, xp_credit)
+			print("💎 [%s] Registered %.1f XP credit (%.0f%% of damage)" % [crystal_id, xp_credit, xp_contribution_multiplier * 100])
 	elif enemy.has_method("take_damage"):
 		enemy.take_damage(damage)
 
-	print("💎 Applied %.1f damage to enemy from %s (no XP)" % [damage, damage_source])
-
-	# ALWAYS attempt fossilization (regardless of existing stacks)
+	# Roll for fossilization
 	if randf() < spread_fossilize_chance:
 		apply_fossilization_to_enemy(enemy)
-		print("💎 Fossilization applied!")
-	else:
-		print("💎 Fossilization chance missed (%.1f%%)" % (spread_fossilize_chance * 100))
+		print("💎 [%s] Fossilization triggered (%.1f%% chance)" % [crystal_id, spread_fossilize_chance * 100])
 
 func calculate_pulse_damage() -> float:
-	# Crystal does reduced damage (6% of bottle damage) - gives no XP due to special source
-	var bottle_damage = source_bottle.effective_damage if source_bottle else base_damage
-	return bottle_damage * 0.01  # 6% of bottle's damage
+	# Crystal does flat damage, not percentage based
+	# This prevents scaling issues with high damage bottles
+	return base_damage
 
 func apply_fossilization_to_enemy(enemy: Node):
-	print("💎 Applying fossilization to enemy")
+	print("💎 [%s] Applying fossilization to enemy" % crystal_id)
 
 	# Create trigger data for the fossilization
 	var fossilize_trigger_resource = TriggerEffectResource.new()
 	fossilize_trigger_resource.trigger_name = "fossilize"
 	fossilize_trigger_resource.trigger_type = TriggerEffectResource.TriggerType.ON_HIT
 	fossilize_trigger_resource.effect_parameters["duration"] = 2.5
-	fossilize_trigger_resource.effect_parameters["tick_damage"] = 6.0
+	fossilize_trigger_resource.effect_parameters["tick_damage"] = 3.0  # Reduced tick damage
 	fossilize_trigger_resource.effect_parameters["amber_color"] = Color(1.0, 0.8, 0.3, 0.6)
-	fossilize_trigger_resource.effect_parameters["max_stacks"] = 1
-	fossilize_trigger_resource.effect_parameters["stack_value"] = 0.8
+	fossilize_trigger_resource.effect_parameters["max_stacks"] = 1  # Only one stack from crystals
+	fossilize_trigger_resource.effect_parameters["trigger_source"] = "amber_crystal"
 
 	# Create EnhancedTriggerData
 	var fossilize_trigger_data = EnhancedTriggerData.new(fossilize_trigger_resource)
@@ -185,9 +220,13 @@ func apply_fossilization_to_enemy(enemy: Node):
 	if not bottle_to_use:
 		bottle_to_use = ImprovedBaseSauceBottle.new()
 		bottle_to_use.bottle_id = "amber_crystal"
+		bottle_to_use.base_damage = base_damage
+		bottle_to_use.effective_damage = base_damage
 
 	# Use the amber trigger's fossilization method
 	amber_trigger.apply_fossilization_to_enemy(enemy, bottle_to_use, fossilize_trigger_data, 1)
+
+	print("💎 [%s] Fossilization applied using BaseAmberTrigger" % crystal_id)
 
 func create_pulse_visual():
 	# Create expanding ring visual effect
@@ -212,7 +251,7 @@ func create_pulse_visual():
 		crystal_tween.tween_property(sprite, "scale", Vector2(1.0, 1.0), 0.1)
 
 func create_pulse_visual_feedback():
-	# Subtle ambient glow/pulsing for the crystal itself
+	# Subtle ambient pulsing for the crystal itself
 	if sprite:
 		var ambient_tween = create_tween()
 		ambient_tween.set_loops()
@@ -220,7 +259,7 @@ func create_pulse_visual_feedback():
 		ambient_tween.tween_property(sprite, "modulate", Color(1.0, 0.8, 0.3, 1.0), 1.0)
 
 func _on_lifetime_expired():
-	print("💎 Crystal lifetime expired - destroying")
+	print("💎 [%s] Crystal lifetime expired - destroying" % crystal_id)
 	create_destruction_effect()
 	queue_free()
 
@@ -237,8 +276,8 @@ func create_destruction_effect():
 # Public interface for talent enhancements
 func enhance_fossilization_chance(bonus: float):
 	spread_fossilize_chance = min(spread_fossilize_chance + bonus, 1.0)
-	print("💎 Crystal fossilization chance enhanced to %.1f%%" % (spread_fossilize_chance * 100))
+	print("💎 [%s] Crystal fossilization chance enhanced to %.1f%%" % [crystal_id, spread_fossilize_chance * 100])
 
 func enhance_damage_multiplier(multiplier: float):
 	base_damage *= multiplier
-	print("💎 Crystal damage enhanced by %.1fx" % multiplier)
+	print("💎 [%s] Crystal damage enhanced by %.1fx to %.1f" % [crystal_id, multiplier, base_damage])
