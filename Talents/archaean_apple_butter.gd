@@ -75,6 +75,25 @@ func _create_fossilization_overflow_trigger() -> TriggerEffectResource:
 
 	return trigger
 
+func _create_crystalline_bloom_trigger() -> TriggerEffectResource:
+	"""When 3+ enemies are fossilized nearby, spawn amber crystal that pulses damage + fossilization"""
+	var trigger = TriggerEffectResource.new()
+	trigger.trigger_name = "crystalline_bloom"
+	trigger.trigger_type = TriggerEffectResource.TriggerType.ON_TIMER
+	trigger.trigger_condition["chance"] = 1.0  # Always check hits to detect fossilizations
+	trigger.trigger_condition["cooldown"] = 3.0
+
+	# Base crystal parameters (can be enhanced by future talents)
+	trigger.effect_parameters["detection_radius"] = 400.0  # Range to check for fossilized enemies
+	trigger.effect_parameters["min_fossilized_enemies"] = 3  # Minimum to trigger
+	trigger.effect_parameters["cooldown_duration"] = 2.0  # Seconds between crystals
+	trigger.effect_parameters["pulse_radius"] = 150.0  # Crystal pulse range
+	trigger.effect_parameters["spread_fossilize_chance"] = 0.5  # 50% chance per pulse
+	trigger.effect_parameters["crystal_duration"] = 5.0  # Crystal lifetime
+	trigger.effect_parameters["pulse_interval"] = 1.0  # Seconds between pulses
+
+	return trigger
+
 func build_talent_pool():
 	var apple_butter_talents = [
 		# Future talents will go here
@@ -92,6 +111,13 @@ func build_talent_pool():
 			[_create_fossilization_overflow_trigger()],
 			TalentManager.TalentTheme.EXPLOSIVE
 		),
+		create_trigger_talent(
+			"Crystalline Bloom",
+			"When 3+ enemies are fossilized nearby, spawn amber crystal that pulses damage + 50% fossilization chance",
+			2,  # Tier 3 talent
+			[_create_crystalline_bloom_trigger()],
+			TalentManager.TalentTheme.EXPLOSIVE
+		),
 		#create_trigger_talent(
 			#"Amber Amplifier",
 			#"+20% damage per fossilized enemy alive (max +200%)",
@@ -99,13 +125,13 @@ func build_talent_pool():
 			#[_create_amber_amplifier_trigger()],
 			#TalentManager.TalentTheme.DAMAGE
 		#),
-		#create_trigger_talent(
-			#"Temporal Debt Collection",
-			#"Every second without fossilizing, gain +5% fossilization chance. Resets on success.",
-			#2,
-			#[_create_temporal_debt_trigger()],
-			#TalentManager.TalentTheme.DEFENSIVE
-		#),
+		create_trigger_talent(
+			"Temporal Debt Collection",
+			"Every second without fossilizing, gain +5% fossilization chance. Resets on success.",
+			2,
+			[_create_temporal_debt_trigger()],
+			TalentManager.TalentTheme.DEFENSIVE
+		),
 		create_trigger_talent(
 			"Amber Preservation Protocol",
 			"Fossilized enemies shatter into 3-5 amber seekers that fly out and fossilize on hit (60% chance)",

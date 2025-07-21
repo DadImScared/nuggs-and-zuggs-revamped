@@ -1,0 +1,21 @@
+[gd_scene load_steps=4 format=3 uid="uid://ghahvow8ltv3"]
+
+[ext_resource type="Texture2D" uid="uid://cac23twpftwpr" path="res://Assets/Sprites/Red Crystal Cluster.png" id="1_6kqmb"]
+[ext_resource type="Script" uid="uid://drf38cax3ot2v" path="res://Scenes/amber_crystal.gd" id="1_xy6xj"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_xy6xj"]
+radius = 229.467
+
+[node name="AmberCrystal" type="Area2D"]
+z_index = -2
+scale = Vector2(0.113306, 0.113306)
+script = ExtResource("1_xy6xj")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(0.712494, 0.712494)
+texture = ExtResource("1_6kqmb")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_xy6xj")
+
+[node name="Timer" type="Timer" parent="."]
