@@ -36,13 +36,13 @@ extends Resource
 func get_scaled_health(player_level: int) -> float:
 	if player_level < 2:
 		return base_health
-	var scale_factor = 1.0 + (player_level - 1) * 1.1
+	var scale_factor = 1.0 + (player_level - 1) * 0.25
 	return base_health * scale_factor
 
 func get_scaled_damage(player_level: int) -> float:
 	if player_level < 2:
 		return base_damage
-	var scale_factor = 1.0 + (player_level - 1) * 0.4
+	var scale_factor = 1.0 + (player_level - 1) * 0.1
 	return base_damage * scale_factor
 
 func get_scaled_speed(player_level: int) -> float:

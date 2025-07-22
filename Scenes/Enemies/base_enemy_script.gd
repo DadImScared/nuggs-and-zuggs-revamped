@@ -15,7 +15,7 @@ var external_velocity: Vector2 = Vector2.ZERO
 var health_bar_timer = 0.0
 var health_bar_duration = 3.0
 
-var base_xp_reward = 5
+var base_xp_reward = 2
 var base_health = 100
 var base_damage = 10
 var base_speed = 18.0

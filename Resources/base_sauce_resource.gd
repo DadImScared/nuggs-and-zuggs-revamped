@@ -7,7 +7,7 @@ extends Resource
 @export var geological_period: String
 
 # Base stats
-@export var damage: float = 10.0
+@export var damage: float = 25.0
 @export var fire_rate: float = 1.0
 @export var range: float = 200.0
 @export var projectile_count: int = 1
@@ -31,7 +31,7 @@ extends Resource
 @export var special_effect_type: SpecialEffectType = SpecialEffectType.NONE
 
 # Level scaling factors (how much each stat improves per level)
-@export var damage_per_level: float = 2.0
+@export var damage_per_level: float = 5.0
 @export var fire_rate_per_level: float = 0.1
 @export var range_per_level: float = 10.0
 @export var effect_chance_per_level: float = 0.05

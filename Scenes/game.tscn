@@ -4906,7 +4906,7 @@ offset_bottom = 38.0
 layer = 128
 
 [node name="Timer" type="Timer" parent="."]
-wait_time = 0.663
+wait_time = 0.3
 autostart = true
 
 [node name="MainBackground" type="TileMapLayer" parent="."]
