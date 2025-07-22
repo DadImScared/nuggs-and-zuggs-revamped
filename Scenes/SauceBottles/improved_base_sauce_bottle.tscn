@@ -47,7 +47,7 @@ _data = {
 
 [node name="ImprovedBaseSauceBottle" type="Area2D"]
 rotation = 1.54663
-collision_layer = 2
+collision_layer = 0
 collision_mask = 2
 script = ExtResource("1_tdy8v")
 

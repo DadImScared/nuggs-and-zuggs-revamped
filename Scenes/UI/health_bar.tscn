@@ -1,0 +1,39 @@
+[gd_scene load_steps=2 format=3 uid="uid://cfmaux2haguyk"]
+
+[ext_resource type="Script" uid="uid://cyomm2b2v7f35" path="res://Scenes/UI/health_bar.gd" id="1_qyqjh"]
+
+[node name="HealthBar" type="Control"]
+layout_mode = 3
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -3.0
+offset_right = 5.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_qyqjh")
+
+[node name="Background" type="ColorRect" parent="."]
+modulate = Color(0.147672, 0.147672, 0.147672, 0.8)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Bar" type="ProgressBar" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+show_percentage = false
+
+[node name="HideTimer" type="Timer" parent="."]
+
+[connection signal="timeout" from="HideTimer" to="." method="_on_hide_timer_timeout"]

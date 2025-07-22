@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://dejcnidd8q7ru"]
+[gd_scene load_steps=15 format=3 uid="uid://dejcnidd8q7ru"]
 
 [ext_resource type="Texture2D" uid="uid://beq1448oiyio4" path="res://Assets/Sprites/Enemies/Bee/HIT/Bee_0005_Capa-6.png" id="1_icc58"]
 [ext_resource type="Script" uid="uid://b3ebqljnpf6mn" path="res://Scenes/Enemies/base_enemy_script.gd" id="1_krk6v"]
@@ -11,6 +11,7 @@
 [ext_resource type="Texture2D" uid="uid://dk71usxs0xks7" path="res://Assets/Sprites/Enemies/Bee/Bee_0002_Capa-3.png" id="8_0a38t"]
 [ext_resource type="Texture2D" uid="uid://3tvrwagxc46j" path="res://Assets/Sprites/Enemies/Bee/Bee_0003_Capa-4.png" id="9_yt7lv"]
 [ext_resource type="Texture2D" uid="uid://cqxo00162jboa" path="res://Assets/Sprites/Enemies/Bee/Bee_0004_Capa-5.png" id="10_uhle1"]
+[ext_resource type="PackedScene" uid="uid://cfmaux2haguyk" path="res://Scenes/UI/health_bar.tscn" id="12_ylxdx"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_axskv"]
 animations = [{
@@ -62,7 +63,7 @@ height = 56.089
 [node name="BeeEnemy" type="CharacterBody2D" groups=["enemies"]]
 z_index = 1
 collision_layer = 2
-collision_mask = 2
+collision_mask = 0
 script = ExtResource("1_krk6v")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
@@ -78,25 +79,8 @@ position = Vector2(4, 8)
 rotation = 1.45574
 shape = SubResource("CapsuleShape2D_35t4o")
 
-[node name="HealthBarContainer" type="Control" parent="."]
-layout_mode = 3
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -15.915
-offset_top = 32.675
-offset_right = 24.085
-offset_bottom = 40.675
-grow_horizontal = 2
-scale = Vector2(0.835, 0.835)
-size_flags_horizontal = 0
-size_flags_vertical = 8
-
-[node name="HealthBar" type="ProgressBar" parent="HealthBarContainer"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-show_percentage = false
+[node name="HealthBar" parent="." instance=ExtResource("12_ylxdx")]
+offset_left = -21.0
+offset_top = 34.0
+offset_right = 22.0
+offset_bottom = 39.0

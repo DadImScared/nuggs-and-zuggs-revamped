@@ -5,15 +5,14 @@ signal died(xp_amount: int, damage_sources: Dictionary)
 signal debuff_xp_earned(bottle_id: String, xp_amount: int)
 
 @onready var player = get_node("/root/Game/Player")
-@onready var health_bar_container = $HealthBarContainer
-@onready var health_bar = $HealthBarContainer/HealthBar
 @onready var animated_sprite = $AnimatedSprite2D
+@onready var health_bar: HealthBar = $HealthBar  # Reference to instanced scene
+
+# Remove this variable - no longer needed
+# var health_bar: HealthBar
 
 var external_velocity_override: bool = false
 var external_velocity: Vector2 = Vector2.ZERO
-
-var health_bar_timer = 0.0
-var health_bar_duration = 3.0
 
 var base_xp_reward = 2
 var base_health = 100
@@ -52,12 +51,17 @@ func _ready() -> void:
 		animated_sprite.play("move")
 
 	scale_to_player_level()
-	setup_health_bar()
+	setup_health_bar()  # Simple setup, no creation needed
 	setup_default_stats()
 	original_speed = move_speed
 
 	if enemy_resource:
 		setup_from_resource()
+
+func setup_health_bar():
+	"""Initialize the health bar that's already in the scene"""
+	if health_bar:
+		health_bar.initialize(max_health, health)
 
 func setup_from_resource():
 	if not enemy_resource:
@@ -99,17 +103,8 @@ func set_enemy_resource(resource: BaseEnemyResource):
 	if is_inside_tree():
 		setup_from_resource()
 
-func setup_health_bar():
-	health_bar.max_value = max_health
-	health_bar.value = health
-
 func _process(delta):
-	# Handle health bar visibility
-	if health_bar_timer > 0:
-		health_bar_timer -= delta
-		if health_bar_timer <= 0:
-			health_bar_container.visible = false
-
+	# OLD health bar timer code REMOVED
 	process_status_effects(delta)
 	process_debuff_periodic_xp(delta)
 	_process_stacking_effects(delta)  # Process stacking effects
@@ -421,7 +416,6 @@ func _cleanup_stack_behavior(effect_name: String, effect_data: Dictionary, sourc
 			mechanical_cleanup.call()
 			print("🧹 Executed mechanical cleanup for: %s" % effect_name)
 
-# Rest of your existing functions...
 func scale_to_player_level():
 	if PlayerStats.level < 2:
 		max_health = base_health
@@ -463,9 +457,10 @@ func take_damage_from_source(damage_amount: float, source_bottle_id: String):
 
 	# Rest of existing damage logic...
 	health -= actual_damage
-	health_bar.value = health
-	health_bar_container.visible = true
-	health_bar_timer = health_bar_duration
+
+	# NEW: Update generic health bar instead of old container
+	if health_bar and is_instance_valid(health_bar):
+		health_bar.update_health(health)
 
 	# Track damage for XP distribution
 	if not damage_sources.has(source_bottle_id):
@@ -477,6 +472,8 @@ func take_damage_from_source(damage_amount: float, source_bottle_id: String):
 	play_hit_animation()
 
 	if health <= 0:
+		# Health bar will auto-cleanup when enemy dies (it's a child)
+
 		if "infect" in active_effects:
 			spread_infection_on_death()
 		_process_death_triggers()
@@ -503,7 +500,6 @@ func get_total_stacked_value(effect_name: String) -> float:
 			total_value += effect.base_value * effect.stacks
 	return total_value
 
-# Include all your other existing functions...
 func _apply_stack_behavior(effect_name: String, effect_data: Dictionary, source_bottle_id: String):
 	"""Apply immediate effects when stacks are added - fully generic"""
 
@@ -513,9 +509,6 @@ func _apply_stack_behavior(effect_name: String, effect_data: Dictionary, source_
 		if immediate_effect.is_valid():
 			immediate_effect.call()
 			print("⚡ Applied immediate effect for: %s" % effect_name)
-
-func _apply_generic_stacking(effect_name: String, stacked_value: float, effect_data: Dictionary, source_bottle_id: String):
-	pass  # Can be empty now
 
 func apply_external_velocity(new_velocity: Vector2):
 	external_velocity = new_velocity
