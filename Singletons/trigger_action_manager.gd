@@ -11,7 +11,7 @@ func _ready():
 
 func _register_trigger_actions():
 	"""Automatically register all trigger action classes"""
-	print("🔍 Auto-discovering trigger actions...")
+	#print("🔍 Auto-discovering trigger actions...")
 
 	var total_registered = 0
 
@@ -25,7 +25,7 @@ func _register_trigger_actions():
 	var global_registered = _register_triggers_from_path("res://TriggerActions/Global/")
 	total_registered += global_registered
 
-	print("✅ Auto-registered %d trigger actions" % total_registered)
+	#print("✅ Auto-registered %d trigger actions" % total_registered)
 
 #func _register_trigger_actions():
 	#"""Register all trigger action classes"""
@@ -42,7 +42,7 @@ func _register_trigger_actions():
 	## trigger_actions["perfect_shots"] = PerfectShotsTriggerAction.new()
 	## trigger_actions["death_explosion"] = DeathExplosionTriggerAction.new()
 #
-	#print("TriggerActionManager: Registered %d trigger actions" % trigger_actions.size())
+	##print("TriggerActionManager: Registered %d trigger actions" % trigger_actions.size())
 
 func process_trigger_effects(source_bottle: ImprovedBaseSauceBottle) -> void:
 	"""Process all trigger effects for a bottle - called from bottle's _check_trigger_effects()"""
@@ -63,7 +63,8 @@ func process_trigger_effects(source_bottle: ImprovedBaseSauceBottle) -> void:
 				# Update timing for timer-based triggers
 				action.update_trigger_timing(source_bottle, enhance_trigger)
 		else:
-			print("⚠️ No trigger action registered for: %s" % trigger_name)
+			pass
+			#print("⚠️ No trigger action registered for: %s" % trigger_name)
 
 func execute_hit_trigger(source_bottle: ImprovedBaseSauceBottle, hit_enemy: Node2D, projectile: Area2D = null):
 	"""Execute triggers based on hitting an enemy"""
@@ -84,7 +85,8 @@ func execute_hit_trigger(source_bottle: ImprovedBaseSauceBottle, hit_enemy: Node
 					action.execute_trigger(source_bottle, enhance_trigger)
 					action.update_trigger_timing(source_bottle, enhance_trigger)
 			else:
-				print("⚠️ No trigger action registered for hit trigger: %s" % trigger_name)
+				pass
+				#print("⚠️ No trigger action registered for hit trigger: %s" % trigger_name)
 
 func execute_dot_tick_trigger(source_bottle: ImprovedBaseSauceBottle, affected_enemy: Node2D, dot_type: String, damage_dealt: float):
 	"""Execute triggers when a DOT effect deals damage"""
@@ -106,7 +108,8 @@ func execute_dot_tick_trigger(source_bottle: ImprovedBaseSauceBottle, affected_e
 					action.execute_trigger(source_bottle, trigger_effect)
 					action.update_trigger_timing(source_bottle, trigger_effect)
 			else:
-				print("⚠️ No trigger action registered for DOT tick trigger: %s" % trigger_name)
+				pass
+				#print("⚠️ No trigger action registered for DOT tick trigger: %s" % trigger_name)
 
 func execute_event_trigger(source_bottle: ImprovedBaseSauceBottle, event_type: TriggerEffectResource.TriggerType, event_data: Dictionary = {}):
 	"""Execute triggers based on events (crit, death, etc.)"""
@@ -133,11 +136,11 @@ func is_trigger_registered(trigger_name: String) -> bool:
 
 # Debug function
 func debug_print_registered_triggers():
-	print("=== Trigger Actions ===")
+	#print("=== Trigger Actions ===")
 	for trigger_name in trigger_actions:
 		var action = trigger_actions[trigger_name]
-		print("  %s: %s" % [trigger_name, action.trigger_description])
-	print("========================")
+		#print("  %s: %s" % [trigger_name, action.trigger_description])
+	#print("========================")
 
 func _discover_sauce_action_folders() -> Array[String]:
 	"""Discover all Triggers folders in SauceActions directory"""
@@ -145,7 +148,7 @@ func _discover_sauce_action_folders() -> Array[String]:
 	var dir = DirAccess.open("res://SauceActions/")
 
 	if not dir:
-		print("⚠️ SauceActions directory not found")
+		#print("⚠️ SauceActions directory not found")
 		return trigger_paths
 
 	dir.list_dir_begin()
@@ -158,7 +161,7 @@ func _discover_sauce_action_folders() -> Array[String]:
 			var triggers_dir = DirAccess.open(triggers_path)
 			if triggers_dir:
 				trigger_paths.append(triggers_path)
-				print("  📁 Found triggers folder: %s" % triggers_path)
+				#print("  📁 Found triggers folder: %s" % triggers_path)
 
 		folder_name = dir.get_next()
 
@@ -193,33 +196,33 @@ func _register_trigger_from_file(file_path: String) -> bool:
 	# Load the script
 	var script = load(file_path)
 	if not script:
-		print("⚠️ Failed to load trigger script: %s" % file_path)
+		#print("⚠️ Failed to load trigger script: %s" % file_path)
 		return false
 
 	# Create instance
 	var trigger_instance = script.new()
 	if not trigger_instance:
-		print("⚠️ Failed to instantiate trigger: %s" % file_path)
+		#print("⚠️ Failed to instantiate trigger: %s" % file_path)
 		return false
 
 	# Check if it's a valid trigger (has trigger_name)
 	if not trigger_instance.has_method("execute_trigger"):
-		print("⚠️ Invalid trigger (no execute_trigger method): %s" % file_path)
+		#print("⚠️ Invalid trigger (no execute_trigger method): %s" % file_path)
 		return false
 
 	# Register using the trigger_name
 	var trigger_name = trigger_instance.trigger_name
 	if trigger_name == "":
-		print("⚠️ Trigger has empty name: %s" % file_path)
+		#print("⚠️ Trigger has empty name: %s" % file_path)
 		return false
 
 	trigger_actions[trigger_name] = trigger_instance
-	print("  ✅ Registered: %s from %s" % [trigger_name, file_path])
+	#print("  ✅ Registered: %s from %s" % [trigger_name, file_path])
 	return true
 
 func refresh_active_triggers(bottle: ImprovedBaseSauceBottle):
 	"""Called when new talents are added - refreshes any active triggers with new enhancements"""
-	print("🔄 Refreshing active triggers for bottle: %s" % bottle.sauce_data.sauce_name)
+	#print("🔄 Refreshing active triggers for bottle: %s" % bottle.sauce_data.sauce_name)
 
 	# Find all active trigger actions and refresh them
 	for trigger_effect in bottle.trigger_effects:
@@ -235,12 +238,14 @@ func refresh_active_triggers(bottle: ImprovedBaseSauceBottle):
 			# Check if this trigger is currently active and can be refreshed
 			if action.has_method("refresh_enhancements") and action.has_method("is_active"):
 				if action.is_active():
-					print("🔄 Refreshing active trigger: %s" % trigger_name)
+					#print("🔄 Refreshing active trigger: %s" % trigger_name)
 					action.refresh_enhancements(bottle, trigger_effect)
 				else:
-					print("ℹ️ Trigger %s not active, no refresh needed" % trigger_name)
+					pass
+					#print("ℹ️ Trigger %s not active, no refresh needed" % trigger_name)
 			else:
-				print("ℹ️ Trigger %s doesn't support refresh" % trigger_name)
+				pass
+				#print("ℹ️ Trigger %s doesn't support refresh" % trigger_name)
 
 func get_active_triggers(bottle: ImprovedBaseSauceBottle) -> Array:
 	"""Get list of currently active triggers for debugging"""

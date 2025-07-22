@@ -36,7 +36,7 @@ func _ready():
 	if pool_visual:
 		_create_pool_visuals()
 
-	print("🔥 Molten pool ready with %.1f DPS, %.0f radius, %.1f duration" % [damage_per_second, pool_radius, duration])
+	#print("🔥 Molten pool ready with %.1f DPS, %.0f radius, %.1f duration" % [damage_per_second, pool_radius, duration])
 
 func _create_pool_visuals():
 	"""Create circular visuals using code-generated Polygon2D"""
@@ -109,13 +109,13 @@ func _on_enemy_entered(enemy: Node2D):
 	"""Enemy entered the molten pool"""
 	if enemy.is_in_group("enemies") and enemy not in enemies_in_pool:
 		enemies_in_pool.append(enemy)
-		print("🔥 Enemy entered molten pool: %s" % enemy.name)
+		#print("🔥 Enemy entered molten pool: %s" % enemy.name)
 
 func _on_enemy_exited(enemy: Node2D):
 	"""Enemy left the molten pool"""
 	if enemy in enemies_in_pool:
 		enemies_in_pool.erase(enemy)
-		print("🔥 Enemy left molten pool: %s" % enemy.name)
+		#print("🔥 Enemy left molten pool: %s" % enemy.name)
 
 func _damage_enemies_in_pool():
 	"""Deal damage to all enemies currently in the pool"""
@@ -130,5 +130,5 @@ func _damage_enemies_in_pool():
 		else:
 			enemies_in_pool.erase(enemy)
 
-	if enemies_in_pool.size() > 0:
-		print("🔥 Molten pool damaged %d enemies for %.1f each" % [enemies_in_pool.size(), tick_damage])
+	#if enemies_in_pool.size() > 0:
+		#print("🔥 Molten pool damaged %d enemies for %.1f each" % [enemies_in_pool.size(), tick_damage])

@@ -70,7 +70,7 @@ static func create_pandemic_spread_visual(from_pos: Vector2, to_pos: Vector2, co
 
 static func create_mutation_visual(enemy_pos: Vector2, color: Color):
 	"""Create visual effect for mutating infection"""
-	print("🧬 MUTATION VISUAL CALLED at position: ", enemy_pos)
+	#print("🧬 MUTATION VISUAL CALLED at position: ", enemy_pos)
 
 	# Create one simple circle like before, but with sauce color
 	var circle = ColorRect.new()
@@ -82,14 +82,14 @@ static func create_mutation_visual(enemy_pos: Vector2, color: Color):
 	# Add to scene
 	var scene = Engine.get_main_loop().current_scene
 	scene.add_child(circle)
-	print("🧬 Added circle at: ", circle.global_position)
+	#print("🧬 Added circle at: ", circle.global_position)
 
 	# Simple fade out over 3 seconds
 	var tween = circle.create_tween()
 	tween.tween_property(circle, "modulate:a", 0.0, 3.0)
 	tween.tween_callback(circle.queue_free)
 
-	print("🧬 Circle created - should fade out over 3 seconds")
+	#print("🧬 Circle created - should fade out over 3 seconds")
 
 static func _create_dna_helix_effect(enemy_pos: Vector2, color: Color):
 	"""Create secondary helix pattern for enhanced mutation visual"""

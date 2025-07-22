@@ -16,10 +16,10 @@ func execute_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: Enhan
 	var infected_enemies = _find_infected_enemies_from_bottle(source_bottle.bottle_id)
 
 	if infected_enemies.size() == 0:
-		print("🔗 Viral Relay: No infected enemies found")
+		#print("🔗 Viral Relay: No infected enemies found")
 		return
 
-	print("🔗 Viral Relay: Processing %d infected enemies" % infected_enemies.size())
+	#print("🔗 Viral Relay: Processing %d infected enemies" % infected_enemies.size())
 
 	var successful_jumps = 0
 
@@ -30,7 +30,7 @@ func execute_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: Enhan
 			_execute_viral_jump(infected_enemy, jump_target, source_bottle, infection_strength)
 			successful_jumps += 1
 
-	print("🔗 Viral Relay: %d infections jumped to new targets" % successful_jumps)
+	#print("🔗 Viral Relay: %d infections jumped to new targets" % successful_jumps)
 	log_trigger_executed(source_bottle, trigger_data)
 
 func _find_infected_enemies_from_bottle(bottle_id: String) -> Array[Node2D]:
@@ -139,4 +139,4 @@ func _create_relay_visual(from_pos: Vector2, to_pos: Vector2, color: Color):
 	tween.tween_property(line, "modulate:a", 0.0, 0.5)
 	tween.tween_callback(line.queue_free)
 
-	print("🔗 Viral relay visual created from %s to %s" % [from_pos, to_pos])
+	#print("🔗 Viral relay visual created from %s to %s" % [from_pos, to_pos])

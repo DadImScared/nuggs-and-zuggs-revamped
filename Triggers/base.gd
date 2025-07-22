@@ -11,7 +11,8 @@ func store_original_trigger_data(trigger_data: TriggerEffectResource):
 	original_trigger_data = trigger_data.duplicate()
 
 func refresh_enhancements(bottle: ImprovedBaseSauceBottle, base_trigger_data: TriggerEffectResource) -> void:
-	print("⚠️ Trigger %s doesn't implement refresh_enhancements()" % trigger_name)
+	pass
+	#print("⚠️ Trigger %s doesn't implement refresh_enhancements()" % trigger_name)
 
 # Virtual method that child classes should override to report if they're active
 func is_active() -> bool:
@@ -57,7 +58,8 @@ func update_trigger_timing(source_bottle: ImprovedBaseSauceBottle, trigger_data:
 
 # Debug logging
 func log_trigger_executed(source_bottle: ImprovedBaseSauceBottle, trigger_data: EnhancedTriggerData) -> void:
-	print("⚡ %s trigger executed for bottle %s" % [trigger_name, source_bottle.bottle_id])
+	pass
+	#print("⚡ %s trigger executed for bottle %s" % [trigger_name, source_bottle.bottle_id])
 
 # Utility functions
 func get_enemies_in_radius(center: Vector2, radius: float) -> Array[Node2D]:
@@ -130,12 +132,12 @@ func apply_enhancements(bottle: ImprovedBaseSauceBottle, base_trigger_data: Trig
 	"""Generic enhancement system with source tracking"""
 	var enhanced_data = EnhancedTriggerData.new(base_trigger_data)
 
-	print("🔍 Looking for enhancements for: %s" % trigger_name)
-	print("🔍 Bottle has %d total trigger effects:" % bottle.trigger_effects.size())
+	#print("🔍 Looking for enhancements for: %s" % trigger_name)
+	#print("🔍 Bottle has %d total trigger effects:" % bottle.trigger_effects.size())
 
 	for i in range(bottle.trigger_effects.size()):
 		var trigger_effect = bottle.trigger_effects[i]
-		print("  [%d] %s - enhances: %s" % [i, trigger_effect.trigger_name, str(trigger_effect.enhances)])
+		#print("  [%d] %s - enhances: %s" % [i, trigger_effect.trigger_name, str(trigger_effect.enhances)])
 
 	# Find all enhancements that target this trigger
 	var enhancements_applied = 0
@@ -143,11 +145,11 @@ func apply_enhancements(bottle: ImprovedBaseSauceBottle, base_trigger_data: Trig
 		if trigger_effect.enhances.size() > 0 and trigger_name in trigger_effect.enhances:
 			apply_single_enhancement_with_tracking(enhanced_data, trigger_effect)
 			enhancements_applied += 1
-			print("🔧 Enhancement: %s applied to %s" % [trigger_effect.trigger_name, trigger_name])
+			#print("🔧 Enhancement: %s applied to %s" % [trigger_effect.trigger_name, trigger_name])
 
-	if enhancements_applied > 0:
-		print("✨ %s enhanced with %d bonuses" % [trigger_name, enhancements_applied])
-		print(enhanced_data.get_tooltip_text())  # Show detailed breakdown
+	#if enhancements_applied > 0:
+		#print("✨ %s enhanced with %d bonuses" % [trigger_name, enhancements_applied])
+		#print(enhanced_data.get_tooltip_text())  # Show detailed breakdown
 
 	return enhanced_data
 
@@ -169,21 +171,21 @@ func apply_single_enhancement_with_tracking(enhanced_data: EnhancedTriggerData, 
 			apply_direct_with_tracking(enhanced_data, param_key, param_value, enhancement_name)
 
 func apply_multiplier_with_tracking(enhanced_data: EnhancedTriggerData, base_key: String, multiplier: float, enhancement_name: String):
-	print("🔍 Looking for parameter: %s" % base_key)
-	print("🔍 trigger_condition keys: %s" % str(enhanced_data.trigger_condition.keys()))
-	print("🔍 effect_parameters keys: %s" % str(enhanced_data.effect_parameters.keys()))
+	#print("🔍 Looking for parameter: %s" % base_key)
+	#print("🔍 trigger_condition keys: %s" % str(enhanced_data.trigger_condition.keys()))
+	#print("🔍 effect_parameters keys: %s" % str(enhanced_data.effect_parameters.keys()))
 
 	var current_value = get_parameter_value_from_enhanced(enhanced_data, base_key)
-	print("🔍 Found value for %s: %s" % [base_key, str(current_value)])
+	#print("🔍 Found value for %s: %s" % [base_key, str(current_value)])
 
 	if current_value != null:
-		print("✅ Applying multiplier")
+		#print("✅ Applying multiplier")
 		var new_value = current_value * multiplier
 		set_parameter_value_in_enhanced(enhanced_data, base_key, new_value)
 		enhanced_data.add_enhancement_source(base_key, enhancement_name, "multiply", multiplier, new_value)
-		print("  🔢 %s: %.2f → %.2f (×%.2f from %s)" % [base_key.capitalize(), current_value, new_value, multiplier, enhancement_name])
-	else:
-		print("❌ Parameter %s not found!" % base_key)
+		#print("  🔢 %s: %.2f → %.2f (×%.2f from %s)" % [base_key.capitalize(), current_value, new_value, multiplier, enhancement_name])
+
+		#print("❌ Parameter %s not found!" % base_key)
 
 func apply_direct_with_tracking(enhanced_data: EnhancedTriggerData, param_key: String, param_value, enhancement_name: String):
 	"""Add parameter with source tracking - auto-adds if parameter already exists"""
@@ -196,12 +198,12 @@ func apply_direct_with_tracking(enhanced_data: EnhancedTriggerData, param_key: S
 		var new_value = existing_value + param_value
 		set_parameter_value_in_enhanced(enhanced_data, param_key, new_value)
 		enhanced_data.add_enhancement_source(param_key, enhancement_name, "add", param_value, new_value)
-		print("  ➕ %s: %.2f → %.2f (+%.2f from %s)" % [param_key.capitalize(), existing_value, new_value, param_value, enhancement_name])
+		#print("  ➕ %s: %.2f → %.2f (+%.2f from %s)" % [param_key.capitalize(), existing_value, new_value, param_value, enhancement_name])
 	else:
 		# Parameter doesn't exist - SET it as new parameter
 		enhanced_data.effect_parameters[param_key] = param_value
 		enhanced_data.add_enhancement_source(param_key, enhancement_name, "set", param_value, param_value)
-		print("  ✨ Added %s: %s (from %s)" % [param_key.capitalize(), str(param_value), enhancement_name])
+		#print("  ✨ Added %s: %s (from %s)" % [param_key.capitalize(), str(param_value), enhancement_name])
 
 func get_parameter_value_from_enhanced(enhanced_data: EnhancedTriggerData, key: String):
 	"""Get parameter value from enhanced data"""

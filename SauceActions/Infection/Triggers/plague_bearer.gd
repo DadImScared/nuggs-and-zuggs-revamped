@@ -17,29 +17,29 @@ func is_active() -> bool:
 
 func refresh_enhancements(bottle: ImprovedBaseSauceBottle, base_trigger_data: TriggerEffectResource) -> void:
 	if not is_trigger_active:
-		print("⚠️ Trying to refresh inactive Plague Bearer")
+		#print("⚠️ Trying to refresh inactive Plague Bearer")
 		return
 
-	print("🔄 Refreshing Plague Bearer enhancements")
+	#print("🔄 Refreshing Plague Bearer enhancements")
 	store_original_trigger_data(base_trigger_data)
 	# Reapply enhancements with current bottle state
 	var enhanced_data = apply_enhancements(bottle, original_trigger_data)
 	var old_radius = current_trigger_data.trigger_condition.get("radius", 50.0)
 	var new_radius = enhanced_data.trigger_condition.get("radius", 50.0)
-	print(new_radius, " new radius----------")
+	#print(new_radius, " new radius----------")
 	# Update stored data
 	current_trigger_data = enhanced_data
 
 	# Update visual if radius changed
 	if visual_node and is_instance_valid(visual_node) and abs(old_radius - new_radius) > 0.1:
-		print("🔄 Updating visual radius: %.0f → %.0f" % [old_radius, new_radius])
+		#print("🔄 Updating visual radius: %.0f → %.0f" % [old_radius, new_radius])
 		visual_node.update_radius(new_radius)
 		visual_node.queue_redraw()
 
-	print("🔄 Plague Bearer refresh complete - radius: %.0f, chance: %.1f%%" % [
-		new_radius,
-		enhanced_data.trigger_condition.get("chance", 0.1) * 100
-	])
+	#print("🔄 Plague Bearer refresh complete - radius: %.0f, chance: %.1f%%" % [
+		#new_radius,
+		#enhanced_data.trigger_condition.get("chance", 0.1) * 100
+	#])
 
 func execute_trigger(bottle: ImprovedBaseSauceBottle, trigger_data: EnhancedTriggerData):
 	if not is_trigger_active:
@@ -82,7 +82,7 @@ func activate_plague_bearer(bottle: ImprovedBaseSauceBottle, trigger_data: Enhan
 	infection_timer.timeout.connect(_on_infection_timer_timeout)
 	infection_timer.start()
 
-	print("🦠 Plague Bearer: Activated with %.0f radius, %.1f%% chance" % [radius, chance * 100])
+	#print("🦠 Plague Bearer: Activated with %.0f radius, %.1f%% chance" % [radius, chance * 100])
 
 func _on_infection_timer_timeout():
 	if not current_bottle or not current_trigger_data or not is_instance_valid(visual_node):
@@ -133,8 +133,8 @@ func _on_infection_timer_timeout():
 	# Update visual intensity based on infection activity
 	visual_node.set_infection_intensity(min(infections_this_tick / 3.0, 1.0))
 
-	if infections_this_tick > 0:
-		print("🦠 Plague Bearer: Infected %d enemies this tick (%.0f radius, %.1f%% chance)" % [infections_this_tick, infection_radius, infection_chance * 100])
+	#if infections_this_tick > 0:
+		#print("🦠 Plague Bearer: Infected %d enemies this tick (%.0f radius, %.1f%% chance)" % [infections_this_tick, infection_radius, infection_chance * 100])
 
 func deactivate_plague_bearer():
 	is_trigger_active = false
@@ -149,7 +149,7 @@ func deactivate_plague_bearer():
 
 	current_bottle = null
 	current_trigger_data = null
-	print("🦠 Plague Bearer: Deactivated")
+	#print("🦠 Plague Bearer: Deactivated")
 
 func get_enemies_in_radius(center: Vector2, radius: float) -> Array:
 	var enemies = []
@@ -198,21 +198,21 @@ func check_for_plague_bearer_enhancements(bottle: ImprovedBaseSauceBottle, base_
 	# Apply enhancements
 	if has_virulent_aura:
 		enhanced_data.trigger_condition["radius"] = base_radius * 1.5  # +50% radius
-		print("🦠 Virulent Aura: Radius increased to %.0f" % enhanced_data.trigger_condition["radius"])
+		#print("🦠 Virulent Aura: Radius increased to %.0f" % enhanced_data.trigger_condition["radius"])
 
 	if has_contagious_miasma:
 		enhanced_data.trigger_condition["chance"] = base_chance * 1.5  # +50% chance
-		print("🦠 Contagious Miasma: Chance increased to %.1f%%" % (enhanced_data.trigger_condition["chance"] * 100))
+		#print("🦠 Contagious Miasma: Chance increased to %.1f%%" % (enhanced_data.trigger_condition["chance"] * 100))
 
 	if has_pandemic_zone:
 		enhanced_data.trigger_condition["radius"] = base_radius * 2.0  # +100% radius
 		enhanced_data.trigger_condition["chance"] = base_chance * 1.5  # +50% chance
-		print("🦠 Pandemic Zone: Radius doubled, chance increased!")
+		#print("🦠 Pandemic Zone: Radius doubled, chance increased!")
 
 	if has_plague_lord:
 		enhanced_data.effect_parameters["slow_strength"] = 0.4  # 40% slow
 		enhanced_data.effect_parameters["slow_duration"] = 2.0  # 2 seconds
-		print("🦠 Plague Lord: Added 40% slow effect")
+		#print("🦠 Plague Lord: Added 40% slow effect")
 
 	return enhanced_data
 
@@ -342,7 +342,7 @@ class PlagueBearerVisualNode extends Node2D:
 		miasma_effect.emitting = true
 		start_pulse_animation()
 		queue_redraw()
-		print("🎨 Visual activated with radius: ", radius)
+		#print("🎨 Visual activated with radius: ", radius)
 
 	func deactivate_visual():
 		is_active = false
@@ -445,4 +445,4 @@ class PlagueBearerVisualNode extends Node2D:
 
 			# Redraw circles with new radius
 			queue_redraw()
-			print("🎨 Plague Bearer visual radius updated to: ", radius)
+			#print("🎨 Plague Bearer visual radius updated to: ", radius)

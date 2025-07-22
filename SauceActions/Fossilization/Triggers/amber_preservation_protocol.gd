@@ -12,7 +12,7 @@ func execute_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: Enhan
 	if not dead_enemy or not is_instance_valid(dead_enemy):
 		return
 
-	print("🔶 Amber Preservation: Fossilized enemy died! Spawning seekers...")
+	#print("🔶 Amber Preservation: Fossilized enemy died! Spawning seekers...")
 	call_deferred("_spawn_amber_seekers", dead_enemy.global_position, trigger_data, source_bottle)
 	#_spawn_amber_seekers(dead_enemy.global_position, trigger_data, source_bottle)
 
@@ -34,7 +34,7 @@ func _spawn_amber_seekers(death_position: Vector2, trigger_data: EnhancedTrigger
 	var seeker_count = trigger_data.effect_parameters.get("seeker_count", [3, 5])
 	var actual_count = randi_range(seeker_count[0], seeker_count[1])
 
-	print("🔶 Spawning %d amber seekers at %s" % [actual_count, death_position])
+	#print("🔶 Spawning %d amber seekers at %s" % [actual_count, death_position])
 
 	for i in range(actual_count):
 		_create_amber_seeker(death_position, trigger_data, i, actual_count, source_bottle)
@@ -69,4 +69,4 @@ func _create_amber_seeker(spawn_position: Vector2, trigger_data: EnhancedTrigger
 	# Add to scene
 	Engine.get_main_loop().current_scene.add_child(seeker)
 
-	print("🔶 Created amber seeker %d/%d" % [index + 1, total_count])
+	#print("🔶 Created amber seeker %d/%d" % [index + 1, total_count])

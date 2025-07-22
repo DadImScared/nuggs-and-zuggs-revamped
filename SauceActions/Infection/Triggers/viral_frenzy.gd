@@ -13,15 +13,15 @@ func execute_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: Enhan
 	var duration = trigger_data.effect_parameters.get("duration", 8.0)  # 8 seconds
 	var source = "Viral Frenzy"
 
-	print("🔥 Viral Frenzy: Triggered! Gaining fire rate boost for %.1f seconds" % duration)
+	#print("🔥 Viral Frenzy: Triggered! Gaining fire rate boost for %.1f seconds" % duration)
 
 	# Use the NEW buff system to add fire rate buff
 	var success = PlayerStats.add_fire_rate_buff(fire_rate_boost, duration, source)
 
 	#if success:
-		#print("🔥 Viral Frenzy: Applied +%.0f%% fire rate boost for %.1fs" % (fire_rate_boost * 100, duration))
+		##print("🔥 Viral Frenzy: Applied +%.0f%% fire rate boost for %.1fs" % (fire_rate_boost * 100, duration))
 	#else:
-		#print("🔥 Viral Frenzy: Buff system failed (shouldn't happen)")
+		##print("🔥 Viral Frenzy: Buff system failed (shouldn't happen)")
 
 	# Create visual effect
 	_create_frenzy_visual(source_bottle)

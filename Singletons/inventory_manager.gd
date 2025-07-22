@@ -34,11 +34,11 @@ signal bottle_respecced(bottle: ImprovedBaseSauceBottle)
 func _ready() -> void:
 	storage.resize(max_inventory)
 	equipped.resize(max_equipped_size)
-	print("InventoryManager initialized with bottle instance storage only")
+	#print("InventoryManager initialized with bottle instance storage only")
 
 func register_scene_node(scene_node: Node2D):
 	scene_holder_node = scene_node
-	print("InventoryManager: Scene node registered")
+	#print("InventoryManager: Scene node registered")
 
 # BOTTLE INSTANCE MANAGEMENT
 func create_bottle_for_sauce(sauce_resource: BaseSauceResource) -> ImprovedBaseSauceBottle:
@@ -46,14 +46,14 @@ func create_bottle_for_sauce(sauce_resource: BaseSauceResource) -> ImprovedBaseS
 	var bottle = item_data.create_bottle(sauce_resource)
 
 	if not bottle:
-		print("❌ Failed to create bottle instance!")
+		#print("❌ Failed to create bottle instance!")
 		return null
 
 	# Connect bottle level up signal
 	if bottle.has_signal("leveled_up"):
 		bottle.leveled_up.connect(_on_bottle_leveled_up)
 
-	print("✅ Created bottle for: %s" % sauce_resource.sauce_name)
+	#print("✅ Created bottle for: %s" % sauce_resource.sauce_name)
 	return bottle
 
 func add_bottle_to_scene(bottle: ImprovedBaseSauceBottle):
@@ -82,11 +82,11 @@ func destroy_bottle(bottle: ImprovedBaseSauceBottle):
 
 	# Queue for deletion
 	bottle.queue_free()
-	print("🗑️ Destroyed bottle: %s" % bottle.sauce_data.sauce_name)
+	#print("🗑️ Destroyed bottle: %s" % bottle.sauce_data.sauce_name)
 
 # SIGNAL HANDLING
 func _on_bottle_leveled_up(bottle_id: String, level: int, sauce_name: String):
-	print("InventoryManager: %s leveled up to %d" % [sauce_name, level])
+	#print("InventoryManager: %s leveled up to %d" % [sauce_name, level])
 	bottle_leveled_up.emit(bottle_id, sauce_name, level)
 
 # BOTTLE LOOKUP
@@ -197,11 +197,11 @@ func distribute_xp_by_damage(total_xp: int, damage_sources: Dictionary):
 
 # TALENT APPLICATION
 func apply_upgrade_choice(bottle_id: String, choice_number: int):
-	print("InventoryManager: Applying talent choice %d to bottle %s" % [choice_number, bottle_id])
+	#print("InventoryManager: Applying talent choice %d to bottle %s" % [choice_number, bottle_id])
 
 	var bottle = get_bottle_by_id(bottle_id)
 	if not bottle:
-		print("Warning: Bottle %s not found!" % bottle_id)
+		#print("Warning: Bottle %s not found!" % bottle_id)
 		return
 
 	var sauce_name = bottle.sauce_data.sauce_name
@@ -210,7 +210,7 @@ func apply_upgrade_choice(bottle_id: String, choice_number: int):
 	# Get talent from talent manager
 	var talent = TalentManager.get_talent_by_choice(sauce_name, level, choice_number)
 	if not talent:
-		print("No talent found for %s level %d choice %d" % [sauce_name, level, choice_number])
+		#print("No talent found for %s level %d choice %d" % [sauce_name, level, choice_number])
 		return
 
 	# Apply the talent
@@ -221,7 +221,7 @@ func apply_upgrade_choice(bottle_id: String, choice_number: int):
 	var full_talent = "L%d: %s" % [level, talent.talent_name]
 	bottle.chosen_upgrades.append(full_talent)
 
-	print("✨ Applied talent: %s to bottle %s" % [talent.talent_name, bottle_id])
+	#print("✨ Applied talent: %s to bottle %s" % [talent.talent_name, bottle_id])
 
 	# Trigger talent applied signal for UI updates
 	talent_applied.emit(bottle, talent)
@@ -249,11 +249,11 @@ func get_talent_preview_for_level(sauce_name: String, level: int, choice_number:
 
 # BETTER: Level-aware talent application (used by UI)
 func apply_talent_choice_with_level(bottle_id: String, level: int, choice_number: int):
-	print("InventoryManager: Applying level %d talent choice %d to bottle %s" % [level, choice_number, bottle_id])
+	#print("InventoryManager: Applying level %d talent choice %d to bottle %s" % [level, choice_number, bottle_id])
 
 	var bottle = get_bottle_by_id(bottle_id)
 	if not bottle:
-		print("Warning: Bottle %s not found!" % bottle_id)
+		#print("Warning: Bottle %s not found!" % bottle_id)
 		return
 
 	var sauce_name = bottle.sauce_data.sauce_name
@@ -261,7 +261,7 @@ func apply_talent_choice_with_level(bottle_id: String, level: int, choice_number
 	# Get talent from talent manager
 	var talent = TalentManager.get_talent_by_choice(sauce_name, level, choice_number, bottle)
 	if not talent:
-		print("No talent found for %s level %d choice %d" % [sauce_name, level, choice_number])
+		#print("No talent found for %s level %d choice %d" % [sauce_name, level, choice_number])
 		return
 
 	# Apply the talent
@@ -272,7 +272,7 @@ func apply_talent_choice_with_level(bottle_id: String, level: int, choice_number
 	var full_talent = "L%d: %s (%s)" % [level, talent.talent_name, talent.description]
 	bottle.chosen_upgrades.append(full_talent)
 
-	print("✨ Applied talent: %s to bottle %s" % [talent.talent_name, bottle_id])
+	#print("✨ Applied talent: %s to bottle %s" % [talent.talent_name, bottle_id])
 
 	# Trigger talent applied signal for UI updates
 	talent_applied.emit(bottle, talent)
@@ -305,7 +305,7 @@ func remove_talent_from_bottle(bottle: ImprovedBaseSauceBottle, talent: Talent):
 		if talent_display in bottle.chosen_upgrades:
 			bottle.chosen_upgrades.erase(talent_display)
 
-		print("Removed talent: %s from bottle %s" % [talent.talent_name, bottle.bottle_id])
+		#print("Removed talent: %s from bottle %s" % [talent.talent_name, bottle.bottle_id])
 		talent_removed.emit(bottle, talent)
 
 func respec_bottle(bottle: ImprovedBaseSauceBottle):
@@ -315,7 +315,7 @@ func respec_bottle(bottle: ImprovedBaseSauceBottle):
 	for talent in talents_to_remove:
 		remove_talent_from_bottle(bottle, talent)
 
-	print("Full respec completed for bottle %s" % bottle.bottle_id)
+	#print("Full respec completed for bottle %s" % bottle.bottle_id)
 	bottle_respecced.emit(bottle)
 
 # Statistics and debugging
@@ -346,25 +346,28 @@ func get_talent_statistics() -> Dictionary:
 	return stats
 
 func debug_print_bottle_talents(bottle: ImprovedBaseSauceBottle):
-	"""Debug function to print all talents on a bottle"""
-	print("=== Bottle Talents Debug: %s ===" % bottle.bottle_id)
-	print("Sauce: %s, Level: %d" % [bottle.sauce_data.sauce_name, bottle.current_level])
-	print("Active Talents (%d):" % bottle.active_talents.size())
+	pass
+	"""Debug function to #print all talents on a bottle"""
+	#print("=== Bottle Talents Debug: %s ===" % bottle.bottle_id)
+	#print("Sauce: %s, Level: %d" % [bottle.sauce_data.sauce_name, bottle.current_level])
+	#print("Active Talents (%d):" % bottle.active_talents.size())
 
 	for i in range(bottle.active_talents.size()):
 		var talent = bottle.active_talents[i]
-		print("  %d. L%d %s (%s)" % [i+1, talent.level_required, talent.talent_name, Talent.TalentType.keys()[talent.talent_type]])
+		#print("  %d. L%d %s (%s)" % [i+1, talent.level_required, talent.talent_name, Talent.TalentType.keys()[talent.talent_type]])
 
-	print("Special Effects (%d):" % bottle.special_effects.size())
+	#print("Special Effects (%d):" % bottle.special_effects.size())
 	for effect in bottle.special_effects:
-		print("  - %s (%s)" % [effect.effect_name, SpecialEffectResource.EffectType.keys()[effect.effect_type]])
+		pass
+		#print("  - %s (%s)" % [effect.effect_name, SpecialEffectResource.EffectType.keys()[effect.effect_type]])
 
-	print("Trigger Effects (%d):" % bottle.trigger_effects.size())
+	#print("Trigger Effects (%d):" % bottle.trigger_effects.size())
 	for trigger in bottle.trigger_effects:
-		print("  - %s (%s)" % [trigger.trigger_name, TriggerEffectResource.TriggerType.keys()[trigger.trigger_type]])
+		pass
+		#print("  - %s (%s)" % [trigger.trigger_name, TriggerEffectResource.TriggerType.keys()[trigger.trigger_type]])
 
-	print("Transformations: %s" % str(bottle.transformation_effects))
-	print("========================")
+	#print("Transformations: %s" % str(bottle.transformation_effects))
+	#print("========================")
 
 # SAUCE SELECTION
 func select_sauce(sauce: BaseSauceResource):
@@ -396,11 +399,11 @@ func can_store_sauce():
 
 func apply_specific_talent(bottle_id: String, talent: Talent):
 	"""Apply a specific talent object to a bottle"""
-	print("InventoryManager: Applying talent %s to bottle %s" % [talent.talent_name, bottle_id])
+	#print("InventoryManager: Applying talent %s to bottle %s" % [talent.talent_name, bottle_id])
 
 	var bottle = get_bottle_by_id(bottle_id)
 	if not bottle:
-		print("Warning: Bottle %s not found!" % bottle_id)
+		#print("Warning: Bottle %s not found!" % bottle_id)
 		return
 
 	# Apply the talent directly
@@ -413,7 +416,7 @@ func apply_specific_talent(bottle_id: String, talent: Talent):
 	var full_talent = "L%d: %s" % [bottle.current_level, talent.talent_name]
 	bottle.chosen_upgrades.append(full_talent)
 
-	print("✨ Applied talent: %s to bottle %s" % [talent.talent_name, bottle_id])
+	#print("✨ Applied talent: %s to bottle %s" % [talent.talent_name, bottle_id])
 
 	# Trigger talent applied signal for UI updates
 	talent_applied.emit(bottle, talent)

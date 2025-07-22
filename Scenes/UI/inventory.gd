@@ -41,7 +41,7 @@ func create_slot(slot_type, slot_index):
 		storage_container.add_child(inventory_slot)
 
 func _on_slot_selected(slot: InventorySlot):
-	print("Slot selected: ", slot.slot_type, " index: ", slot.slot_index)
+	#print("Slot selected: ", slot.slot_type, " index: ", slot.slot_index)
 
 	# Deselect previously selected slot
 	if current_selected_slot != null:
@@ -58,7 +58,7 @@ func _on_slot_selected(slot: InventorySlot):
 		bottle_details_panel.hide_details()
 
 func _on_slot_drag_started(slot: InventorySlot):
-	print("Drag started, clearing selection")
+	#print("Drag started, clearing selection")
 
 	# Clear selection when drag starts
 	if current_selected_slot != null:

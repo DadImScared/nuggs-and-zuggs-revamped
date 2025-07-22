@@ -11,13 +11,13 @@ extends Control
 func _ready():
 	# Debug: Check if nodes exist
 	if not bar:
-		print("ERROR: Bar node not found! Check scene structure.")
+		#print("ERROR: Bar node not found! Check scene structure.")
 		return
 	if not hide_timer:
-		print("ERROR: HideTimer node not found! Check scene structure.")
+		#print("ERROR: HideTimer node not found! Check scene structure.")
 		return
 	if not background:
-		print("ERROR: Background node not found! Check scene structure.")
+		#print("ERROR: Background node not found! Check scene structure.")
 		return
 
 	visible = false
@@ -26,7 +26,7 @@ func _ready():
 
 func setup_styling():
 	if not background or not bar:
-		print("ERROR: Cannot setup styling - nodes missing")
+		#print("ERROR: Cannot setup styling - nodes missing")
 		return
 
 	# Create a border background
@@ -45,7 +45,7 @@ func setup_styling():
 func initialize(max_hp: float, current_hp: float):
 	"""Initialize health bar - position is already set in scene"""
 	if not bar:
-		print("ERROR: Cannot initialize - Bar node missing")
+		#print("ERROR: Cannot initialize - Bar node missing")
 		return
 
 	bar.max_value = max_hp

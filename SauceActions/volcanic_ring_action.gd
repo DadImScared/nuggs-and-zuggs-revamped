@@ -64,7 +64,7 @@ func _schedule_molten_pool_creation(ring: Node2D, talent: SpecialEffectResource,
 	ring.add_child(timer)
 	timer.start()
 
-	print("🔥 Molten pool scheduled for %.1f seconds at ring position" % pool_delay)
+	#print("🔥 Molten pool scheduled for %.1f seconds at ring position" % pool_delay)
 
 func _create_molten_pool_at_ring(ring: Node2D, talent: SpecialEffectResource, source_bottle: ImprovedBaseSauceBottle):
 	"""Create the actual molten pool at the ring's position"""
@@ -83,7 +83,7 @@ func _create_molten_pool_at_ring(ring: Node2D, talent: SpecialEffectResource, so
 	# Add to scene
 	Engine.get_main_loop().current_scene.add_child(pool)
 
-	print("🔥 Molten pool created at %s with %.1f DPS for %.1f seconds" % [pool.global_position, pool_damage, pool_duration])
+	#print("🔥 Molten pool created at %s with %.1f DPS for %.1f seconds" % [pool.global_position, pool_damage, pool_duration])
 
 func _make_ring_collapse(ring: Node2D, talent: SpecialEffectResource):
 	"""Make the ONE ring collapse inward after expanding"""

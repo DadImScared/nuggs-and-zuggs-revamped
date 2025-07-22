@@ -28,19 +28,19 @@ func _ready():
 func _on_talent_applied(bottle: ImprovedBaseSauceBottle, talent: Talent):
 	# Refresh display if this is the currently shown bottle
 	if current_bottle and bottle.bottle_id == current_bottle.bottle_id:
-		print("Refreshing bottle details after talent applied: %s" % talent.talent_name)
+		#print("Refreshing bottle details after talent applied: %s" % talent.talent_name)
 		show_bottle_details(bottle)
 
 func _on_talent_removed(bottle: ImprovedBaseSauceBottle, talent: Talent):
 	# Refresh display if this is the currently shown bottle
 	if current_bottle and bottle.bottle_id == current_bottle.bottle_id:
-		print("Refreshing bottle details after talent removed: %s" % talent.talent_name)
+		#print("Refreshing bottle details after talent removed: %s" % talent.talent_name)
 		show_bottle_details(bottle)
 
 func _on_bottle_respecced(bottle: ImprovedBaseSauceBottle):
 	# Refresh display if this is the currently shown bottle
 	if current_bottle and bottle.bottle_id == current_bottle.bottle_id:
-		print("Refreshing bottle details after respec")
+		#print("Refreshing bottle details after respec")
 		show_bottle_details(bottle)
 
 func show_bottle_details(bottle: ImprovedBaseSauceBottle):

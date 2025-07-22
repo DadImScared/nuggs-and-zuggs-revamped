@@ -53,7 +53,7 @@ func setup_ring(damage: float, radius: float, ring_duration: float, bottle_id: S
 	source_bottle_id = bottle_id
 	expansion_speed = max_radius / duration
 
-	print("🌋 Ring setup: %.1f damage, %.0f radius, %.1f duration" % [damage, radius, ring_duration])
+	#print("🌋 Ring setup: %.1f damage, %.0f radius, %.1f duration" % [damage, radius, ring_duration])
 
 func _process(delta):
 	elapsed_time += delta
@@ -90,7 +90,7 @@ func _apply_ring_damage():
 	# Apply damage to enemies in the ring
 	for enemy in enemies_in_ring:
 		if enemy.has_method("take_damage_from_source"):
-			print("enemy take ddamag effrom source ------------- ", ring_damage * damage_interval)
+			#print("enemy take ddamag effrom source ------------- ", ring_damage * damage_interval)
 			enemy.take_damage_from_source(ring_damage * damage_interval, source_bottle_id)
 		elif enemy.has_method("take_damage"):
 			enemy.take_damage(ring_damage * damage_interval, source_bottle_id)

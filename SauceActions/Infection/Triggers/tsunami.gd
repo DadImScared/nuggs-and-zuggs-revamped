@@ -15,10 +15,10 @@ func execute_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: Enhan
 	var infected_enemies = _find_all_infected_enemies()
 
 	if infected_enemies.size() == 0:
-		print("🌊 Infection Tsunami: No infected enemies found")
+		#print("🌊 Infection Tsunami: No infected enemies found")
 		return
 
-	print("🌊 Infection Tsunami: Pulsing %d infected enemies!" % infected_enemies.size())
+	#print("🌊 Infection Tsunami: Pulsing %d infected enemies!" % infected_enemies.size())
 
 	# Create visual effects
 	_create_tsunami_visuals(infected_enemies, source_bottle.sauce_data.sauce_color)
@@ -126,4 +126,4 @@ func _spread_infection_to_enemy(enemy: Node2D, source_bottle: ImprovedBaseSauceB
 		if "active_effects" in enemy and "infect" in enemy.active_effects:
 			enemy.active_effects["infect"]["color"] = source_bottle.sauce_data.sauce_color
 
-		print("🌊 Tsunami spread infection to enemy")
+		#print("🌊 Tsunami spread infection to enemy")

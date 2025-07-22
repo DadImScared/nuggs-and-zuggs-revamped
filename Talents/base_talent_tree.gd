@@ -50,10 +50,10 @@ func create_projectile_boost(amount: int) -> StatModifier:
 # Debug helper
 func print_talent_tree():
 	var tree = build_talent_tree()
-	print("=== %s Talent Tree ===" % sauce_name)
+	#print("=== %s Talent Tree ===" % sauce_name)
 	for level in tree.keys():
-		print("Level %d:" % level)
+		#print("Level %d:" % level)
 		for i in range(tree[level].size()):
 			var talent = tree[level][i]
-			print("  %d. %s - %s" % [i + 1, talent.talent_name, talent.description])
-	print("=========================")
+			#print("  %d. %s - %s" % [i + 1, talent.talent_name, talent.description])
+	#print("=========================")

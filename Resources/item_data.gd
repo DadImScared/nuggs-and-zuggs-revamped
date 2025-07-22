@@ -17,17 +17,17 @@ func create_bottle(p_resource: BaseSauceResource):
 
 func _add_base_triggers(bottle: ImprovedBaseSauceBottle, sauce_resource: BaseSauceResource):
 	"""Add sauce-specific base triggers based on sauce name"""
-	print("🔧 Adding base triggers for: %s" % sauce_resource.sauce_name)
+	#print("🔧 Adding base triggers for: %s" % sauce_resource.sauce_name)
 
 	match sauce_resource.sauce_name:
 		"Prehistoric Pesto":
 			var pesto_talents = PrehistoricPestoTalents.new()
 			bottle.trigger_effects.append(pesto_talents.create_basic_infection())
-			print("✅ Added base infection trigger to Prehistoric Pesto")
+			#print("✅ Added base infection trigger to Prehistoric Pesto")
 		"Archaean Apple Butter":
 			var apple_butter_talents = ArchaeanAppleButterTalents.new()
 			bottle.trigger_effects.append(apple_butter_talents.create_basic_fossilization())
-			print("✅ Added base fossilization trigger to Archaean Apple Butter")
+			#print("✅ Added base fossilization trigger to Archaean Apple Butter")
 		_:
 			print("ℹ️ No base triggers defined for: %s" % sauce_resource.sauce_name)
-			print("   This sauce will have basic projectile behavior only")
+			#print("   This sauce will have basic projectile behavior only")

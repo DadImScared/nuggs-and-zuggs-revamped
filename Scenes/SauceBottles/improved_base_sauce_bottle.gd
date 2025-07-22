@@ -61,7 +61,7 @@ var effective_radius: float = 120.0
 func _ready() -> void:
 	var sauce_name = sauce_data.sauce_name if sauce_data else "UnknownSauce"
 	bottle_id = "%s_%d" % [sauce_name, get_instance_id()]
-	print("🍼 Created improved bottle with ID: %s" % bottle_id)
+	#print("🍼 Created improved bottle with ID: %s" % bottle_id)
 	recalculate_all_effective_stats()
 
 	body_entered.connect(_on_body_entered)
@@ -168,7 +168,7 @@ func get_modified_duration(base_duration: float) -> float:
 		if effect.effect_name == "infection_duration_boost":
 			var multiplier = effect.get_parameter("duration_multiplier", 1.5)
 			final_duration *= multiplier
-			print("🦠 Persistent Strain: Extending infection from %.1fs to %.1fs" % [base_duration, final_duration])
+			#print("🦠 Persistent Strain: Extending infection from %.1fs to %.1fs" % [base_duration, final_duration])
 
 	return final_duration
 
@@ -333,7 +333,7 @@ func recalculate_all_effective_stats():
 			"base_radius":
 
 				base_effect_radius = modifier.apply_to_value(base_effect_radius)
-				print("in radius?", base_effect_radius)
+				#print("in radius?", base_effect_radius)
 
 	# Store in effective variables
 	effective_damage = base_damage
@@ -342,14 +342,14 @@ func recalculate_all_effective_stats():
 	effective_effect_chance = base_effect_chance
 	effective_effect_intensity = base_effect_intensity
 	effective_radius = base_effect_radius
-	print("Final effective stats:")
-	print("  Damage: %.1f" % effective_damage)
-	print("  Fire Rate: %.1f" % effective_fire_rate)
-	print("  Range: %.1f" % effective_range)
-	print("  Effect Chance: %.2f" % effective_effect_chance)
-	print("  Effect Intensity: %.2f" % effective_effect_intensity)
-	print("  Effect radius: %.2f" % effective_radius)
-	print("=======================================")
+	#print("Final effective stats:")
+	#print("  Damage: %.1f" % effective_damage)
+	#print("  Fire Rate: %.1f" % effective_fire_rate)
+	#print("  Range: %.1f" % effective_range)
+	#print("  Effect Chance: %.2f" % effective_effect_chance)
+	#print("  Effect Intensity: %.2f" % effective_effect_intensity)
+	#print("  Effect radius: %.2f" % effective_radius)
+	#print("=======================================")
 
 
 # TALENT MODIFIER CALCULATION METHODS
@@ -401,13 +401,13 @@ func get_modified_projectile_count() -> int:
 func modify_stat(modifier: StatModifier):
 	"""Apply a stat modifier from a talent"""
 	if not sauce_data.has_method("get"):
-		print("Warning: sauce_data doesn't support get method")
+		#print("Warning: sauce_data doesn't support get method")
 		return
 
 	var current_value = sauce_data.get(modifier.stat_name)
 
 	if current_value == null:
-		print("Warning: Unknown stat '%s'" % modifier.stat_name)
+		#print("Warning: Unknown stat '%s'" % modifier.stat_name)
 		return
 
 	#var new_value = modifier.apply_to_value(current_value)
@@ -416,9 +416,9 @@ func modify_stat(modifier: StatModifier):
 	stat_modifier_history.append(modifier)
 	recalculate_all_effective_stats()
 
-	print(" hi %s: %.1f -> %.1f (%s)" % [
-		modifier.stat_name, current_value, effective_damage, modifier.get_description()
-	])
+	#print(" hi %s: %.1f -> %.1f (%s)" % [
+		#modifier.stat_name, current_value, effective_damage, modifier.get_description()
+	#])
 
 	# Update runtime systems if needed
 	_update_runtime_stats(modifier.stat_name)
@@ -427,7 +427,7 @@ func remove_stat_modifier(modifier: StatModifier):
 	"""Remove a previously applied stat modifier"""
 	if modifier in stat_modifier_history:
 		stat_modifier_history.erase(modifier)
-		print("Removed stat modifier: %s" % modifier.get_description())
+		#print("Removed stat modifier: %s" % modifier.get_description())
 		# Note: Full removal would require recalculating from base values
 
 func _update_runtime_stats(stat_name: String):
@@ -447,14 +447,14 @@ func add_special_effect(effect: SpecialEffectResource):
 		SpecialEffectResource.EffectType.PASSIVE_EFFECT:
 			_apply_passive_effect(effect)
 
-	print("  Added special effect: %s" % effect.effect_name)
+	#print("  Added special effect: %s" % effect.effect_name)
 
 func remove_special_effect(effect: SpecialEffectResource):
 	"""Remove a special effect from this bottle"""
 	if effect in special_effects:
 		special_effects.erase(effect)
 		_remove_passive_effect(effect)
-		print("  Removed special effect: %s" % effect.effect_name)
+		#print("  Removed special effect: %s" % effect.effect_name)
 
 func _apply_passive_effect(effect: SpecialEffectResource):
 	"""Apply effects that are always active"""
@@ -480,24 +480,24 @@ func add_trigger_effect(trigger: TriggerEffectResource):
 	"""Add a trigger effect from a talent"""
 	if not trigger in trigger_effects:
 		trigger_effects.append(trigger)
-		print("Added trigger effect: %s" % trigger.trigger_name)
+		#print("Added trigger effect: %s" % trigger.trigger_name)
 
 func remove_trigger_effect(trigger: TriggerEffectResource):
 	"""Remove a trigger effect (for respec)"""
 	if trigger in trigger_effects:
 		trigger_effects.erase(trigger)
-		print("Removed trigger effect: %s" % trigger.trigger_name)
+		#print("Removed trigger effect: %s" % trigger.trigger_name)
 
 func apply_transformation(talent: Talent):
 	"""Apply a transformation talent"""
 	transformation_effects[talent.talent_name] = talent
-	print("Applied transformation: %s" % talent.talent_name)
+	#print("Applied transformation: %s" % talent.talent_name)
 
 func remove_transformation(talent: Talent):
 	"""Remove a transformation talent"""
 	if talent.talent_name in transformation_effects:
 		transformation_effects.erase(talent.talent_name)
-		print("Removed transformation: %s" % talent.talent_name)
+		#print("Removed transformation: %s" % talent.talent_name)
 
 # ===================================================================
 # UTILITY FUNCTIONS
@@ -540,15 +540,15 @@ func get_effective_stats() -> Dictionary:
 	}
 
 func debug_print_effective_stats():
-	"""Debug function to print all effective stats"""
+	"""Debug function to #print all effective stats"""
 	var stats = get_effective_stats()
-	print("=== Effective Stats for %s ===" % bottle_id)
-	print("Damage: %.1f (base: %.1f)" % [stats.modified_damage, stats.base_damage])
-	print("Fire Rate: %.2f/sec (base: %.2f/sec)" % [stats.modified_fire_rate, stats.base_fire_rate])
-	print("Range: %.0f (base: %.0f)" % [stats.modified_range, stats.base_range])
-	print("Projectiles: %d" % stats.projectile_count)
-	print("Active Modifiers: %d" % stat_modifier_history.size())
-	print("=============================")
+	#print("=== Effective Stats for %s ===" % bottle_id)
+	#print("Damage: %.1f (base: %.1f)" % [stats.modified_damage, stats.base_damage])
+	#print("Fire Rate: %.2f/sec (base: %.2f/sec)" % [stats.modified_fire_rate, stats.base_fire_rate])
+	#print("Range: %.0f (base: %.0f)" % [stats.modified_range, stats.base_range])
+	#print("Projectiles: %d" % stats.projectile_count)
+	#print("Active Modifiers: %d" % stat_modifier_history.size())
+	#print("=============================")
 
 # Utility functions for external access
 func get_bottle_base() -> Node2D:

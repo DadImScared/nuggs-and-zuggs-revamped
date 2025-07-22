@@ -9,18 +9,18 @@ func execute_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: Enhan
 	# Get the enemy that was hit from the trigger data
 	var hit_enemy = trigger_data.effect_parameters.get("hit_enemy")
 	if not hit_enemy or not is_instance_valid(hit_enemy):
-		print("💉 Double Dose: No valid hit enemy")
+		#print("💉 Double Dose: No valid hit enemy")
 		return
 
 	# Get parameters
 	#var spread_count = trigger_data.effect_parameters.get("spread_count", 2)
 	#var enhanced_data = apply_enhancements(source_bottle, trigger_data)
 	var spread_count = trigger_data.effect_parameters.get("spread_count", 2)
-	print("enhanced data ----- ", trigger_data.effect_parameters)
+	#print("enhanced data ----- ", trigger_data.effect_parameters)
 	#var spread_radius = trigger_data.effect_parameters.get("spread_radius", 100.0)
 	var spread_radius = source_bottle.effective_radius
 
-	print("💉 Double Dose: Triggered on infected enemy hit!")
+	#print("💉 Double Dose: Triggered on infected enemy hit!")
 
 	# Find nearby enemies to spread to
 	var nearby_enemies = get_enemies_in_radius(hit_enemy.global_position, spread_radius)
@@ -34,7 +34,7 @@ func execute_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: Enhan
 
 	# Randomly select spread targets
 	if spread_targets.size() == 0:
-		print("💉 Double Dose: No valid spread targets found")
+		#print("💉 Double Dose: No valid spread targets found")
 		return
 
 	spread_targets.shuffle()
@@ -51,7 +51,7 @@ func execute_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: Enhan
 			source_bottle.sauce_data.sauce_color
 		)
 
-	print("💉 Double Dose: Spread infection to %d enemies from infected target" % actual_spread_count)
+	#print("💉 Double Dose: Spread infection to %d enemies from infected target" % actual_spread_count)
 	log_trigger_executed(source_bottle, trigger_data)
 
 func _is_enemy_infected(enemy: Node2D) -> bool:

@@ -11,7 +11,7 @@ func execute_trigger(bottle: ImprovedBaseSauceBottle, data: EnhancedTriggerData)
 	var projectile = data.effect_parameters.get("projectile", null)
 
 	if not enemy or not is_instance_valid(enemy):
-		print("⚠️ Fossilize: No valid enemy to fossilize")
+		#print("⚠️ Fossilize: No valid enemy to fossilize")
 		return
 
 	# Read parameters from trigger effect resource
@@ -36,7 +36,7 @@ func execute_trigger(bottle: ImprovedBaseSauceBottle, data: EnhancedTriggerData)
 		visual_cleanup = func():
 			if is_instance_valid(amber_shell):
 				amber_shell.queue_free()
-			print("🔶 All fossilize stacks removed - amber shell destroyed")
+			#print("🔶 All fossilize stacks removed - amber shell destroyed")
 
 	# Immediate effect - runs every time a stack is added
 	immediate_effect = func():
@@ -48,7 +48,7 @@ func execute_trigger(bottle: ImprovedBaseSauceBottle, data: EnhancedTriggerData)
 		enemy.move_speed = enemy.base_speed * max(slow_multiplier, 0.1)
 
 		var current_stacks = enemy.get_total_stack_count("fossilize")
-		print("🔶 Fossilize: %d stacks, %.0f%% speed reduction" % [current_stacks, total_slow * 100])
+		#print("🔶 Fossilize: %d stacks, %.0f%% speed reduction" % [current_stacks, total_slow * 100])
 
 	# Tick effect - deals damage over time based on stacks
 	tick_effect = func():
@@ -58,7 +58,7 @@ func execute_trigger(bottle: ImprovedBaseSauceBottle, data: EnhancedTriggerData)
 		var total_stacks = enemy.get_total_stack_count("fossilize")
 		var damage = tick_damage * total_stacks
 		enemy.take_damage_from_source(damage, bottle.bottle_id)
-		print("🔶 Fossilize tick: %.1f damage (%d stacks)" % [damage, total_stacks])
+		#print("🔶 Fossilize tick: %.1f damage (%d stacks)" % [damage, total_stacks])
 
 	# Mechanical cleanup - runs when individual stacks expire
 	mechanical_cleanup = func():
@@ -69,10 +69,10 @@ func execute_trigger(bottle: ImprovedBaseSauceBottle, data: EnhancedTriggerData)
 		if remaining_slow > 0:
 			var slow_multiplier = 1.0 - remaining_slow
 			enemy.move_speed = enemy.base_speed * max(slow_multiplier, 0.1)
-			print("🔶 Fossilize stack expired: %.0f%% speed reduction remaining" % (remaining_slow * 100))
+			#print("🔶 Fossilize stack expired: %.0f%% speed reduction remaining" % (remaining_slow * 100))
 		else:
 			enemy.move_speed = enemy.base_speed
-			print("🔶 All fossilize stacks expired - speed fully restored")
+			#print("🔶 All fossilize stacks expired - speed fully restored")
 
 	# Apply stacking fossilize effect with DOT
 	var stacks_applied = enemy.apply_stacking_effect(
@@ -92,11 +92,11 @@ func execute_trigger(bottle: ImprovedBaseSauceBottle, data: EnhancedTriggerData)
 
 	# Log the application
 	var total_slow_percent = enemy.get_total_stacked_value("fossilize") * 100
-	print("🔶 Fossilize applied! Stack %d/%d (%.0f%% total slow)" % [
-		stacks_applied,
-		max_stacks,
-		total_slow_percent
-	])
+	#print("🔶 Fossilize applied! Stack %d/%d (%.0f%% total slow)" % [
+		#stacks_applied,
+		#max_stacks,
+		#total_slow_percent
+	#])
 
 func _create_amber_shell(enemy: Node2D, amber_color: Color) -> Node:
 	"""Create amber shell overlay around the enemy"""

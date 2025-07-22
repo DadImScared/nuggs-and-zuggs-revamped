@@ -41,10 +41,10 @@ var is_playing_hit_animation: bool = false
 
 func _ready() -> void:
 	if not enemy_resource:
-		print("Warning: No enemy resource set for bee!")
+		#print("Warning: No enemy resource set for bee!")
 		setup_default_stats()
 	else:
-		print("Setting up bee enemy: %s" % enemy_resource.enemy_name)
+		#print("Setting up bee enemy: %s" % enemy_resource.enemy_name)
 		setup_from_resource()
 
 	setup_health_bar()
@@ -54,7 +54,7 @@ func _ready() -> void:
 	if animated_sprite:
 		animated_sprite.play("move")
 		animated_sprite.animation_finished.connect(_on_animation_finished)
-		print("Started bee move animation")
+		#print("Started bee move animation")
 
 func setup_from_resource():
 	var player_level = PlayerStats.level if PlayerStats else 1
@@ -75,7 +75,7 @@ func setup_from_resource():
 	if animated_sprite:
 		animated_sprite.speed_scale = enemy_resource.animation_speed_multiplier
 
-	print("Bee stats - Health: %d, Speed: %.1f, Damage: %.1f" % [health, move_speed, damage])
+	#print("Bee stats - Health: %d, Speed: %.1f, Damage: %.1f" % [health, move_speed, damage])
 
 func setup_default_stats():
 	# Fallback bee stats
@@ -152,7 +152,7 @@ func take_damage_from_source(damage_amount: float, source_bottle_id: String):
 	play_hit_animation()
 
 	if health <= 0:
-		print("Bee died! XP reward: %d" % xp_on_kill)
+		#print("Bee died! XP reward: %d" % xp_on_kill)
 		queue_free()
 		emit_signal("died", xp_on_kill, damage_sources)
 
@@ -160,18 +160,18 @@ func play_hit_animation():
 	if not animated_sprite or is_playing_hit_animation:
 		return
 
-	print("Playing bee hit animation")
+	#print("Playing bee hit animation")
 	is_playing_hit_animation = true
 	animated_sprite.play("hit")
 
 func _on_animation_finished():
 	var current_animation = animated_sprite.animation
-	print("Animation finished: %s" % current_animation)
+	#print("Animation finished: %s" % current_animation)
 
 	if current_animation == "hit":
 		is_playing_hit_animation = false
 		animated_sprite.play("move")  # Return to move animation
-		print("Returning to move animation")
+		#print("Returning to move animation")
 
 func take_damage(damage_amount: float):
 	take_damage_from_source(damage_amount, "unknown")

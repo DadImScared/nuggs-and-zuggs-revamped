@@ -46,7 +46,7 @@ func execute_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: Enhan
 					if "active_effects" in enemy and "infect" in enemy.active_effects:
 						enemy.active_effects["infect"]["color"] = source_bottle.sauce_data.sauce_color
 
-	print("💥 EXTINCTION EVENT! Hit %d enemies with %.1f damage at %s" % [enemies_hit, explosion_damage, explosion_position])
+	#print("💥 EXTINCTION EVENT! Hit %d enemies with %.1f damage at %s" % [enemies_hit, explosion_damage, explosion_position])
 	log_trigger_executed(source_bottle, trigger_data)
 
 func should_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: EnhancedTriggerData) -> bool:

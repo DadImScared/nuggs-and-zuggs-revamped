@@ -20,7 +20,7 @@ enum TalentType {
 }
 
 func apply_to_bottle(bottle: ImprovedBaseSauceBottle):
-	print("Applying talent '%s' to bottle %s" % [talent_name, bottle.bottle_id])
+	#print("Applying talent '%s' to bottle %s" % [talent_name, bottle.bottle_id])
 
 	match talent_type:
 		TalentType.STAT_MODIFIER:
@@ -39,7 +39,7 @@ func apply_to_bottle(bottle: ImprovedBaseSauceBottle):
 
 func remove_from_bottle(bottle: ImprovedBaseSauceBottle):
 	"""Remove this talent's effects from a bottle (for respec)"""
-	print("Removing talent '%s' from bottle %s" % [talent_name, bottle.bottle_id])
+	#print("Removing talent '%s' from bottle %s" % [talent_name, bottle.bottle_id])
 
 	match talent_type:
 		TalentType.STAT_MODIFIER:

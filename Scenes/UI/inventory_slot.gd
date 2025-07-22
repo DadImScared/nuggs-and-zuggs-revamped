@@ -31,17 +31,17 @@ func _ready():
 	else:
 		sauce_bottle = InventoryManager.storage.get(slot_index)
 
-	print("InventorySlot _ready - slot_type: %s, index: %d, bottle: %s" % [slot_type, slot_index, sauce_bottle])
+	#print("InventorySlot _ready - slot_type: %s, index: %d, bottle: %s" % [slot_type, slot_index, sauce_bottle])
 	update_visual()
 
 func _on_slot_frame_input(event: InputEvent):
-	print("SlotFrame received input: ", event)  # This should print for ANY mouse input
+	#print("SlotFrame received input: ", event)  # This should #print for ANY mouse input
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed and sauce_bottle != null:
-			print("Emitting slot_selected")
+			#print("Emitting slot_selected")
 			slot_selected.emit(self)
-		if event.pressed:
-			print("Mouse pressed on SlotFrame - sauce_bottle: ", sauce_bottle)
+		#if event.pressed:
+			#print("Mouse pressed on SlotFrame - sauce_bottle: ", sauce_bottle)
 
 # Drag and drop methods - all handled by SlotFrame
 func get_drag_data(at_position):
@@ -56,30 +56,30 @@ func get_drag_data(at_position):
 	return SlotData.new(self, sauce_bottle, slot_type, slot_index)
 
 func can_drop_data(at_position, data):
-	print("Can drop data on SlotFrame")
-	print("data: ", data)
-	print("data is SlotData: ", data is SlotData)
+	#print("Can drop data on SlotFrame")
+	#print("data: ", data)
+	#print("data is SlotData: ", data is SlotData)
 
 	if not data is SlotData:
-		print("not SlotData")
+		#print("not SlotData")
 		return false
 
-	print("source slot_type: ", data["slot_type"])
-	print("target slot_type: ", slot_type)
+	#print("source slot_type: ", data["slot_type"])
+	#print("target slot_type: ", slot_type)
 
 	if slot_type == "equipped":
 		var result = data["slot_type"] == "inventory"
-		print("equipped target, result: ", result)
+		#print("equipped target, result: ", result)
 		return result
 	elif slot_type == "inventory":
 		var result = data["slot_type"] == "equipped"
-		print("inventory target, result: ", result)
+		#print("inventory target, result: ", result)
 		return result
 
 	return false
 
 func drop_data(at_position, data):
-	print("drop_data called on SlotFrame")
+	#print("drop_data called on SlotFrame")
 	InventoryManager.move_sauce(data, SlotData.new(self, sauce_bottle, slot_type, slot_index))
 	data["slot"].sauce_bottle = sauce_bottle
 	sauce_bottle = data["sauce_bottle"]
@@ -110,15 +110,15 @@ func create_drag_preview():
 	return preview
 
 func update_visual():
-	print("update_visual - sauce_bottle: ", sauce_bottle)
-	if sauce_bottle:
-		print("sauce_data: ", sauce_bottle.sauce_data)
-		if sauce_bottle.sauce_data:
-			print("sauce_name: ", sauce_bottle.sauce_data.sauce_name)
+	#print("update_visual - sauce_bottle: ", sauce_bottle)
+	#if sauce_bottle:
+		#print("sauce_data: ", sauce_bottle.sauce_data)
+		#if sauce_bottle.sauce_data:
+			#print("sauce_name: ", sauce_bottle.sauce_data.sauce_name)
 
 	# Check if all UI elements exist
 	if not sauce_icon or not level_label or not background or not selection_border:
-		print("ERROR: Missing UI elements!")
+		#print("ERROR: Missing UI elements!")
 		return
 
 	if sauce_bottle and sauce_bottle.sauce_data:

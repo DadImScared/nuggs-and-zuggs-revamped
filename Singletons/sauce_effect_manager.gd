@@ -45,7 +45,7 @@ func apply_effect(
 	# NEW: Check if we have a custom callback for this effect
 	var effect_type = sauce_resource.special_effect_type
 	if effect_callbacks.has(effect_type):
-		print("🆕 Using custom callback for: %s" % BaseSauceResource.SpecialEffectType.keys()[effect_type])
+		#print("🆕 Using custom callback for: %s" % BaseSauceResource.SpecialEffectType.keys()[effect_type])
 
 		# Create context and use callback system
 		var context = StatusEffectApplier.EffectContext.new(
@@ -66,11 +66,11 @@ func apply_effect(
 	)
 
 	if handled_by_modular:
-		print("✅ Sauce action handled by modular system: %s" % BaseSauceResource.SpecialEffectType.keys()[sauce_resource.special_effect_type])
+		#print("✅ Sauce action handled by modular system: %s" % BaseSauceResource.SpecialEffectType.keys()[sauce_resource.special_effect_type])
 		return
 
 	# FALLBACK: Use your existing legacy effect system
-	print("⚠️ Using legacy effect system for: %s" % BaseSauceResource.SpecialEffectType.keys()[sauce_resource.special_effect_type])
+	#print("⚠️ Using legacy effect system for: %s" % BaseSauceResource.SpecialEffectType.keys()[sauce_resource.special_effect_type])
 
 	match sauce_resource.special_effect_type:
 		BaseSauceResource.SpecialEffectType.TORNADO:
@@ -114,7 +114,7 @@ func apply_effect(
 func register_custom_effect(effect_type: BaseSauceResource.SpecialEffectType, callback: Callable):
 	"""Register a custom effect callback - will override legacy behavior for that effect"""
 	effect_callbacks[effect_type] = callback
-	print("🆕 Registered custom callback for: ", BaseSauceResource.SpecialEffectType.keys()[effect_type])
+	#print("🆕 Registered custom callback for: ", BaseSauceResource.SpecialEffectType.keys()[effect_type])
 
 func apply_custom_effect(
 	projectile: Area2D,
@@ -153,7 +153,7 @@ func _apply_volcanic_ring_effect(projectile, enemy, bottle: ImprovedBaseSauceBot
 	ring.setup_ring(ring_damage, max_radius, ring_duration, bottle.bottle_id)
 	get_tree().current_scene.add_child(ring)
 
-	print("🌋 Volcanic ring created at %s with %.1f damage and %.0f max radius" % [ring_position, ring_damage, max_radius])
+	#print("🌋 Volcanic ring created at %s with %.1f damage and %.0f max radius" % [ring_position, ring_damage, max_radius])
 
 func _apply_tornado_effect(projectile: Area2D, enemy: Node2D, sauce_resource: BaseSauceResource, sauce_level: int, source_bottle_id: String):
 	var current_intensity = sauce_resource.get_current_effect_intensity(sauce_level)

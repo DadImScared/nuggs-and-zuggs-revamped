@@ -20,7 +20,7 @@ func apply_action(projectile: Area2D, enemy: Node2D, source_bottle: ImprovedBase
 	# Check for special infection talents
 	_process_infection_talents(enemy, source_bottle, intensity, final_duration)
 
-	print("🦠 Infection applied to enemy with intensity %.1f for %.1fs" % [intensity, duration])
+	#print("🦠 Infection applied to enemy with intensity %.1f for %.1fs" % [intensity, duration])
 
 func _process_infection_talents(enemy: Node2D, source_bottle: ImprovedBaseSauceBottle, intensity: float, duration: float):
 	"""Process special infection effects from talents"""
@@ -51,7 +51,7 @@ func _apply_infection_to_enemy(enemy: Node2D, intensity: float, duration: float,
 #
 		#PlayerStats.total_infections_this_run += 1
 
-		print("🦠 Applied infection to enemy: intensity=%.1f, duration=%.1fs" % [intensity, duration])
+		#print("🦠 Applied infection to enemy: intensity=%.1f, duration=%.1fs" % [intensity, duration])
 
 func _create_viral_spread(enemy: Node2D, talent: SpecialEffectResource, intensity: float, duration: float, source_bottle: ImprovedBaseSauceBottle):
 	"""Create immediate viral spread to nearby enemies"""
@@ -74,7 +74,7 @@ func _create_viral_spread(enemy: Node2D, talent: SpecialEffectResource, intensit
 				)
 				infected_count += 1
 
-	print("🦠 Viral Spread: Infected %d nearby enemies" % infected_count)
+	#print("🦠 Viral Spread: Infected %d nearby enemies" % infected_count)
 
 func _create_mutation_strain(enemy: Node2D, talent: SpecialEffectResource, intensity: float, duration: float, source_bottle: ImprovedBaseSauceBottle):
 	"""Create mutating infection that stacks damage"""
@@ -97,18 +97,18 @@ func _create_mutation_strain(enemy: Node2D, talent: SpecialEffectResource, inten
 		# Use InfectionVisuals for mutation visual
 		InfectionVisuals.create_mutation_visual(enemy.global_position, Color.MAGENTA)
 
-		print("🧬 Mutation: Applied mutation stacking (%d/%d stacks from bottle %s)" % [stack_count, max_stacks, source_bottle.bottle_id])
+		#print("🧬 Mutation: Applied mutation stacking (%d/%d stacks from bottle %s)" % [stack_count, max_stacks, source_bottle.bottle_id])
 	else:
 		# Fallback for enemies without stacking support
 		_apply_infection_to_enemy(enemy, intensity * mutation_rate, 6.0, source_bottle.bottle_id, Color.MAGENTA)
-		print("🧬 Mutation: Applied enhanced infection (no stacking support)")
+		#print("🧬 Mutation: Applied enhanced infection (no stacking support)")
 
 func _create_epidemic_spread(enemy: Node2D, talent: SpecialEffectResource, intensity: float, duration: float, spread_radius: float, source_bottle: ImprovedBaseSauceBottle):
 	"""Create epidemic that spreads in waves - FIXED VERSION"""
 	var wave_count = talent.get_parameter("wave_count", 3)
 	var wave_delay = talent.get_parameter("wave_delay", 0.5)
 
-	print("🌊 Epidemic: Starting %d waves with %.1fs delay" % [wave_count, wave_delay])
+	#print("🌊 Epidemic: Starting %d waves with %.1fs delay" % [wave_count, wave_delay])
 
 	# Create epidemic start visual
 	InfectionVisuals.create_epidemic_start_visual(enemy.global_position, source_bottle.sauce_data.sauce_color)
@@ -125,14 +125,14 @@ func _get_modified_duration(base_duration: float, source_bottle: ImprovedBaseSau
 		if effect.effect_name == "infection_duration_boost":
 			var multiplier = effect.get_parameter("duration_multiplier", 1.5)
 			final_duration *= multiplier
-			print("🦠 Persistent Strain: Extending infection from %.1fs to %.1fs" % [base_duration, final_duration])
+			#print("🦠 Persistent Strain: Extending infection from %.1fs to %.1fs" % [base_duration, final_duration])
 
 	return final_duration
 
 func _schedule_epidemic_waves(enemy: Node2D, waves: int, delay: float, intensity: float, duration: float, radius: float, source_bottle: ImprovedBaseSauceBottle):
 	"""Schedule multiple infection waves - SAFE implementation storing position not object"""
 	if not is_instance_valid(enemy):
-		print("⚠️ Cannot schedule epidemic waves: invalid enemy")
+		#print("⚠️ Cannot schedule epidemic waves: invalid enemy")
 		return
 
 	# Store the position instead of the enemy object to avoid freed object issues
@@ -181,7 +181,7 @@ func _execute_epidemic_wave_at_position(epicenter_position: Vector2, intensity: 
 	"""Execute epidemic wave at a specific position (safer than using enemy object)"""
 	# Validate source bottle
 	if not source_bottle or not is_instance_valid(source_bottle):
-		print("⚠️ Epidemic wave %d: Source bottle no longer valid" % wave_number)
+		#print("⚠️ Epidemic wave %d: Source bottle no longer valid" % wave_number)
 		return
 
 	var nearby_enemies = get_enemies_in_radius(epicenter_position, radius)
@@ -210,7 +210,7 @@ func _execute_epidemic_wave_at_position(epicenter_position: Vector2, intensity: 
 			)
 			infected_count += 1
 
-	print("🌊 Epidemic wave %d: Infected %d enemies at position %s" % [wave_number, infected_count, epicenter_position])
+	#print("🌊 Epidemic wave %d: Infected %d enemies at position %s" % [wave_number, infected_count, epicenter_position])
 
 
 
@@ -228,7 +228,7 @@ func _create_toxic_strain(enemy: Node2D, talent: SpecialEffectResource, intensit
 	# Use InfectionVisuals for toxic visual
 	InfectionVisuals.create_toxic_strain_visual(enemy.global_position)
 
-	print("☠️ Toxic Strain: Applied infection + poison (%.1fx multiplier)" % toxicity_multiplier)
+	#print("☠️ Toxic Strain: Applied infection + poison (%.1fx multiplier)" % toxicity_multiplier)
 
 func _create_pandemic_spread(enemy: Node2D, talent: SpecialEffectResource, intensity: float, duration: float, source_bottle: ImprovedBaseSauceBottle):
 	"""Create pandemic that can spread to entire screen"""
@@ -251,7 +251,7 @@ func _create_pandemic_spread(enemy: Node2D, talent: SpecialEffectResource, inten
 				)
 				infected_count += 1
 
-	print("🌍 Pandemic: Infected %d enemies across the screen" % infected_count)
+	#print("🌍 Pandemic: Infected %d enemies across the screen" % infected_count)
 
 func get_enemies_in_radius(center: Vector2, radius: float) -> Array[Node2D]:
 	"""Get all enemies within a certain radius of a position"""

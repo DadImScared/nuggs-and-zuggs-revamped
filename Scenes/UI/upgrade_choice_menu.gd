@@ -43,7 +43,7 @@ func setup_with_talents(sauce_name: String, level: int, bottle):
 
 	# Get talents for this specific level
 	displayed_talents = TalentManager.get_talents_for_level(sauce_name, level, bottle)
-	print("Setting up upgrade menu with %d talents for %s level %d" % [displayed_talents.size(), sauce_name, level])
+	#print("Setting up upgrade menu with %d talents for %s level %d" % [displayed_talents.size(), sauce_name, level])
 
 	if displayed_talents.size() >= 1:
 		_setup_choice_button(button1, desc1, preview1, displayed_talents[0])
@@ -106,17 +106,17 @@ func _style_button_by_type(button: Button, talent_type: Talent.TalentType):
 		button.modulate = base_color.lerp(Color.WHITE, 0.7)
 
 func _on_choice_1():
-	print("Chose talent 1: Level %d %s" % [current_level, current_sauce])
+	#print("Chose talent 1: Level %d %s" % [current_level, current_sauce])
 	talent_selected.emit(displayed_talents[0])
 	_close_menu()
 
 func _on_choice_2():
-	print("Chose talent 2: Level %d %s" % [current_level, current_sauce])
+	#print("Chose talent 2: Level %d %s" % [current_level, current_sauce])
 	talent_selected.emit(displayed_talents[1])
 	_close_menu()
 
 func _on_choice_3():
-	print("Chose talent 3: Level %d %s" % [current_level, current_sauce])
+	#print("Chose talent 3: Level %d %s" % [current_level, current_sauce])
 	talent_selected.emit(displayed_talents[2])
 	_close_menu()
 
@@ -132,8 +132,8 @@ func _on_button_mouse_entered(button: Button, talent_index: int):
 	# Could show additional tooltip info here
 	var talent = displayed_talents[talent_index - 1]
 	#var talent = TalentManager.get_talent_by_choice(current_sauce, current_level, talent_index)
-	if talent:
-		print("Hovering over: %s" % talent.talent_name)
+	#if talent:
+		#print("Hovering over: %s" % talent.talent_name)
 
 func _on_button_mouse_exited(button: Button):
 	# Remove highlight

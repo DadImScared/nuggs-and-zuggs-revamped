@@ -27,11 +27,11 @@ func execute_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: Enhan
 
 	if success:
 		var current_stacks = PlayerStats.get_buff_count_from_source(PlayerStats.BuffType.MOVEMENT_SPEED, source)
-		print("🏃 Infectious Momentum! Stack %d/%d (+%.1f%% speed for %.1fs)" % [
-			current_stacks, max_stacks, speed_bonus * 100, duration
-		])
-	else:
-		print("🚫 Infectious Momentum at max stacks")
+		#print("🏃 Infectious Momentum! Stack %d/%d (+%.1f%% speed for %.1fs)" % [
+			#current_stacks, max_stacks, speed_bonus * 100, duration
+		#])
+	#else:
+		#print("🚫 Infectious Momentum at max stacks")
 
 	log_trigger_executed(source_bottle, trigger_data)
 

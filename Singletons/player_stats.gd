@@ -64,8 +64,8 @@ func gain_xp(amount: int):
 	xp += final_amount
 	emit_signal("xp_changed", xp, xp_to_next)
 
-	if multiplier > 1.0:
-		print("💎 XP bonus: %d → %d (%.1fx)" % [amount, final_amount, multiplier])
+	#if multiplier > 1.0:
+		#print("💎 XP bonus: %d → %d (%.1fx)" % [amount, final_amount, multiplier])
 
 	while xp >= xp_to_next:
 		xp -= xp_to_next
@@ -99,7 +99,7 @@ func _update_buffs(delta: float):
 		buff.remaining_time -= delta
 
 		if buff.remaining_time <= 0:
-			print("⏰ Buff expired: %s from %s" % [_get_buff_type_name(buff.type), buff.source])
+			#print("⏰ Buff expired: %s from %s" % [_get_buff_type_name(buff.type), buff.source])
 			active_buffs.remove_at(i)
 			buffs_changed_flag = true
 
@@ -107,7 +107,7 @@ func _update_buffs(delta: float):
 	for i in range(active_shields.size() - 1, -1, -1):
 		var shield = active_shields[i]
 		if shield.amount <= 0:
-			print("🛡️ Shield depleted: %s" % shield.source)
+			#print("🛡️ Shield depleted: %s" % shield.source)
 			active_shields.remove_at(i)
 			buffs_changed_flag = true
 
@@ -123,7 +123,7 @@ func add_buff(type: BuffType, value: float, duration: float, source: String = ""
 	if max_stacks > 0:
 		var current_stacks = get_buff_count_from_source(type, source)
 		if current_stacks >= max_stacks:
-			print("🚫 %s at max stacks (%d)" % [source, max_stacks])
+			#print("🚫 %s at max stacks (%d)" % [source, max_stacks])
 			return false
 
 	# Create buff dictionary
@@ -138,12 +138,12 @@ func add_buff(type: BuffType, value: float, duration: float, source: String = ""
 	}
 
 	active_buffs.append(new_buff)
-	print("⚡ Added buff: %s +%s for %.1fs from %s" % [
-		_get_buff_type_name(type),
-		_format_value(value, is_percentage),
-		duration,
-		source
-	])
+	#print("⚡ Added buff: %s +%s for %.1fs from %s" % [
+		#_get_buff_type_name(type),
+		#_format_value(value, is_percentage),
+		#duration,
+		#source
+	#])
 
 	_update_player_stats()
 	buffs_changed.emit()
@@ -160,7 +160,7 @@ func add_shield(amount: float, source: String = "", shield_type: String = "defau
 	}
 
 	active_shields.append(new_shield)
-	print("🛡️ Added shield: %.0f %s from %s" % [amount, shield_type, source])
+	#print("🛡️ Added shield: %.0f %s from %s" % [amount, shield_type, source])
 	shield_changed.emit()
 
 # ===================================================================
@@ -302,8 +302,8 @@ func absorb_damage(incoming_damage: float) -> float:
 			shield.amount -= absorbed
 			remaining_damage -= absorbed
 
-			if absorbed > 0:
-				print("🛡️ Shield absorbed %.0f damage" % absorbed)
+			#if absorbed > 0:
+				#print("🛡️ Shield absorbed %.0f damage" % absorbed)
 
 	return remaining_damage
 
@@ -352,21 +352,21 @@ func _format_value(value: float, is_percentage: bool) -> String:
 
 func debug_print_buffs():
 	if active_buffs.size() == 0 and active_shields.size() == 0:
-		print("No active buffs or shields")
+		#print("No active buffs or shields")
 		return
 
-	print("=== ACTIVE BUFFS ===")
-	for buff in active_buffs:
-		print("  %s: %s for %.1fs from %s" % [
-			_get_buff_type_name(buff.type),
-			_format_value(buff.value, buff.is_percentage),
-			buff.remaining_time,
-			buff.source
-		])
+	#print("=== ACTIVE BUFFS ===")
+	#for buff in active_buffs:
+		#print("  %s: %s for %.1fs from %s" % [
+			#_get_buff_type_name(buff.type),
+			#_format_value(buff.value, buff.is_percentage),
+			#buff.remaining_time,
+			#buff.source
+		#])
 
-	print("=== CURRENT STATS ===")
-	print("  Speed: %.1f (base: %.1f)" % [speed, base_speed])
-	print("  Damage: %.1f (base: %.1f)" % [damage, base_damage])
-	print("  Crit: %.1f%%" % (crit_chance * 100))
-	print("  Projectiles: %d" % projectile_count)
-	print("===================")
+	#print("=== CURRENT STATS ===")
+	#print("  Speed: %.1f (base: %.1f)" % [speed, base_speed])
+	#print("  Damage: %.1f (base: %.1f)" % [damage, base_damage])
+	#print("  Crit: %.1f%%" % (crit_chance * 100))
+	#print("  Projectiles: %d" % projectile_count)
+	#print("===================")

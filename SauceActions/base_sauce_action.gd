@@ -29,8 +29,8 @@ func get_talent_modifications(source_bottle: ImprovedBaseSauceBottle) -> Array[S
 # Debug logging
 func log_action_applied(enemy: Node2D, modifications: Array) -> void:
 	var mod_names = modifications.map(func(mod): return mod.effect_name)
-	print("🔥 %s action applied to %s with %d talent modifications: %s" %
-		[action_name, enemy.name, modifications.size(), str(mod_names)])
+	#print("🔥 %s action applied to %s with %d talent modifications: %s" %
+		#[action_name, enemy.name, modifications.size(), str(mod_names)])
 
 # Utility to get enemies in radius
 func get_enemies_in_radius(center: Vector2, radius: float) -> Array[Node2D]:

@@ -25,7 +25,7 @@ func _ready() -> void:
 
 	# DIRECT CONNECTION to InventoryManager
 	InventoryManager.bottle_leveled_up.connect(_on_bottle_leveled_up)
-	print("UI Manager connected directly to InventoryManager")
+	#print("UI Manager connected directly to InventoryManager")
 
 	# Connect to talent signals for feedback
 	InventoryManager.talent_applied.connect(_on_talent_applied)
@@ -46,10 +46,10 @@ func update_xp_display(current_xp: int, max_xp: int):
 		xp_label.text = str(current_xp) + "/" + str(max_xp)
 
 func _on_bottle_leveled_up(bottle_id: String, sauce_name: String, level: int):
-	print("UI Manager: %s leveled up to %d" % [sauce_name, level])
+	#print("UI Manager: %s leveled up to %d" % [sauce_name, level])
 	var bottle = InventoryManager.get_bottle_by_id(bottle_id)
 	if not bottle:
-		print("❌ ERROR: Could not find bottle %s for upgrade menu!" % bottle_id)
+		#print("❌ ERROR: Could not find bottle %s for upgrade menu!" % bottle_id)
 		return
 
 	var upgrade_menu = UPGRADE_CHOICE_MENU.instantiate()
@@ -57,11 +57,11 @@ func _on_bottle_leveled_up(bottle_id: String, sauce_name: String, level: int):
 	upgrade_menu.setup_with_talents(sauce_name, level, bottle)
 	# Connect to the correct signal name
 	upgrade_menu.talent_selected.connect(func(talent): _on_talent_chosen(bottle_id, talent))
-	#upgrade_menu.talent_selected.connect(func(choice): print("choice ", choice))
+	#upgrade_menu.talent_selected.connect(func(choice): #print("choice ", choice))
 
 
 func _on_talent_chosen(bottle_id: String, talent: Talent):
-	print("UI Manager: Applying talent %s to bottle %s" % [talent.talent_name, bottle_id])
+	#print("UI Manager: Applying talent %s to bottle %s" % [talent.talent_name, bottle_id])
 	InventoryManager.apply_specific_talent(bottle_id, talent)  # ✅ Pass talent object
 
 func _on_level_up(level: int):
@@ -76,17 +76,17 @@ func _on_talent_applied(bottle: ImprovedBaseSauceBottle, talent: Talent):
 	# Show talent application feedback
 	var feedback_text = "✨ Talent Applied: %s" % talent.talent_name
 	_show_talent_notification(feedback_text, Color.GOLD)
-	print("UI Feedback: %s" % feedback_text)
+	#print("UI Feedback: %s" % feedback_text)
 
 func _on_talent_removed(bottle: ImprovedBaseSauceBottle, talent: Talent):
 	var feedback_text = "❌ Talent Removed: %s" % talent.talent_name
 	_show_talent_notification(feedback_text, Color.ORANGE)
-	print("UI Feedback: %s" % feedback_text)
+	#print("UI Feedback: %s" % feedback_text)
 
 func _on_bottle_respecced(bottle: ImprovedBaseSauceBottle):
 	var feedback_text = "🔄 %s Respecced!" % bottle.sauce_data.sauce_name
 	_show_talent_notification(feedback_text, Color.PURPLE)
-	print("UI Feedback: %s" % feedback_text)
+	#print("UI Feedback: %s" % feedback_text)
 
 func _show_talent_notification(text: String, color: Color):
 	# Create a simple notification label that fades out
@@ -108,9 +108,9 @@ func _show_talent_notification(text: String, color: Color):
 # Debug function to test talent system
 func _input(event):
 	if event.is_action_pressed("ui_accept") and Input.is_action_pressed("ui_select"):
-		# Debug: print talent status of first equipped bottle
+		# Debug: #print talent status of first equipped bottle
 		var bottles = InventoryManager.get_equipped_bottles()
 		if bottles.size() > 0:
 			var bottle = bottles[0]
-			InventoryManager.debug_print_bottle_talents(bottle)
-			print("Chosen upgrades: %s" % str(bottle.chosen_upgrades))
+			InventoryManager.debug_#print_bottle_talents(bottle)
+			#print("Chosen upgrades: %s" % str(bottle.chosen_upgrades))

@@ -46,4 +46,4 @@ static func has_sauce(name: String) -> bool:
 # Register new sauce (for mods/expansion) - static method
 static func register_sauce(name: String, sauce_resource: BaseSauceResource):
 	_all_sauces[name] = sauce_resource
-	print("Registered new sauce: %s" % name)
+	#print("Registered new sauce: %s" % name)

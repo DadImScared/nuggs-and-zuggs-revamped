@@ -125,7 +125,7 @@ func handle_enemy_hit(enemy: Node2D):
 	# Add pierce bonus damage
 	if pierce_hits > 0 and pierce_damage_bonus > 0:
 		final_damage += final_damage * (pierce_damage_bonus * pierce_hits)
-		print("Pierce bonus: +%.0f%% (hit #%d)" % [pierce_damage_bonus * pierce_hits * 100, pierce_hits + 1])
+		#print("Pierce bonus: +%.0f%% (hit #%d)" % [pierce_damage_bonus * pierce_hits * 100, pierce_hits + 1])
 
 	# Deal damage
 	if enemy.has_method("take_damage_from_source"):
@@ -206,7 +206,7 @@ func _attempt_bounce(hit_enemy: Node2D):
 		rotation = velocity.angle()
 
 		bounces_remaining -= 1
-		print("Bounced! %d bounces remaining" % bounces_remaining)
+		#print("Bounced! %d bounces remaining" % bounces_remaining)
 
 		# Visual effect for bounce
 		_create_bounce_effect(global_position)
@@ -345,17 +345,19 @@ func get_scaled_damage() -> float:
 
 # Debug function
 func debug_print_projectile_info():
-	print("=== Projectile Debug ===")
-	print("Damage Multiplier: %.2f" % damage_multiplier)
-	print("Is Critical: %s" % is_critical_hit)
-	print("Pierce Hits: %d (bonus: %.1f%%)" % [pierce_hits, pierce_damage_bonus * 100])
-	print("Infinite Pierce: %s" % infinite_pierce)
-	print("Is Homing: %s" % is_homing)
-	print("Is Bouncing: %s (remaining: %d)" % [is_bouncing, bounces_remaining])
-	print("On-Hit Effects: %d" % on_hit_effects.size())
+	pass
+	#print("=== Projectile Debug ===")
+	#print("Damage Multiplier: %.2f" % damage_multiplier)
+	#print("Is Critical: %s" % is_critical_hit)
+	#print("Pierce Hits: %d (bonus: %.1f%%)" % [pierce_hits, pierce_damage_bonus * 100])
+	#print("Infinite Pierce: %s" % infinite_pierce)
+	#print("Is Homing: %s" % is_homing)
+	#print("Is Bouncing: %s (remaining: %d)" % [is_bouncing, bounces_remaining])
+	#print("On-Hit Effects: %d" % on_hit_effects.size())
 	for effect in on_hit_effects:
-		print("  - %s" % effect.type)
-	print("=======================")
+		pass
+		#print("  - %s" % effect.type)
+	#print("=======================")
 
 # Cleanup when projectile is destroyed
 func _exit_tree():

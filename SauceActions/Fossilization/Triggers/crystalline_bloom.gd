@@ -34,7 +34,7 @@ func should_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: Enhanc
 	var fossilized_count = _count_fossilized_enemies_near_player(player_position)
 
 	if fossilized_count >= min_fossilized_enemies:
-		print("💎 Crystalline Bloom: %d fossilized enemies detected - spawning crystal!" % fossilized_count)
+		#print("💎 Crystalline Bloom: %d fossilized enemies detected - spawning crystal!" % fossilized_count)
 		return true
 
 	return false
@@ -43,7 +43,7 @@ func execute_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: Enhan
 	var player_position = _get_player_position()
 
 	if player_position == Vector2.ZERO:
-		print("💎 Crystalline Bloom: Could not find player position")
+		#print("💎 Crystalline Bloom: Could not find player position")
 		return
 
 	# FIXED: Find a good spawn position that stays near the player
@@ -74,7 +74,7 @@ func _get_player_position() -> Vector2:
 	if player and is_instance_valid(player):
 		return player.global_position
 
-	print("💎 Warning: Could not find player node")
+	#print("💎 Warning: Could not find player node")
 	return Vector2.ZERO
 
 func _get_crystal_spawn_position(player_position: Vector2) -> Vector2:
@@ -92,7 +92,7 @@ func _get_crystal_spawn_position(player_position: Vector2) -> Vector2:
 				fossilized_enemies.append(enemy)
 
 	if fossilized_enemies.is_empty():
-		print("💎 No nearby fossilized enemies - spawning near player")
+		#print("💎 No nearby fossilized enemies - spawning near player")
 		# Spawn in a random direction around the player, but close by
 		var random_angle = randf() * TAU  # Random angle in radians
 		var spawn_distance = randf_range(80.0, 150.0)  # 80-150 pixels from player
@@ -111,9 +111,9 @@ func _get_crystal_spawn_position(player_position: Vector2) -> Vector2:
 		# Move the spawn position closer to the player
 		var direction_to_center = (center_position - player_position).normalized()
 		center_position = player_position + (direction_to_center * max_spawn_distance)
-		print("💎 Clamped crystal spawn position to stay within %.0fpx of player" % max_spawn_distance)
+		#print("💎 Clamped crystal spawn position to stay within %.0fpx of player" % max_spawn_distance)
 
-	print("💎 Spawning crystal at center of %d nearby fossilized enemies (%.0fpx from player)" % [fossilized_enemies.size(), center_position.distance_to(player_position)])
+	#print("💎 Spawning crystal at center of %d nearby fossilized enemies (%.0fpx from player)" % [fossilized_enemies.size(), center_position.distance_to(player_position)])
 	return center_position
 
 func _count_fossilized_enemies_near_player(player_position: Vector2) -> int:
@@ -125,19 +125,19 @@ func _count_fossilized_enemies_near_player(player_position: Vector2) -> int:
 		if is_instance_valid(enemy) and is_enemy_fossilized(enemy):
 			fossilized_count += 1
 
-	print("💎 Found %d fossilized enemies within %.0fpx of player" % [fossilized_count, detection_radius])
+	#print("💎 Found %d fossilized enemies within %.0fpx of player" % [fossilized_count, detection_radius])
 	return fossilized_count
 
 func _spawn_crystal_at_position(position: Vector2, source_bottle: ImprovedBaseSauceBottle, trigger_data: EnhancedTriggerData):
 	"""Instantiate and configure the amber crystal"""
 	if not crystal_scene:
-		print("💎 Error: Crystal scene not loaded!")
+		#print("💎 Error: Crystal scene not loaded!")
 		return
 
 	var crystal = crystal_scene.instantiate()
 
 	if not crystal:
-		print("💎 Error: Failed to instantiate crystal!")
+		#print("💎 Error: Failed to instantiate crystal!")
 		return
 
 	# Position the crystal at chosen location
@@ -152,7 +152,7 @@ func _spawn_crystal_at_position(position: Vector2, source_bottle: ImprovedBaseSa
 	# Add to scene
 	Engine.get_main_loop().current_scene.add_child(crystal)
 
-	print("💎 Amber Crystal spawned at position %s by %s (%.0fpx from player)" % [str(position), source_bottle.sauce_data.sauce_name, position.distance_to(_get_player_position())])
+	#print("💎 Amber Crystal spawned at position %s by %s (%.0fpx from player)" % [str(position), source_bottle.sauce_data.sauce_name, position.distance_to(_get_player_position())])
 
 	# Optional: Create spawn visual effect
 	create_fossilization_particles(position, DEFAULT_AMBER_COLOR)
@@ -184,7 +184,7 @@ func _update_cooldown():
 	"""Update the cooldown timestamp"""
 	last_crystal_spawn_time = Time.get_ticks_msec()
 
-	print("💎 Crystalline Bloom cooldown started - next crystal available in %.1fs" % cooldown_duration)
+	#print("💎 Crystalline Bloom cooldown started - next crystal available in %.1fs" % cooldown_duration)
 
 # Public interface for debugging/testing
 func get_fossilized_count_near_player() -> int:

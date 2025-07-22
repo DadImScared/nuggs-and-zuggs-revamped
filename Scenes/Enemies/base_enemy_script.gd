@@ -88,7 +88,7 @@ func setup_from_resource():
 	if animated_sprite:
 		animated_sprite.speed_scale = enemy_resource.animation_speed_multiplier
 
-	print("%s stats - Health: %d, Speed: %.1f, Damage: %.1f, Scale: %.3f" % [enemy_resource.enemy_name, health, move_speed, damage, enemy_resource.scale_modifier])
+	#print("%s stats - Health: %d, Speed: %.1f, Damage: %.1f, Scale: %.3f" % [enemy_resource.enemy_name, health, move_speed, damage, enemy_resource.scale_modifier])
 
 func setup_default_stats():
 	# Fallback stats
@@ -148,7 +148,7 @@ func _process_death_triggers():
 				TriggerEffectResource.TriggerType.ON_ENEMY_DEATH,
 				death_data
 			)
-			print("💀 Processing death triggers for bottle: %s" % bottle.sauce_data.sauce_name)
+			#print("💀 Processing death triggers for bottle: %s" % bottle.sauce_data.sauce_name)
 
 func process_status_effects(delta: float):
 	var effects_to_remove = []
@@ -226,7 +226,7 @@ func apply_status_effect(effect_name: String, duration: float, intensity: float,
 			PlayerStats.total_infections_this_run = 0
 
 		PlayerStats.total_infections_this_run += 1
-		print("🦠 Infection applied! Total this run: %d" % PlayerStats.total_infections_this_run)
+		#print("🦠 Infection applied! Total this run: %d" % PlayerStats.total_infections_this_run)
 
 	if source_bottle and source_bottle.special_effects:
 		for effect in source_bottle.special_effects:
@@ -234,13 +234,13 @@ func apply_status_effect(effect_name: String, duration: float, intensity: float,
 			if effect.effect_name == "infection_duration_boost":
 				var duration_multiplier = effect.get_parameter("duration_multiplier", 1.5)
 				actual_duration = duration * duration_multiplier
-				print("🦠 Persistent Strain: Duration %.1fs → %.1fs" % [duration, actual_duration])
+				#print("🦠 Persistent Strain: Duration %.1fs → %.1fs" % [duration, actual_duration])
 
 			# Enhanced Transmission - radius boost
 			elif effect.effect_name == "infection_radius_boost":
 				var radius_multiplier = effect.get_parameter("radius_multiplier", 1.5)
 				spread_radius = spread_radius * radius_multiplier
-				print("🦠 Enhanced Transmission: Spread radius %.0f → %.0f" % [120.0, spread_radius])
+				#print("🦠 Enhanced Transmission: Spread radius %.0f → %.0f" % [120.0, spread_radius])
 
 	if enemy_resource:
 		match effect_name:
@@ -291,7 +291,7 @@ func remove_status_effect(effect_name: String):
 		var effect_data = active_effects[effect_name]
 		if effect_data.has("cleanup") and effect_data.cleanup.is_valid():
 			effect_data.cleanup.call()
-			print("🧹 Executed cleanup for: %s" % effect_name)
+			#print("🧹 Executed cleanup for: %s" % effect_name)
 
 		# Existing removal logic
 		match effect_name:
@@ -337,7 +337,7 @@ func apply_stacking_effect(effect_name: String, base_value: float, max_stacks: i
 
 	# Check if we're at max stacks
 	if effect.stacks >= max_stacks:
-		print("⚠️ %s at max stacks (%d/%d)" % [effect_name, effect.stacks, max_stacks])
+		#print("⚠️ %s at max stacks (%d/%d)" % [effect_name, effect.stacks, max_stacks])
 		return effect.stacks
 
 	# Add stack (up to max)
@@ -352,9 +352,9 @@ func apply_stacking_effect(effect_name: String, base_value: float, max_stacks: i
 	# Apply the stacking effect (this calls immediate_effect)
 	_apply_stack_behavior(effect.effect_type, effect, source_bottle_id)
 
-	print("📈 %s gained %s stack %d/%d from bottle %s (%.1f base value)" % [
-		name, effect_name, effect.stacks, max_stacks, source_bottle_id, base_value
-	])
+	#print("📈 %s gained %s stack %d/%d from bottle %s (%.1f base value)" % [
+		#name, effect_name, effect.stacks, max_stacks, source_bottle_id, base_value
+	#])
 
 	return effect.stacks
 
@@ -407,14 +407,14 @@ func _cleanup_stack_behavior(effect_name: String, effect_data: Dictionary, sourc
 			# Check if this is the LAST stack (already removed, so count should be 0)
 			if get_total_stack_count(effect_name) == 0:
 				visual_cleanup.call()
-				print("🧹 Executed visual cleanup for: %s" % effect_name)
+				#print("🧹 Executed visual cleanup for: %s" % effect_name)
 
 	# GENERIC: Handle mechanical cleanup if provided
 	if effect_data.has("effect_data") and effect_data.effect_data.has("mechanical_cleanup"):
 		var mechanical_cleanup = effect_data.effect_data.mechanical_cleanup
 		if mechanical_cleanup.is_valid():
 			mechanical_cleanup.call()
-			print("🧹 Executed mechanical cleanup for: %s" % effect_name)
+			#print("🧹 Executed mechanical cleanup for: %s" % effect_name)
 
 func scale_to_player_level():
 	if PlayerStats.level < 2:
@@ -447,13 +447,13 @@ func take_damage_from_source(damage_amount: float, source_bottle_id: String):
 	if has_meta("vulnerability_multiplier"):
 		var old_damage = actual_damage
 		actual_damage *= get_meta("vulnerability_multiplier")
-		print("💀 Vulnerability: %.1f → %.1f damage" % [old_damage, actual_damage])
+		#print("💀 Vulnerability: %.1f → %.1f damage" % [old_damage, actual_damage])
 
 	# Apply damage amplification stacking from all bottles
 	if has_meta("damage_amplification"):
 		var bonus_damage = actual_damage * get_meta("damage_amplification")
 		actual_damage += bonus_damage
-		print("⚡ Amplified: +%.1f bonus damage" % bonus_damage)
+		#print("⚡ Amplified: +%.1f bonus damage" % bonus_damage)
 
 	# Rest of existing damage logic...
 	health -= actual_damage
@@ -478,7 +478,7 @@ func take_damage_from_source(damage_amount: float, source_bottle_id: String):
 			spread_infection_on_death()
 		_process_death_triggers()
 		var enemy_name = enemy_resource.enemy_name if enemy_resource else "Enemy"
-		print("%s died! Took %.1f total damage" % [enemy_name, total_damage_taken])
+		#print("%s died! Took %.1f total damage" % [enemy_name, total_damage_taken])
 		queue_free()
 		emit_signal("died", xp_on_kill, damage_sources)
 
@@ -508,7 +508,7 @@ func _apply_stack_behavior(effect_name: String, effect_data: Dictionary, source_
 		var immediate_effect = effect_data.effect_data.immediate_effect
 		if immediate_effect.is_valid():
 			immediate_effect.call()
-			print("⚡ Applied immediate effect for: %s" % effect_name)
+			#print("⚡ Applied immediate effect for: %s" % effect_name)
 
 func apply_external_velocity(new_velocity: Vector2):
 	external_velocity = new_velocity

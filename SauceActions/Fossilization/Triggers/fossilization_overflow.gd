@@ -20,7 +20,7 @@ func execute_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: Enhan
 	if not hit_enemy or not is_instance_valid(hit_enemy):
 		return
 
-	print("💥 Fossilization Overflow! Amber explosion triggered!")
+	#print("💥 Fossilization Overflow! Amber explosion triggered!")
 
 	# Get explosion parameters
 	var explosion_radius = trigger_data.effect_parameters.get("explosion_radius", 120.0)
@@ -48,7 +48,7 @@ func _create_amber_explosion(position: Vector2, radius: float, damage_multiplier
 	# Get nearby enemies using base class method
 	var nearby_enemies = get_nearby_enemies(position, radius)
 
-	print("🔶 Amber explosion hit %d enemies in %.1f radius" % [nearby_enemies.size(), radius])
+	#print("🔶 Amber explosion hit %d enemies in %.1f radius" % [nearby_enemies.size(), radius])
 
 	for enemy in nearby_enemies:
 		if not is_instance_valid(enemy):
@@ -65,7 +65,7 @@ func _create_amber_explosion(position: Vector2, radius: float, damage_multiplier
 		elif enemy.has_method("take_damage"):
 			enemy.take_damage(final_damage)
 
-		print("💥 Dealt %.1f damage to enemy at distance %.1f" % [final_damage, distance])
+		#print("💥 Dealt %.1f damage to enemy at distance %.1f" % [final_damage, distance])
 
 		# Apply fossilization to hit enemies using base class method
 		if randf() < spread_chance:
@@ -84,4 +84,4 @@ func _create_amber_explosion(position: Vector2, radius: float, damage_multiplier
 			var fossilize_trigger_data = EnhancedTriggerData.new(fossilize_trigger_resource)
 
 			apply_fossilization_to_enemy(enemy, source_bottle, fossilize_trigger_data, 1)
-			print("🔶 Spread fossilization to enemy at distance %.1f" % distance)
+			#print("🔶 Spread fossilization to enemy at distance %.1f" % distance)

@@ -21,12 +21,12 @@ var spawn_tier_thresholds = {
 }
 
 func _ready():
-	print("Enemy Pool Manager starting up...")
+	#print("Enemy Pool Manager starting up...")
 	load_enemy_types()
 	update_spawn_weights()
 
 func load_enemy_types():
-	print("Loading enemy types...")
+	#print("Loading enemy types...")
 
 	# Create basic enemy and add to existing array
 	var basic_enemy = BaseEnemyResource.new()
@@ -37,9 +37,9 @@ func load_enemy_types():
 	basic_enemy.scene_path = "res://Scenes/enemy.tscn"
 	#basic_enemies.append(basic_enemy)
 
-	print("Loaded %d enemy types:" % basic_enemies.size())
-	for enemy in basic_enemies:
-		print("  - %s (weight: %d)" % [enemy.enemy_name, enemy.spawn_weight])
+	#print("Loaded %d enemy types:" % basic_enemies.size())
+	#for enemy in basic_enemies:
+		#print("  - %s (weight: %d)" % [enemy.enemy_name, enemy.spawn_weight])
 
 func update_spawn_weights():
 	# Clear previous weights
@@ -63,7 +63,7 @@ func update_spawn_weights():
 		for enemy in boss_enemies:
 			current_spawn_weights[enemy] = enemy.spawn_weight * 0.1  # Much rarer
 
-	print("Updated spawn weights: %d enemy types available" % current_spawn_weights.size())
+	#print("Updated spawn weights: %d enemy types available" % current_spawn_weights.size())
 
 func get_random_enemy_resource() -> BaseEnemyResource:
 	# Update weights in case player leveled up
@@ -71,7 +71,7 @@ func get_random_enemy_resource() -> BaseEnemyResource:
 
 	# If no enemies available, return null
 	if current_spawn_weights.is_empty():
-		print("Warning: No enemies available to spawn!")
+		#print("Warning: No enemies available to spawn!")
 		return null
 
 	# Calculate total weight of all enemies
@@ -87,14 +87,14 @@ func get_random_enemy_resource() -> BaseEnemyResource:
 	for enemy in current_spawn_weights:
 		cumulative_weight += current_spawn_weights[enemy]
 		if random_value <= cumulative_weight:
-			print("Selected enemy: %s" % enemy.enemy_name)
+			#print("Selected enemy: %s" % enemy.enemy_name)
 			return enemy
 
 	# Fallback - return first enemy
 	return current_spawn_weights.keys()[0]
 
 func add_enemy_type(enemy_resource: BaseEnemyResource, tier: String = "basic"):
-	print("Adding enemy type: %s to tier: %s" % [enemy_resource.enemy_name, tier])
+	#print("Adding enemy type: %s to tier: %s" % [enemy_resource.enemy_name, tier])
 
 	match tier:
 		"basic":
@@ -104,7 +104,7 @@ func add_enemy_type(enemy_resource: BaseEnemyResource, tier: String = "basic"):
 		"boss":
 			boss_enemies.append(enemy_resource)
 		_:
-			print("Unknown tier: %s, adding to basic" % tier)
+			#print("Unknown tier: %s, adding to basic" % tier)
 			basic_enemies.append(enemy_resource)
 
 	# Update weights so new enemy can spawn

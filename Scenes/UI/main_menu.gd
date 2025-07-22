@@ -72,7 +72,7 @@ func _setup_kitchen_background():
 			background.get_parent().move_child(texture_rect, 0)  # Move to back
 			background.queue_free()
 		else:
-			print("Kitchen background image not found, using fallback brown")
+			#print("Kitchen background image not found, using fallback brown")
 			# Keep the existing brown background as fallback
 
 func _connect_signals():
@@ -133,7 +133,7 @@ func _create_floating_sauce(index: int):
 	if texture:
 		sauce_sprite.texture = texture
 	else:
-		print("Warning: Could not load bottle texture!")
+		#print("Warning: Could not load bottle texture!")
 		return
 
 	# Sauce colors with themed names!
@@ -263,7 +263,7 @@ func _create_floating_nugget(index: int):
 	if texture:
 		nugget_sprite.texture = texture
 	else:
-		print("Warning: Could not load nugget texture: ", texture_path)
+		#print("Warning: Could not load nugget texture: ", texture_path)
 		return
 
 	# Golden brown nugget colors (cooked nugget vibes)
@@ -393,7 +393,7 @@ func _create_floating_utensil(index: int):
 		if fallback_texture:
 			utensil_sprite.texture = fallback_texture
 		else:
-			print("Warning: Could not load utensil or fallback texture")
+			#print("Warning: Could not load utensil or fallback texture")
 			return
 
 	# Metallic colors for utensils
@@ -500,7 +500,7 @@ func _cleanup_old_items():
 # Button Actions
 func _on_start_pressed():
 	"""Start the game"""
-	print("Starting Nuggs and Zuggs!")
+	#print("Starting Nuggs and Zuggs!")
 
 	# Play button sound if available
 	_play_button_sound()
@@ -510,7 +510,7 @@ func _on_start_pressed():
 
 func _on_options_pressed():
 	"""Open options menu"""
-	print("Opening options menu")
+	#print("Opening options menu")
 	_play_button_sound()
 
 	# For now, just show a simple message
@@ -523,7 +523,7 @@ func _on_options_pressed():
 
 func _on_quit_pressed():
 	"""Quit the game"""
-	print("Quitting game...")
+	#print("Quitting game...")
 	_play_button_sound()
 
 	# Add quit confirmation dialog
@@ -580,8 +580,8 @@ func _unhandled_key_input(event):
 	if OS.is_debug_build():
 		if event.pressed and event.keycode == KEY_F1:
 			# F1 for debug info
-			print("=== MAIN MENU DEBUG ===")
-			print("Game Version: ", GAME_VERSION)
-			print("Available scenes: ")
-			print("  Main Game: ", MAIN_GAME_SCENE)
-			print("  Options: ", OPTIONS_SCENE)
+			#print("=== MAIN MENU DEBUG ===")
+			#print("Game Version: ", GAME_VERSION)
+			#print("Available scenes: ")
+			#print("  Main Game: ", MAIN_GAME_SCENE)
+			#print("  Options: ", OPTIONS_SCENE)

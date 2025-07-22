@@ -16,12 +16,12 @@ func execute_trigger(bottle: ImprovedBaseSauceBottle, trigger_data: EnhancedTrig
 	if bottle_contributed:
 		# Give XP to the bottle
 		bottle.gain_xp(xp_reward)
-		print("💰 Pathogen Dividend: %s gained %d XP from infected enemy death" % [bottle.sauce_data.sauce_name, xp_reward])
+		#print("💰 Pathogen Dividend: %s gained %d XP from infected enemy death" % [bottle.sauce_data.sauce_name, xp_reward])
 
 		# Optional: Create visual effect at enemy death position
 		_create_dividend_visual(enemy_position)
-	else:
-		print("💰 Pathogen Dividend: Bottle didn't contribute to this kill, no XP gained")
+	#else:
+		#print("💰 Pathogen Dividend: Bottle didn't contribute to this kill, no XP gained")
 
 	log_trigger_executed(bottle, trigger_data)
 

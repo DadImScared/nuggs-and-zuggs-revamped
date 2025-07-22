@@ -14,7 +14,7 @@ func _ready() -> void:
 
 func _on_sauce_selected():
 	pass
-	#print("sauce selectedd in card")
+	##print("sauce selectedd in card")
 	#card_selected.emit(sauce_data)
 
 func update_visuals(p_sauce_data = null):

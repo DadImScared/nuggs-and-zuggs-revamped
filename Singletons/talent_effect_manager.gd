@@ -19,7 +19,7 @@ func create_mini_volcano(position: Vector2, damage: float, radius: float, source
 
 func create_tsunami_wave(origin: Vector2, damage: float):
 	"""Create massive tsunami wave effect"""
-	print("🌊 CREATING TSUNAMI WAVE! 🌊")
+	#print("🌊 CREATING TSUNAMI WAVE! 🌊")
 
 	# Create visual wave effect
 	_create_tsunami_visual(origin)
@@ -53,7 +53,7 @@ func _create_tsunami_visual(origin: Vector2):
 
 func transform_arena(source_bottle: ImprovedBaseSauceBottle):
 	"""Transform arena with permanent effects"""
-	print("🔥 ARENA TRANSFORMATION ACTIVATED! 🔥")
+	#print("🔥 ARENA TRANSFORMATION ACTIVATED! 🔥")
 
 	# Change arena background/theme
 	var arena = get_tree().get_first_node_in_group("arena")
@@ -68,7 +68,7 @@ func transform_arena(source_bottle: ImprovedBaseSauceBottle):
 
 func transform_arena_to_ketchup_hell(source_bottle: ImprovedBaseSauceBottle):
 	"""Transform arena to tomato apocalypse"""
-	print("💀 TOMATO APOCALYPSE! THE END TIMES! 💀")
+	#print("💀 TOMATO APOCALYPSE! THE END TIMES! 💀")
 
 	# All puddles become permanent and stack
 	active_transformations[source_bottle.bottle_id] = {
@@ -280,7 +280,7 @@ func create_permanent_damage_field(damage_per_second: float):
 	timer.start()
 
 	permanent_damage_fields.append(field_area)
-	print("🔥 Permanent damage field created: %.1f DPS" % damage_per_second)
+	#print("🔥 Permanent damage field created: %.1f DPS" % damage_per_second)
 
 func _on_permanent_field_timer(timer: Timer):
 	"""Handle permanent field damage timer safely"""
@@ -384,7 +384,7 @@ func cleanup_all_effects():
 	mega_puddles.clear()
 
 	active_transformations.clear()
-	print("🧹 All talent effects cleaned up")
+	#print("🧹 All talent effects cleaned up")
 
 func get_active_effects_count() -> Dictionary:
 	"""Get count of active effects for debugging"""
@@ -404,7 +404,7 @@ func get_enemies_in_radius_for_infection(position: Vector2, radius: float, sourc
 			if effect.effect_name == "enhanced_transmission":
 				var radius_multiplier = effect.get_parameter("radius_multiplier", 1.5)
 				enhanced_radius = radius * radius_multiplier
-				print("🦠 Enhanced Transmission: Infection spread radius %.0f → %.0f" % [radius, enhanced_radius])
+				#print("🦠 Enhanced Transmission: Infection spread radius %.0f → %.0f" % [radius, enhanced_radius])
 				break
 
 	# Find all enemies in the enhanced radius

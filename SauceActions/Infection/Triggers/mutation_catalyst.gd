@@ -13,10 +13,10 @@ func execute_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: Enhan
 	# The triggering enemy is passed via effect_parameters by TriggerActionManager
 	var triggering_enemy = trigger_data.effect_parameters.get("dot_enemy")
 	if not triggering_enemy or not is_instance_valid(triggering_enemy):
-		print("⚠️ Mutation Catalyst: No valid triggering enemy")
+		#print("⚠️ Mutation Catalyst: No valid triggering enemy")
 		return
 
-	print("🧬 Mutation Catalyst: Triggered from infection tick - permanently boosting damage!")
+	#print("🧬 Mutation Catalyst: Triggered from infection tick - permanently boosting damage!")
 
 	# Create permanent damage modifier using existing StatModifier system
 	var damage_modifier = StatModifier.new()
@@ -30,7 +30,7 @@ func execute_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: Enhan
 	# Recalculate effective stats to apply the new modifier immediately
 	source_bottle.recalculate_all_effective_stats()
 
-	print("🧬 Mutation Catalyst: Applied +%.3f%% permanent damage boost. Total modifiers: %d" % [damage_boost_percent * 100, source_bottle.stat_modifier_history.size()])
+	#print("🧬 Mutation Catalyst: Applied +%.3f%% permanent damage boost. Total modifiers: %d" % [damage_boost_percent * 100, source_bottle.stat_modifier_history.size()])
 
 	# Log for debugging
 	log_trigger_executed(source_bottle, trigger_data)

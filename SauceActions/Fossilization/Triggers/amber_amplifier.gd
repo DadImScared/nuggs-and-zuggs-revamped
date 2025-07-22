@@ -54,7 +54,7 @@ func _apply_damage_bonus(source_bottle: ImprovedBaseSauceBottle, fossilized_coun
 	source_bottle.stat_modifier_history.append(damage_modifier)
 	source_bottle.recalculate_all_effective_stats()
 
-	print("🔶 Amber Amplifier: %d nearby fossilized enemies = %.0f%% damage bonus" % [fossilized_count, damage_bonus * 100])
+	#print("🔶 Amber Amplifier: %d nearby fossilized enemies = %.0f%% damage bonus" % [fossilized_count, damage_bonus * 100])
 
 func _remove_existing_amplifier_modifiers(source_bottle: ImprovedBaseSauceBottle):
 	"""Remove any existing Amber Amplifier damage modifiers"""

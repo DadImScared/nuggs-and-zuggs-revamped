@@ -8,7 +8,7 @@ func _init():
 
 func execute_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: EnhancedTriggerData) -> void:
 	# If we're here, it means fossilization was successful - reset everything
-	print("🕰️ Temporal Debt: Fossilization successful! Resetting bonus...")
+	#print("🕰️ Temporal Debt: Fossilization successful! Resetting bonus...")
 	_reset_debt_bonus(source_bottle)
 
 func should_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: EnhancedTriggerData) -> bool:
@@ -16,7 +16,7 @@ func should_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: Enhanc
 	if not source_bottle.get_node_or_null("TemporalDebtTimer"):
 		var bonus_per_second = trigger_data.effect_parameters.get("bonus_per_second", 0.05)
 		_create_debt_timer(source_bottle, bonus_per_second)
-		print("🕰️ Temporal Debt: Initialized for bottle %s" % source_bottle.sauce_data.sauce_name)
+		#print("🕰️ Temporal Debt: Initialized for bottle %s" % source_bottle.sauce_data.sauce_name)
 
 	# Check if this hit caused fossilization
 	var hit_enemy = trigger_data.effect_parameters.get("hit_enemy")
@@ -39,7 +39,7 @@ func _reset_debt_bonus(source_bottle: ImprovedBaseSauceBottle):
 	# Reset the debt timer
 	_restart_debt_timer(source_bottle)
 
-	print("🕰️ Temporal Debt: Bonus reset to 0%, timer restarted")
+	#print("🕰️ Temporal Debt: Bonus reset to 0%, timer restarted")
 
 func _remove_existing_debt_modifiers(source_bottle: ImprovedBaseSauceBottle):
 	"""Remove any existing Temporal Debt chance modifiers"""
@@ -60,7 +60,7 @@ func _restart_debt_timer(source_bottle: ImprovedBaseSauceBottle):
 	var debt_timer = source_bottle.get_node_or_null("TemporalDebtTimer")
 	if debt_timer:
 		debt_timer.start()  # Restart existing timer
-		print("🕰️ Temporal Debt: Timer restarted")
+		#print("🕰️ Temporal Debt: Timer restarted")
 
 func _create_debt_timer(source_bottle: ImprovedBaseSauceBottle, bonus_per_second: float):
 	"""Create a new debt accumulation timer"""
@@ -71,7 +71,7 @@ func _create_debt_timer(source_bottle: ImprovedBaseSauceBottle, bonus_per_second
 	debt_timer.autostart = true
 	source_bottle.add_child(debt_timer)
 
-	print("🕰️ Temporal Debt: Timer created and started")
+	#print("🕰️ Temporal Debt: Timer created and started")
 
 func _on_debt_timer_timeout(source_bottle: ImprovedBaseSauceBottle, bonus_per_second: float):
 	"""Called every second to increase fossilization chance"""
@@ -94,4 +94,4 @@ func _add_debt_bonus(source_bottle: ImprovedBaseSauceBottle, bonus_amount: float
 	source_bottle.stat_modifier_history.append(chance_modifier)
 	source_bottle.recalculate_all_effective_stats()
 
-	print("🕰️ Temporal Debt: +%.0f%% chance bonus added" % [bonus_amount * 100])
+	#print("🕰️ Temporal Debt: +%.0f%% chance bonus added" % [bonus_amount * 100])

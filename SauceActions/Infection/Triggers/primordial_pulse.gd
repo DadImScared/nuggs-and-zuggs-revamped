@@ -16,10 +16,10 @@ func execute_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: Enhan
 	# The triggering enemy is passed via effect_parameters by TriggerActionManager
 	var triggering_enemy = trigger_data.effect_parameters.get("dot_enemy")
 	if not triggering_enemy or not is_instance_valid(triggering_enemy):
-		print("⚠️ Primordial Pulse: No valid triggering enemy")
+		#print("⚠️ Primordial Pulse: No valid triggering enemy")
 		return
 
-	print("🌋 Primordial Pulse: Triggered from infection tick on enemy")
+	#print("🌋 Primordial Pulse: Triggered from infection tick on enemy")
 
 	# Find nearby uninfected enemies
 	var nearby_enemies = _get_enemies_in_radius(triggering_enemy.global_position, spread_radius)
@@ -30,7 +30,7 @@ func execute_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: Enhan
 			uninfected_nearby.append(enemy)
 
 	if uninfected_nearby.size() == 0:
-		print("🌋 Primordial Pulse: No uninfected enemies nearby")
+		#print("🌋 Primordial Pulse: No uninfected enemies nearby")
 		return
 
 	# Spread to up to max_spreads nearby enemies
@@ -45,7 +45,7 @@ func execute_trigger(source_bottle: ImprovedBaseSauceBottle, trigger_data: Enhan
 		_apply_infection_spread(enemy, source_bottle, infection_strength)
 		spread_count += 1
 
-	print("🌋 Primordial Pulse: Spread infection to %d nearby enemies" % spread_count)
+	#print("🌋 Primordial Pulse: Spread infection to %d nearby enemies" % spread_count)
 
 	# Create visual effect
 	_create_spread_visual(triggering_enemy.global_position, uninfected_nearby, spread_count)
@@ -70,7 +70,7 @@ func _apply_infection_spread(target_enemy: Node2D, source_bottle: ImprovedBaseSa
 	if "active_effects" in target_enemy and "infect" in target_enemy.active_effects:
 		target_enemy.active_effects["infect"]["color"] = infection_color
 
-	print("🌋 Primordial Pulse: Applied infection (%.1f intensity, %.1f duration)" % [infection_intensity, infection_duration])
+	#print("🌋 Primordial Pulse: Applied infection (%.1f intensity, %.1f duration)" % [infection_intensity, infection_duration])
 
 func _is_infected(enemy: Node2D) -> bool:
 	"""Check if an enemy is already infected"""
