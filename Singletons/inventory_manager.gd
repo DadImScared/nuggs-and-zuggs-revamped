@@ -13,7 +13,8 @@ var equipped: Array = []
 
 # Legacy resources for initial setup only
 var old_equipped: Array = [
-	preload("res://Resources/archaean_apple_butter.tres")
+	preload("res://Resources/hot_sauce.tres")
+	#preload("res://Resources/archaean_apple_butter.tres")
 	#preload("res://Resources/jurassic_jalapeno.tres")
 	#preload("res://Resources/sriracha.tres")
 	#preload("res://Resources/prehistoric_pesto.tres"),

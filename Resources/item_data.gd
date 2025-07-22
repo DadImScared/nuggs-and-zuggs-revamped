@@ -28,6 +28,9 @@ func _add_base_triggers(bottle: ImprovedBaseSauceBottle, sauce_resource: BaseSau
 			var apple_butter_talents = ArchaeanAppleButterTalents.new()
 			bottle.trigger_effects.append(apple_butter_talents.create_basic_fossilization())
 			#print("✅ Added base fossilization trigger to Archaean Apple Butter")
+		"Hot Sauce":
+			var hot_sauce_talents = HotSauceTalents.new()
+			bottle.trigger_effects.append(hot_sauce_talents.create_basic_burn())
 		_:
 			print("ℹ️ No base triggers defined for: %s" % sauce_resource.sauce_name)
 			#print("   This sauce will have basic projectile behavior only")
