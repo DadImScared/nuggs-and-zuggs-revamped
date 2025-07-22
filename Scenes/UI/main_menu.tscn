@@ -1,0 +1,81 @@
+[gd_scene load_steps=2 format=3 uid="uid://cnsd5jumvoypl"]
+
+[ext_resource type="Script" uid="uid://birgngle4n4yw" path="res://Scenes/UI/main_menu.gd" id="1_5wsvm"]
+
+[node name="MainMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_5wsvm")
+
+[node name="Background" type="ColorRect" parent="."]
+modulate = Color(0.101961, 0.0509804, 0.0196078, 1)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="BackgroundEffects" type="Node2D" parent="."]
+
+[node name="FloatingSauces" type="Node2D" parent="BackgroundEffects"]
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MainContainer" type="VBoxContainer" parent="CenterContainer"]
+layout_mode = 2
+
+[node name="Spacer1" type="Control" parent="CenterContainer/MainContainer"]
+layout_mode = 2
+
+[node name="TitleContainer" type="VBoxContainer" parent="CenterContainer/MainContainer"]
+layout_mode = 2
+
+[node name="GameTitle" type="Label" parent="CenterContainer/MainContainer/TitleContainer"]
+modulate = Color(1, 0.8, 0.301961, 1)
+layout_mode = 2
+theme_override_font_sizes/font_size = 64
+text = "Nuggs and Zuggs"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Subtitle" type="Label" parent="CenterContainer/MainContainer/TitleContainer"]
+modulate = Color(0.901961, 0.701961, 0.4, 1)
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Survive the Geological Flavor Apocalypse!"
+
+[node name="Spacer2" type="Control" parent="CenterContainer/MainContainer"]
+layout_mode = 2
+
+[node name="ButtonContainer" type="VBoxContainer" parent="CenterContainer/MainContainer"]
+layout_mode = 2
+
+[node name="StartButton" type="Button" parent="CenterContainer/MainContainer/ButtonContainer"]
+custom_minimum_size = Vector2(300, 60)
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "🍗 START SLINGING 🍗"
+
+[node name="OptionsButton" type="Button" parent="CenterContainer/MainContainer/ButtonContainer"]
+layout_mode = 2
+
+[node name="QuitButton" type="Button" parent="CenterContainer/MainContainer/ButtonContainer"]
+layout_mode = 2
+
+[node name="VersionLabel" type="Label" parent="."]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="MenuIntro" type="AnimationPlayer" parent="."]

@@ -178,7 +178,7 @@ func apply_pulse_effects(enemy: Node):
 	# Apply scaled damage
 	var damage = calculate_pulse_damage()
 
-	print("💎 [%s] Applying %.1f damage to enemy" % [crystal_id, damage])
+	#print("💎 [%s] Applying %.1f damage to enemy" % [crystal_id, damage])
 
 	# Apply damage using crystal bottle ID (gets no XP - it's a utility effect)
 	if enemy.has_method("take_damage_from_source"):
