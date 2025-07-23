@@ -48,5 +48,6 @@ func create_fire_spirit_talent() -> TriggerEffectResource:
 	trigger.effect_parameters["seek_range"] = 300.0
 	trigger.effect_parameters["spirit_speed"] = 60.0
 	trigger.effect_parameters["burn_stacks"] = 2  # Spirits apply 2 burn stacks
+	trigger.effect_parameters["spirit_damage"] = 7.0
 
 	return trigger

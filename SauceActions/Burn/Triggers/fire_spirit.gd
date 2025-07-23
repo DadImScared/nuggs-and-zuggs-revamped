@@ -19,19 +19,20 @@ func execute_trigger(bottle: ImprovedBaseSauceBottle, data: EnhancedTriggerData)
 		DebugControl.debug_status("⚠️ Fire Spirit: No valid bottle position")
 		return
 
-	# Read parameters
+	# Read parameters - now includes spirit_damage
 	var spirit_count = data.effect_parameters.get("spirit_count", 1)
 	var seek_range = data.effect_parameters.get("seek_range", 300.0)
 	var spirit_speed = data.effect_parameters.get("spirit_speed", 200.0)
 	var burn_stacks = data.effect_parameters.get("burn_stacks", 2)
+	var spirit_damage = data.effect_parameters.get("spirit_damage", 7.0)  # NEW: Read damage parameter
 
 	# Spawn fire spirits from the bottle
 	for i in range(spirit_count):
-		_spawn_fire_spirit(spawn_pos, bottle, spirit_speed, seek_range, burn_stacks)
+		_spawn_fire_spirit(spawn_pos, bottle, spirit_speed, seek_range, burn_stacks, spirit_damage)
 
-	DebugControl.debug_status("🔥 Fire Spirit: Spawned %d seeking fire spirits from bottle" % spirit_count)
+	DebugControl.debug_status("🔥 Fire Spirit: Spawned %d seeking fire spirits from bottle (%.1f damage each)" % [spirit_count, spirit_damage])
 
-func _spawn_fire_spirit(spawn_pos: Vector2, source_bottle: ImprovedBaseSauceBottle, speed: float, seek_range: float, burn_stacks: int):
+func _spawn_fire_spirit(spawn_pos: Vector2, source_bottle: ImprovedBaseSauceBottle, speed: float, seek_range: float, burn_stacks: int, spirit_damage: float):
 	"""Create a seeking fire spirit projectile"""
 	# Find closest enemy within range, but exclude recently targeted ones
 	var target_enemy = _find_best_target(spawn_pos, seek_range)
@@ -50,7 +51,7 @@ func _spawn_fire_spirit(spawn_pos: Vector2, source_bottle: ImprovedBaseSauceBott
 	fire_spirit.z_index = 100
 
 	if is_instance_valid(target_enemy) and is_instance_valid(source_bottle):
-		fire_spirit.setup_spirit(target_enemy, source_bottle, speed, burn_stacks)
+		fire_spirit.setup_spirit(target_enemy, source_bottle, speed, burn_stacks, spirit_damage)  # Pass damage parameter
 	else:
 		DebugControl.debug_status("⚠️ Fire Spirit: Invalid parameters, destroying spirit")
 		fire_spirit.queue_free()
@@ -65,43 +66,45 @@ func _spawn_fire_spirit(spawn_pos: Vector2, source_bottle: ImprovedBaseSauceBott
 # Keep track of recently targeted enemies to spread spirits around
 var recently_targeted: Array[Node2D] = []
 
-func _find_best_target(position: Vector2, max_range: float) -> Node2D:
-	"""Find the best enemy target, avoiding recently targeted ones"""
-	var enemies = get_enemies_in_radius(position, max_range)
-	if enemies.is_empty():
-		return null
+func _find_best_target(spawn_pos: Vector2, seek_range: float) -> Node2D:
+	"""Find the best enemy target within range, excluding recently targeted ones"""
+	# Use a simple approach that works - get all enemy nodes directly
+	var all_nodes = Engine.get_main_loop().current_scene.get_children()
+	var enemies = []
 
-	# Clean up invalid recently targeted enemies
-	recently_targeted = recently_targeted.filter(func(enemy): return is_instance_valid(enemy))
+	# Recursively find all enemy nodes
+	_find_enemies_recursive(all_nodes, enemies)
 
-	# First try to find enemies not recently targeted
-	var untargeted_enemies = []
+	var best_target: Node2D = null
+	var best_distance: float = seek_range + 1.0  # Start beyond max range
+
 	for enemy in enemies:
-		if not enemy in recently_targeted:
-			untargeted_enemies.append(enemy)
-
-	var target_pool = untargeted_enemies if untargeted_enemies.size() > 0 else enemies
-
-	# Find closest enemy from the target pool
-	var closest_enemy = null
-	var closest_distance = max_range + 1
-
-	for enemy in target_pool:
 		if not is_instance_valid(enemy):
 			continue
 
-		var distance = position.distance_to(enemy.global_position)
-		if distance < closest_distance:
-			closest_distance = distance
-			closest_enemy = enemy
+		var distance = spawn_pos.distance_to(enemy.global_position)
+		if distance <= seek_range and distance < best_distance:
+			# Prefer enemies not recently targeted
+			if enemy not in recently_targeted:
+				best_target = enemy
+				best_distance = distance
 
-	# Mark this enemy as recently targeted
-	if closest_enemy:
-		recently_targeted.append(closest_enemy)
-		# Keep only the last 5 targets to eventually allow retargeting
+	# Clean up recently targeted list (remove invalid/dead enemies)
+	recently_targeted = recently_targeted.filter(func(e): return is_instance_valid(e))
+
+	# Add new target to recently targeted list
+	if best_target:
+		recently_targeted.append(best_target)
+		# Keep list manageable size
 		if recently_targeted.size() > 5:
 			recently_targeted.pop_front()
 
-		DebugControl.debug_status("🔥 Fire Spirit: Targeting enemy (recently targeted: %d)" % recently_targeted.size())
+	return best_target
 
-	return closest_enemy
+func _find_enemies_recursive(nodes: Array, enemies: Array):
+	"""Recursively find all enemy nodes"""
+	for node in nodes:
+		if node.is_in_group("enemies"):
+			enemies.append(node)
+		if node.get_child_count() > 0:
+			_find_enemies_recursive(node.get_children(), enemies)

@@ -6,6 +6,7 @@ var target_enemy: Node2D
 var source_bottle: Node
 var move_speed: float = 200.0
 var burn_stacks_to_apply: int = 2
+var spirit_damage: float = 7.0  # NEW: Store the damage amount
 var lifetime: float = 5.0
 
 # Components - make sure these match your scene node names
@@ -70,18 +71,20 @@ func _create_fallback_visual():
 	tween.tween_property(fallback, "modulate:a", 0.5, 0.3)
 	tween.tween_property(fallback, "modulate:a", 1.0, 0.3)
 
-func setup_spirit(target: Node2D, bottle: Node, speed: float, burn_stacks: int):
+func setup_spirit(target: Node2D, bottle: Node, speed: float, burn_stacks: int, damage: float = 7.0):
 	"""Initialize the fire spirit with its target and properties"""
 	print("🔥 Fire Spirit setup_spirit() called")
 	print("  Target: %s" % target)
 	print("  Bottle: %s" % bottle)
 	print("  Speed: %s" % speed)
 	print("  Burn stacks: %s" % burn_stacks)
+	print("  Damage: %s" % damage)  # NEW: Log damage parameter
 
 	target_enemy = target
 	source_bottle = bottle
 	move_speed = speed
 	burn_stacks_to_apply = burn_stacks
+	spirit_damage = damage  # NEW: Store damage amount
 
 	# Set initial direction toward target
 	if target_enemy and is_instance_valid(target_enemy):
@@ -140,14 +143,14 @@ func _hit_target():
 	# Apply burn stacks to the target
 	_apply_burn_stacks_to_target()
 
-	# For now, also do some immediate damage
+	# Apply immediate damage using the parameter instead of hardcoded value
 	if target_enemy.has_method("take_damage_from_source") and source_bottle:
 		var bottle_id = source_bottle.bottle_id if source_bottle.has_method("bottle_id") else "fire_spirit"
-		target_enemy.take_damage_from_source(7.0, bottle_id)
-		print("🔥 Fire Spirit dealt 15 immediate damage to enemy")
+		target_enemy.take_damage_from_source(spirit_damage, bottle_id)  # NEW: Use spirit_damage parameter
+		print("🔥 Fire Spirit dealt %.1f immediate damage to enemy" % spirit_damage)
 	elif target_enemy.has_method("take_damage"):
-		target_enemy.take_damage(15)
-		print("🔥 Fire Spirit dealt 15 immediate damage to enemy (fallback)")
+		target_enemy.take_damage(spirit_damage)  # NEW: Use spirit_damage parameter
+		print("🔥 Fire Spirit dealt %.1f immediate damage to enemy (fallback)" % spirit_damage)
 
 	# Attach to enemy briefly
 	_attach_to_enemy()
@@ -226,90 +229,51 @@ func _attach_to_enemy():
 
 	print("🔥 Fire Spirit attaching to enemy!")
 
-	# Stop movement
-	velocity = Vector2.ZERO
-
-	# Try to reparent to enemy
-	var old_global_pos = global_position
-	var old_parent = get_parent()
-
-	if old_parent and is_instance_valid(old_parent):
-		old_parent.remove_child(self)
-
-		if is_instance_valid(target_enemy):
-			target_enemy.add_child(self)
-			# Set local position relative to enemy center
-			position = Vector2(0, -25)  # Float higher above enemy
-			print("🔥 Fire Spirit successfully attached at local position: %s" % position)
-		else:
-			print("⚠️ Target enemy became invalid during attachment")
-			queue_free()
-			return
-	else:
-		print("⚠️ Fire Spirit parent became invalid")
-		queue_free()
-		return
-
-	# Don't scale down - keep full size when attached
-	# Just fade slightly to show it's attached
-	if animated_sprite:
-		var tween = create_tween()
-		tween.tween_property(animated_sprite, "modulate:a", 0.8, 0.3)
-
-	var fallback = get_node_or_null("FallbackVisual")
-	if fallback:
-		var tween2 = create_tween()
-		tween2.tween_property(fallback, "modulate:a", 0.8, 0.3)
-
-	# Auto-remove after 3 seconds
-	var attachment_timer = Timer.new()
-	attachment_timer.wait_time = 3.0
-	attachment_timer.one_shot = true
-	attachment_timer.timeout.connect(queue_free)
-	add_child(attachment_timer)
-	attachment_timer.start()
-
-	print("🔥 Fire Spirit attached! Will disappear in 3 seconds")
+	# Position on enemy and fade out
+	var tween = create_tween()
+	tween.parallel().tween_property(self, "modulate:a", 0.0, 0.5)
+	tween.parallel().tween_property(self, "scale", Vector2(1.5, 1.5), 0.5)
+	tween.tween_callback(_self_destruct)
 
 func _find_new_target_or_die():
-	"""Try to find new target or self-destruct"""
-	print("🔥 Fire Spirit: Target died, looking for new target...")
+	"""Try to find a new target if the current one died"""
+	print("🔥 Fire Spirit target died, looking for new target...")
 
-	# Find nearby enemies within reasonable range
-	var nearby_enemies = _get_enemies_in_radius(global_position, 200.0)
+	# Use a simple approach that works - get all enemy nodes directly
+	var all_nodes = Engine.get_main_loop().current_scene.get_children()
+	var enemies = []
 
-	if nearby_enemies.size() > 0:
-		# Find closest enemy
-		var closest_enemy = null
-		var closest_distance = 999999.0
+	# Recursively find all enemy nodes
+	_find_enemies_recursive(all_nodes, enemies)
 
-		for enemy in nearby_enemies:
-			if is_instance_valid(enemy):
-				var distance = global_position.distance_to(enemy.global_position)
-				if distance < closest_distance:
-					closest_distance = distance
-					closest_enemy = enemy
+	var closest_enemy: Node2D = null
+	var closest_distance: float = 200.0  # Reduced range for retargeting
 
-		if closest_enemy:
-			target_enemy = closest_enemy
-			print("🔥 Fire Spirit: Found new target at %s" % target_enemy.global_position)
-			return
+	for enemy in enemies:
+		if is_instance_valid(enemy):
+			var distance = global_position.distance_to(enemy.global_position)
+			if distance < closest_distance:
+				closest_enemy = enemy
+				closest_distance = distance
 
-	print("🔥 Fire Spirit: No new targets found, self-destructing")
-	_self_destruct()
+	if closest_enemy:
+		print("🔥 Fire Spirit found new target!")
+		target_enemy = closest_enemy
+		var direction = (target_enemy.global_position - global_position).normalized()
+		velocity = direction * move_speed
+	else:
+		print("🔥 Fire Spirit no targets found, self-destructing")
+		_self_destruct()
 
-func _get_enemies_in_radius(center: Vector2, radius: float) -> Array[Node2D]:
-	"""Get all enemies within radius"""
-	var enemies: Array[Node2D] = []
-	var all_enemies = Engine.get_main_loop().current_scene.get_tree().get_nodes_in_group("enemies")
-
-	for enemy in all_enemies:
-		if is_instance_valid(enemy) and center.distance_to(enemy.global_position) <= radius:
-			enemies.append(enemy)
-
-	return enemies
+func _find_enemies_recursive(nodes: Array, enemies: Array):
+	"""Recursively find all enemy nodes"""
+	for node in nodes:
+		if node.is_in_group("enemies"):
+			enemies.append(node)
+		if node.get_child_count() > 0:
+			_find_enemies_recursive(node.get_children(), enemies)
 
 func _self_destruct():
-	"""Remove fire spirit"""
+	"""Destroy the fire spirit"""
 	print("🔥 Fire Spirit self-destructing")
 	queue_free()
