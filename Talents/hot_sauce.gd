@@ -21,8 +21,22 @@ func build_talent_pool():
 			[create_inferno_legion_talent()],
 			TalentManager.TalentTheme.DAMAGE
 		),
-		create_stat_talent("placeholder", "", 2, []),
-		create_stat_talent("placeholder", "", 2, []),
+		create_trigger_talent(
+			"Inferno Legion",
+			"Fire spirits spawn in groups of 3 and apply 4 burn stacks",
+			2,
+			[create_inferno_legion_talent()],
+			TalentManager.TalentTheme.DAMAGE
+		),
+		create_trigger_talent(
+			"Inferno Legion",
+			"Fire spirits spawn in groups of 3 and apply 4 burn stacks",
+			2,
+			[create_inferno_legion_talent()],
+			TalentManager.TalentTheme.DAMAGE
+		),
+		#create_stat_talent("placeholder", "", 2, []),
+		#create_stat_talent("placeholder", "", 2, []),
 		create_stat_talent("placeholder", "", 2, []),
 		create_stat_talent("placeholder", "", 2, []),
 	]
