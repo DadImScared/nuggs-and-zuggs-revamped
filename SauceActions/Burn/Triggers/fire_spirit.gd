@@ -14,9 +14,9 @@ func execute_trigger(bottle: ImprovedBaseSauceBottle, data: EnhancedTriggerData)
 	var spawn_pos: Vector2
 	if bottle and is_instance_valid(bottle):
 		spawn_pos = bottle.global_position
-		print("🔥 Fire Spirit: Spawning from bottle at %s" % spawn_pos)
+		DebugControl.debug_status("🔥 Fire Spirit: Spawning from bottle at %s" % spawn_pos)
 	else:
-		print("⚠️ Fire Spirit: No valid bottle position")
+		DebugControl.debug_status("⚠️ Fire Spirit: No valid bottle position")
 		return
 
 	# Read parameters
@@ -29,14 +29,14 @@ func execute_trigger(bottle: ImprovedBaseSauceBottle, data: EnhancedTriggerData)
 	for i in range(spirit_count):
 		_spawn_fire_spirit(spawn_pos, bottle, spirit_speed, seek_range, burn_stacks)
 
-	print("🔥 Fire Spirit: Spawned %d seeking fire spirits from bottle" % spirit_count)
+	DebugControl.debug_status("🔥 Fire Spirit: Spawned %d seeking fire spirits from bottle" % spirit_count)
 
 func _spawn_fire_spirit(spawn_pos: Vector2, source_bottle: ImprovedBaseSauceBottle, speed: float, seek_range: float, burn_stacks: int):
 	"""Create a seeking fire spirit projectile"""
 	# Find closest enemy within range, but exclude recently targeted ones
 	var target_enemy = _find_best_target(spawn_pos, seek_range)
 	if not target_enemy:
-		print("🔥 Fire Spirit: No enemies in range")
+		DebugControl.debug_status("🔥 Fire Spirit: No enemies in range")
 		return
 
 	# Create the fire spirit
@@ -52,7 +52,7 @@ func _spawn_fire_spirit(spawn_pos: Vector2, source_bottle: ImprovedBaseSauceBott
 	if is_instance_valid(target_enemy) and is_instance_valid(source_bottle):
 		fire_spirit.setup_spirit(target_enemy, source_bottle, speed, burn_stacks)
 	else:
-		print("⚠️ Fire Spirit: Invalid parameters, destroying spirit")
+		DebugControl.debug_status("⚠️ Fire Spirit: Invalid parameters, destroying spirit")
 		fire_spirit.queue_free()
 		return
 
@@ -60,7 +60,7 @@ func _spawn_fire_spirit(spawn_pos: Vector2, source_bottle: ImprovedBaseSauceBott
 	var scene = Engine.get_main_loop().current_scene
 	scene.call_deferred("add_child", fire_spirit)
 
-	print("🔥 Fire Spirit: Created spirit targeting enemy at %s (z_index: 100)" % target_enemy.global_position)
+	DebugControl.debug_status("🔥 Fire Spirit: Created spirit targeting enemy at %s (z_index: 100)" % target_enemy.global_position)
 
 # Keep track of recently targeted enemies to spread spirits around
 var recently_targeted: Array[Node2D] = []
@@ -102,6 +102,6 @@ func _find_best_target(position: Vector2, max_range: float) -> Node2D:
 		if recently_targeted.size() > 5:
 			recently_targeted.pop_front()
 
-		print("🔥 Fire Spirit: Targeting enemy (recently targeted: %d)" % recently_targeted.size())
+		DebugControl.debug_status("🔥 Fire Spirit: Targeting enemy (recently targeted: %d)" % recently_targeted.size())
 
 	return closest_enemy

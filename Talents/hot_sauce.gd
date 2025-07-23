@@ -41,7 +41,7 @@ func create_fire_spirit_talent() -> TriggerEffectResource:
 	var trigger = TriggerEffectResource.new()
 	trigger.trigger_name = "fire_spirit"
 	trigger.trigger_type = TriggerEffectResource.TriggerType.ON_HIT
-	trigger.trigger_condition["chance"] = 0.35  # 15% chance to spawn spirit
+	trigger.trigger_condition["chance"] = 0.15  # 15% chance to spawn spirit
 
 	# Fire spirit parameters
 	trigger.effect_parameters["spirit_count"] = 1
