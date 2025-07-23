@@ -14,8 +14,17 @@ func build_talent_pool():
 			[create_fire_spirit_talent()],
 			TalentManager.TalentTheme.DAMAGE
 		),
-		create_stat_talent("placeholder", "", 1, []),
-		create_stat_talent("placeholder", "", 1, [])
+		create_trigger_talent(
+			"Inferno Legion",
+			"Fire spirits spawn in groups of 3 and apply 4 burn stacks",
+			2,
+			[create_inferno_legion_talent()],
+			TalentManager.TalentTheme.DAMAGE
+		),
+		create_stat_talent("placeholder", "", 2, []),
+		create_stat_talent("placeholder", "", 2, []),
+		create_stat_talent("placeholder", "", 2, []),
+		create_stat_talent("placeholder", "", 2, []),
 	]
 
 	return hot_sauce_talents
@@ -51,3 +60,19 @@ func create_fire_spirit_talent() -> TriggerEffectResource:
 	trigger.effect_parameters["spirit_damage"] = 7.0
 
 	return trigger
+
+func create_inferno_legion_talent() -> TriggerEffectResource:
+	"""Inferno Legion talent - enhanced fire spirits with more count and stacks"""
+	var enhancement = TriggerEffectResource.new()
+	enhancement.trigger_name = "inferno_legion"
+	enhancement.trigger_type = TriggerEffectResource.TriggerType.ON_HIT
+	enhancement.enhances = ["fire_spirit"]  # Enhances the base fire spirit trigger
+
+	# Enhanced fire spirit parameters - these will be added to base values
+	enhancement.effect_parameters["spirit_count"] = 2  # +2 to base 1 = 3 total
+	enhancement.effect_parameters["seek_range"] = 50.0  # +50 to base 300 = 350 total
+	enhancement.effect_parameters["spirit_speed"] = 20.0  # +20 to base 60 = 80 total
+	enhancement.effect_parameters["burn_stacks"] = 2  # +2 to base 2 = 4 total
+	enhancement.effect_parameters["spirit_damage"] = 8.0  # +8 to base 7 = 15 total impact damage
+
+	return enhancement

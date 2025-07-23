@@ -168,20 +168,31 @@ func _apply_burn_stacks_to_target():
 		if target_enemy.has_method("apply_stacking_effect"):
 			var bottle_id = source_bottle.bottle_id if source_bottle and source_bottle.has_method("bottle_id") else "fire_spirit"
 
-			# Create burn callbacks for stacking system
+			# Create burn callbacks for stacking system - make them more robust
 			var immediate_effect = func():
 				if is_instance_valid(target_enemy):
 					var current_stacks = target_enemy.get_total_stack_count("burn")
 					print("🔥 Fire Spirit burn: %d total stacks on enemy" % current_stacks)
 
+			# Make tick effect more robust by not relying on external references
 			var tick_effect = func():
-				if is_instance_valid(target_enemy):
-					var total_stacks = target_enemy.get_total_stack_count("burn")
-					var damage = 5.0 * total_stacks  # 5 damage per stack per tick
-					if target_enemy.has_method("take_damage_from_source"):
-						target_enemy.take_damage_from_source(damage, bottle_id)
+				# Check if target is still valid before doing anything
+				if not is_instance_valid(target_enemy):
+					return
 
-			# Apply burn stack
+				var total_stacks = target_enemy.get_total_stack_count("burn")
+				if total_stacks <= 0:
+					return
+
+				var damage = 5.0 * total_stacks  # 5 damage per stack per tick
+
+				# Apply damage using the most basic method possible
+				if target_enemy.has_method("take_damage_from_source"):
+					target_enemy.take_damage_from_source(damage, bottle_id)
+				elif target_enemy.has_method("take_damage"):
+					target_enemy.take_damage(damage)
+
+			# Apply burn stack with simple, robust callbacks
 			target_enemy.apply_stacking_effect(
 				"burn",
 				1.0,  # stack_value
