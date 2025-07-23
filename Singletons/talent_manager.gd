@@ -47,6 +47,7 @@ func _build_talent_pools():
 	# Use existing talent tree classes to build pools
 	var pesto_tree = PrehistoricPestoTalents.new()
 	talent_pools["Archaean Apple Butter"] = ArchaeanAppleButterTalents.new().build_talent_pool()
+	talent_pools["Hot Sauce"] = HotSauceTalents.new().build_talent_pool()
 
 	if pesto_tree.has_method("build_talent_pool"):
 		talent_pools["Prehistoric Pesto"] = pesto_tree.build_talent_pool()

@@ -1,0 +1,52 @@
+[gd_scene load_steps=9 format=3 uid="uid://cnstipf2o24xx"]
+
+[ext_resource type="Texture2D" uid="uid://vkbro76yimpn" path="res://Assets/Sprites/FireSpirit/tile000.png" id="1_0mm1t"]
+[ext_resource type="Script" uid="uid://c5b7qhrjif7gs" path="res://Effects/FireSpirit/fire_spirit.gd" id="1_tfx6n"]
+[ext_resource type="Texture2D" uid="uid://vanr1ips2gjd" path="res://Assets/Sprites/FireSpirit/tile001.png" id="2_tfx6n"]
+[ext_resource type="Texture2D" uid="uid://bh74dnd15qwu7" path="res://Assets/Sprites/FireSpirit/tile002.png" id="3_x2816"]
+[ext_resource type="Texture2D" uid="uid://lu7uvc66tkua" path="res://Assets/Sprites/FireSpirit/tile003.png" id="4_umgke"]
+[ext_resource type="Texture2D" uid="uid://cfw0boisnw2qp" path="res://Assets/Sprites/FireSpirit/tile004.png" id="5_wtixf"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_dvngp"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_0mm1t")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_tfx6n")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_x2816")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_umgke")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_wtixf")
+}],
+"loop": true,
+"name": &"burn_loop",
+"speed": 10.0
+}]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_vmn0t"]
+radius = 2.55387
+
+[node name="FireSpirit" type="Area2D"]
+scale = Vector2(0.930638, 0.930638)
+collision_mask = 2
+script = ExtResource("1_tfx6n")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+scale = Vector2(0.321026, 0.321026)
+sprite_frames = SubResource("SpriteFrames_dvngp")
+animation = &"burn_loop"
+frame = 1
+frame_progress = 0.260863
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, 1)
+shape = SubResource("CircleShape2D_vmn0t")
+
+[node name="LifetimeTimer" type="Timer" parent="."]
