@@ -19,22 +19,31 @@ func execute_trigger(bottle: ImprovedBaseSauceBottle, data: EnhancedTriggerData)
 		DebugControl.debug_status("⚠️ Fire Spirit: No valid bottle position")
 		return
 
-	# Read parameters - now includes spirit_damage
+	# Read ALL parameters from effect_parameters (consistent location)
 	var spirit_count = data.effect_parameters.get("spirit_count", 1)
 	var seek_range = data.effect_parameters.get("seek_range", 300.0)
 	var spirit_speed = data.effect_parameters.get("spirit_speed", 200.0)
 	var burn_stacks = data.effect_parameters.get("burn_stacks", 2)
-	var spirit_damage = data.effect_parameters.get("spirit_damage", 7.0)  # NEW: Read damage parameter
+	var spirit_damage = data.effect_parameters.get("spirit_damage", 7.0)
+
+	# NEW: Trail parameters from Blazing Trails talent
+	var leaves_trail = data.effect_parameters.get("leaves_trail", false)
+	var trail_width = data.effect_parameters.get("trail_width", 60.0)
+	var trail_duration = data.effect_parameters.get("trail_duration", 5.0)
+	var trail_tick_damage = data.effect_parameters.get("trail_tick_damage", 8.0)
+	var trail_tick_interval = data.effect_parameters.get("trail_tick_interval", 0.3)
+	var trail_color = data.effect_parameters.get("trail_color", Color(1.0, 0.3, 0.0, 0.6))
 
 	# Spawn fire spirits from the bottle
 	for i in range(spirit_count):
-		_spawn_fire_spirit(spawn_pos, bottle, spirit_speed, seek_range, burn_stacks, spirit_damage)
+		_spawn_fire_spirit(spawn_pos, bottle, spirit_speed, seek_range, burn_stacks, spirit_damage, leaves_trail, trail_width, trail_duration, trail_tick_damage, trail_tick_interval, trail_color)
 
-	DebugControl.debug_status("🔥 Fire Spirit: Spawned %d seeking fire spirits from bottle (%.1f damage each)" % [spirit_count, spirit_damage])
+	var trail_info = " with blazing trails" if leaves_trail else ""
+	DebugControl.debug_status("🔥 Fire Spirit: Spawned %d seeking fire spirits from bottle%s" % [spirit_count, trail_info])
 
-func _spawn_fire_spirit(spawn_pos: Vector2, source_bottle: ImprovedBaseSauceBottle, speed: float, seek_range: float, burn_stacks: int, spirit_damage: float):
-	"""Create a seeking fire spirit projectile"""
-	# Find closest enemy within range, but exclude recently targeted ones
+func _spawn_fire_spirit(spawn_pos: Vector2, source_bottle: ImprovedBaseSauceBottle, speed: float, seek_range: float, burn_stacks: int, spirit_damage: float, leaves_trail: bool = false, trail_width: float = 60.0, trail_duration: float = 5.0, trail_tick_damage: float = 8.0, trail_tick_interval: float = 0.3, trail_color: Color = Color.ORANGE):
+	"""Create a seeking fire spirit projectile with optional trail behavior"""
+	# Find closest enemy within range
 	var target_enemy = _find_best_target(spawn_pos, seek_range)
 	if not target_enemy:
 		DebugControl.debug_status("🔥 Fire Spirit: No enemies in range")
@@ -46,22 +55,25 @@ func _spawn_fire_spirit(spawn_pos: Vector2, source_bottle: ImprovedBaseSauceBott
 
 	# Setup the spirit
 	fire_spirit.global_position = spawn_pos
-
-	# Set high z_index so it renders on top
 	fire_spirit.z_index = 100
 
 	if is_instance_valid(target_enemy) and is_instance_valid(source_bottle):
-		fire_spirit.setup_spirit(target_enemy, source_bottle, speed, burn_stacks, spirit_damage)  # Pass damage parameter
+		fire_spirit.setup_spirit(target_enemy, source_bottle, speed, burn_stacks, spirit_damage)
+
+		# NEW: Setup trail behavior if Blazing Trails talent is active
+		if leaves_trail:
+			fire_spirit.setup_trail_behavior(trail_width, trail_duration, trail_tick_damage, trail_tick_interval, trail_color)
 	else:
 		DebugControl.debug_status("⚠️ Fire Spirit: Invalid parameters, destroying spirit")
 		fire_spirit.queue_free()
 		return
 
-	# Add to scene using call_deferred to avoid physics conflicts
+	# Add to scene
 	var scene = Engine.get_main_loop().current_scene
 	scene.call_deferred("add_child", fire_spirit)
 
-	DebugControl.debug_status("🔥 Fire Spirit: Created spirit targeting enemy at %s (z_index: 100)" % target_enemy.global_position)
+	var trail_text = " (with blazing trail)" if leaves_trail else ""
+	DebugControl.debug_status("🔥 Fire Spirit: Created spirit targeting enemy%s" % trail_text)
 
 # Keep track of recently targeted enemies to spread spirits around
 var recently_targeted: Array[Node2D] = []

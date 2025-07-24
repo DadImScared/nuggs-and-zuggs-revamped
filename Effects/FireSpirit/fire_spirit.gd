@@ -1,4 +1,4 @@
-# Effects/FireSpirit/fire_spirit.gd - METHOD REFERENCES APPROACH
+# Effects/FireSpirit/fire_spirit.gd
 extends Area2D
 
 # Spirit properties
@@ -8,6 +8,16 @@ var move_speed: float = 200.0
 var burn_stacks_to_apply: int = 2
 var spirit_damage: float = 7.0
 var lifetime: float = 5.0
+
+# NEW: Trail properties
+var leaves_trail: bool = false
+var trail_width: float = 60.0
+var trail_duration: float = 5.0
+var trail_tick_damage: float = 8.0
+var trail_tick_interval: float = 0.3
+var trail_color: Color = Color.ORANGE
+var last_trail_position: Vector2
+var trail_spacing: float = 20.0  # Create trail segment every 20 pixels
 
 # Components
 @onready var animated_sprite: AnimatedSprite2D = $AnimatedSprite2D
@@ -64,10 +74,21 @@ func setup_spirit(target: Node2D, bottle: Node, speed: float, burn_stacks: int, 
 	move_speed = speed
 	burn_stacks_to_apply = burn_stacks
 	spirit_damage = damage
+	last_trail_position = global_position  # Initialize trail tracking
 
 	if target_enemy and is_instance_valid(target_enemy):
 		var direction = (target_enemy.global_position - global_position).normalized()
 		velocity = direction * move_speed
+
+func setup_trail_behavior(width: float, duration: float, tick_damage: float, tick_interval: float, color: Color):
+	"""Setup trail leaving behavior"""
+	leaves_trail = true
+	trail_width = width
+	trail_duration = duration
+	trail_tick_damage = tick_damage
+	trail_tick_interval = tick_interval
+	trail_color = color
+	print("🔥 Fire Spirit: Trail behavior enabled (%.0fpx wide, %.1fs duration)" % [width, duration])
 
 func _physics_process(delta):
 	if has_hit_target:
@@ -87,6 +108,11 @@ func _physics_process(delta):
 
 	# Move toward target
 	position += velocity * delta
+
+	# NEW: Create trail segments as we move
+	if leaves_trail and global_position.distance_to(last_trail_position) >= trail_spacing:
+		_create_trail_segment(global_position)
+		last_trail_position = global_position
 
 	# Check collision
 	if target_enemy and is_instance_valid(target_enemy):
@@ -192,6 +218,22 @@ func _create_fire_spirit_tick_visual(position: Vector2):
 		tween.parallel().tween_property(particle, "position", particle.position + Vector2(randf_range(-25, 25), -35), 1.0)
 		tween.parallel().tween_property(particle, "modulate:a", 0.0, 1.0)
 		tween.tween_callback(particle.queue_free)
+
+func _create_trail_segment(position: Vector2):
+	"""Create a burning trail segment using reusable FireTrail scene"""
+	print("🔥 Creating trail segment at %s" % position)
+
+	# Create reusable fire trail scene
+	var fire_trail_scene = preload("res://Effects/FireTrail/fire_trail.tscn")
+	var fire_trail = fire_trail_scene.instantiate()
+
+	# Setup the trail segment
+	fire_trail.global_position = position
+	fire_trail.setup_trail(source_bottle, trail_width, trail_duration, trail_tick_damage, trail_tick_interval, trail_color)
+
+	# Add to scene
+	var scene = Engine.get_main_loop().current_scene
+	scene.add_child(fire_trail)
 
 func _create_hit_effect():
 	"""Create explosion when spirit hits"""

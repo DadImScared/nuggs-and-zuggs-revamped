@@ -15,10 +15,10 @@ func build_talent_pool():
 			TalentManager.TalentTheme.DAMAGE
 		),
 		create_trigger_talent(
-			"Inferno Legion",
-			"Fire spirits spawn in groups of 3 and apply 4 burn stacks",
+			"Fire Spirits",
+			"15% chance to spawn seeking fire spirits that apply 2 burn stacks",
 			2,
-			[create_inferno_legion_talent()],
+			[create_fire_spirit_talent()],
 			TalentManager.TalentTheme.DAMAGE
 		),
 		create_trigger_talent(
@@ -28,16 +28,30 @@ func build_talent_pool():
 			[create_inferno_legion_talent()],
 			TalentManager.TalentTheme.DAMAGE
 		),
+		#create_trigger_talent(
+			#"Inferno Legion",
+			#"Fire spirits spawn in groups of 3 and apply 4 burn stacks",
+			#2,
+			#[create_inferno_legion_talent()],
+			#TalentManager.TalentTheme.DAMAGE
+		#),
 		create_trigger_talent(
-			"Inferno Legion",
-			"Fire spirits spawn in groups of 3 and apply 4 burn stacks",
-			2,
-			[create_inferno_legion_talent()],
-			TalentManager.TalentTheme.DAMAGE
+			"Blazing Trails",
+			"Fire spirits leave burning trails that damage enemies for 5 seconds",
+			3,
+			[create_blazing_trails_talent()],
+			TalentManager.TalentTheme.EXPLOSIVE
+		),
+		create_trigger_talent(
+			"Blazing Trails",
+			"Fire spirits leave burning trails that damage enemies for 5 seconds",
+			3,
+			[create_blazing_trails_talent()],
+			TalentManager.TalentTheme.EXPLOSIVE
 		),
 		#create_stat_talent("placeholder", "", 2, []),
 		#create_stat_talent("placeholder", "", 2, []),
-		create_stat_talent("placeholder", "", 2, []),
+		#create_stat_talent("placeholder", "", 2, []),
 		create_stat_talent("placeholder", "", 2, []),
 	]
 
@@ -88,5 +102,22 @@ func create_inferno_legion_talent() -> TriggerEffectResource:
 	enhancement.effect_parameters["spirit_speed"] = 20.0  # +20 to base 60 = 80 total
 	enhancement.effect_parameters["burn_stacks"] = 2  # +2 to base 2 = 4 total
 	enhancement.effect_parameters["spirit_damage"] = 8.0  # +8 to base 7 = 15 total impact damage
+
+	return enhancement
+
+func create_blazing_trails_talent() -> TriggerEffectResource:
+	"""Blazing Trails talent - fire spirits leave burning trails behind them"""
+	var enhancement = TriggerEffectResource.new()
+	enhancement.trigger_name = "blazing_trails"
+	enhancement.trigger_type = TriggerEffectResource.TriggerType.ON_HIT
+	enhancement.enhances = ["fire_spirit"]  # Enhances fire spirit behavior
+
+	# Trail parameters - ALL in effect_parameters for consistency
+	enhancement.effect_parameters["leaves_trail"] = true
+	enhancement.effect_parameters["trail_width"] = 60.0
+	enhancement.effect_parameters["trail_duration"] = 5.0
+	enhancement.effect_parameters["trail_tick_damage"] = 8.0
+	enhancement.effect_parameters["trail_tick_interval"] = 0.3
+	enhancement.effect_parameters["trail_color"] = Color(1.0, 0.3, 0.0, 0.6)
 
 	return enhancement

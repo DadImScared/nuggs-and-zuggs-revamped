@@ -72,6 +72,7 @@ func _setup_kitchen_background():
 			background.get_parent().move_child(texture_rect, 0)  # Move to back
 			background.queue_free()
 		else:
+			pass
 			#print("Kitchen background image not found, using fallback brown")
 			# Keep the existing brown background as fallback
 
@@ -579,6 +580,7 @@ func _unhandled_key_input(event):
 	"""Handle debug keys"""
 	if OS.is_debug_build():
 		if event.pressed and event.keycode == KEY_F1:
+			pass
 			# F1 for debug info
 			#print("=== MAIN MENU DEBUG ===")
 			#print("Game Version: ", GAME_VERSION)
