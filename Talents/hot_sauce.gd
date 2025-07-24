@@ -36,12 +36,19 @@ func build_talent_pool():
 			#TalentManager.TalentTheme.DAMAGE
 		#),
 		create_trigger_talent(
-			"Blazing Trails",
-			"Fire spirits leave burning trails that damage enemies for 5 seconds",
-			3,
-			[create_blazing_trails_talent()],
+			"Chain Ignition",
+			"Burning enemies have 25% chance to instantly ignite nearby enemies",
+			2,
+			[create_chain_ignition_talent()],
 			TalentManager.TalentTheme.EXPLOSIVE
 		),
+		#create_trigger_talent(
+			#"Blazing Trails",
+			#"Fire spirits leave burning trails that damage enemies for 5 seconds",
+			#3,
+			#[create_blazing_trails_talent()],
+			#TalentManager.TalentTheme.EXPLOSIVE
+		#),
 		create_trigger_talent(
 			"Blazing Trails",
 			"Fire spirits leave burning trails that damage enemies for 5 seconds",
@@ -135,10 +142,22 @@ func create_slow_burn_talent() -> TriggerEffectResource:
 	var enhancement = TriggerEffectResource.new()
 	enhancement.trigger_name = "slow_burn"
 	enhancement.trigger_type = TriggerEffectResource.TriggerType.ON_HIT
-	enhancement.enhances = ["burn", "fire_spirit"]  # Enhances BOTH burn sources
+	enhancement.enhances = ["burn"]
 
 	# Slow burn parameters - affect all burn effects
 	enhancement.effect_parameters["duration_multiplier"] = 1.5  # 50% longer duration
 	enhancement.effect_parameters["tick_interval_multiplier"] = 1.3  # 30% slower ticks
 
 	return enhancement
+
+func create_chain_ignition_talent():
+	"""Chain Ignition: Burning enemies have 25% chance to instantly ignite nearby enemies"""
+	var trigger = TriggerEffectResource.new()
+	trigger.trigger_name = "chain_ignition"
+	trigger.trigger_type = TriggerEffectResource.TriggerType.ON_DOT_TICK
+	trigger.trigger_condition["dot_types"] = ["burn"]
+	trigger.trigger_condition["chance"] = 0.05
+	trigger.effect_parameters["spread_radius"] = 100.0
+	trigger.effect_parameters["spread_burn_stacks"] = 1
+	trigger.effect_parameters["max_targets"] = 3
+	return trigger

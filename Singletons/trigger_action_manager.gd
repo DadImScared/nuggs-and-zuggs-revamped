@@ -97,16 +97,19 @@ func execute_dot_tick_trigger(source_bottle: ImprovedBaseSauceBottle, affected_e
 			if trigger_name in trigger_actions:
 				var action = trigger_actions[trigger_name]
 
+				# Apply enhancements FIRST (consistent with hit triggers)
+				var enhance_trigger = action.apply_enhancements(source_bottle, trigger_effect)
+
 				# Check if this specific DOT tick should trigger the effect
-				if action.should_trigger_on_dot_tick(source_bottle, trigger_effect, affected_enemy, dot_type, damage_dealt):
+				if action.should_trigger_on_dot_tick(source_bottle, enhance_trigger, affected_enemy, dot_type, damage_dealt):
 					# Pass DOT context to the trigger
-					trigger_effect.effect_parameters["dot_enemy"] = affected_enemy
-					trigger_effect.effect_parameters["dot_type"] = dot_type
-					trigger_effect.effect_parameters["dot_damage"] = damage_dealt
+					enhance_trigger.effect_parameters["dot_enemy"] = affected_enemy
+					enhance_trigger.effect_parameters["dot_type"] = dot_type
+					enhance_trigger.effect_parameters["dot_damage"] = damage_dealt
 
 					# Execute the trigger
-					action.execute_trigger(source_bottle, trigger_effect)
-					action.update_trigger_timing(source_bottle, trigger_effect)
+					action.execute_trigger(source_bottle, enhance_trigger)
+					action.update_trigger_timing(source_bottle, enhance_trigger)
 			else:
 				pass
 				#print("⚠️ No trigger action registered for DOT tick trigger: %s" % trigger_name)
