@@ -49,10 +49,17 @@ func build_talent_pool():
 			[create_blazing_trails_talent()],
 			TalentManager.TalentTheme.EXPLOSIVE
 		),
+		create_trigger_talent(
+			"Slow Burn",
+			"Burns last 50% longer but tick 30% slower",
+			2,
+			[create_slow_burn_talent()],
+			TalentManager.TalentTheme.DAMAGE
+		)
 		#create_stat_talent("placeholder", "", 2, []),
 		#create_stat_talent("placeholder", "", 2, []),
 		#create_stat_talent("placeholder", "", 2, []),
-		create_stat_talent("placeholder", "", 2, []),
+		#create_stat_talent("placeholder", "", 2, []),
 	]
 
 	return hot_sauce_talents
@@ -120,5 +127,18 @@ func create_blazing_trails_talent() -> TriggerEffectResource:
 	enhancement.effect_parameters["trail_tick_damage"] = 8.0
 	enhancement.effect_parameters["trail_tick_interval"] = 0.3
 	enhancement.effect_parameters["trail_color"] = Color(1.0, 0.3, 0.0, 0.6)
+
+	return enhancement
+
+func create_slow_burn_talent() -> TriggerEffectResource:
+	"""Slow Burn talent - burns last 50% longer but tick slower"""
+	var enhancement = TriggerEffectResource.new()
+	enhancement.trigger_name = "slow_burn"
+	enhancement.trigger_type = TriggerEffectResource.TriggerType.ON_HIT
+	enhancement.enhances = ["burn", "fire_spirit"]  # Enhances BOTH burn sources
+
+	# Slow burn parameters - affect all burn effects
+	enhancement.effect_parameters["duration_multiplier"] = 1.5  # 50% longer duration
+	enhancement.effect_parameters["tick_interval_multiplier"] = 1.3  # 30% slower ticks
 
 	return enhancement
