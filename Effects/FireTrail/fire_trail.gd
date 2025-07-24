@@ -19,7 +19,6 @@ var enemies_in_trail: Array[Node2D] = []
 @onready var visual_effect: Node2D = $VisualEffect
 
 func _ready():
-	print("🔥 Fire Trail segment _ready() called")
 
 	# Setup collision detection for enemies
 	collision_layer = 0  # Don't collide with anything
@@ -33,8 +32,6 @@ func _ready():
 
 func setup_trail(bottle: Node, width: float, duration: float, damage: float, interval: float, color: Color):
 	"""Initialize the fire trail segment with its properties"""
-	print("🔥 Fire Trail setup_trail() called")
-	print("  Width: %.0f, Duration: %.1fs, Damage: %.1f" % [width, duration, damage])
 
 	source_bottle = bottle
 	trail_width = width
@@ -48,14 +45,12 @@ func setup_trail(bottle: Node, width: float, duration: float, damage: float, int
 		var circle_shape = CircleShape2D.new()
 		circle_shape.radius = trail_width / 2.0
 		collision_shape.shape = circle_shape
-		print("🔥 Fire Trail collision radius set to %.0f" % (trail_width / 2.0))
 
 	# Create visual effects
 	_create_visual_effects()
 
 func _create_visual_effects():
 	"""Create the burning trail visual effect"""
-	print("🔥 Creating fire trail visual effects")
 
 	# Create flame particles along the trail width
 	var particle_count = int(trail_width / 10)  # One particle per 10 pixels
@@ -117,7 +112,6 @@ func _damage_enemies_in_trail():
 			# Create damage visual
 			_create_damage_visual(enemy.global_position)
 
-	print("🔥 Fire Trail damaged %d enemies for %.1f damage each" % [current_enemies.size(), tick_damage])
 
 func _get_enemies_in_area() -> Array[Node2D]:
 	"""Get all enemies currently in the fire trail area"""
@@ -164,7 +158,7 @@ func _create_damage_visual(position: Vector2):
 
 func _destroy_trail():
 	"""Remove the fire trail and clean up"""
-	print("🔥 Fire Trail expired after %.1fs" % lifetime_timer)
+	#print("🔥 Fire Trail expired after %.1fs" % lifetime_timer)
 
 	# Create destruction visual effect
 	for i in range(8):

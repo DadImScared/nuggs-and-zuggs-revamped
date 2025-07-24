@@ -29,7 +29,7 @@ var velocity: Vector2
 var has_hit_target: bool = false
 
 func _ready():
-	print("🔥 Fire Spirit _ready() called")
+	#print("🔥 Fire Spirit _ready() called")
 
 	# Setup collision
 	collision_layer = 0
@@ -88,7 +88,7 @@ func setup_trail_behavior(width: float, duration: float, tick_damage: float, tic
 	trail_tick_damage = tick_damage
 	trail_tick_interval = tick_interval
 	trail_color = color
-	print("🔥 Fire Spirit: Trail behavior enabled (%.0fpx wide, %.1fs duration)" % [width, duration])
+	#print("🔥 Fire Spirit: Trail behavior enabled (%.0fpx wide, %.1fs duration)" % [width, duration])
 
 func _physics_process(delta):
 	if has_hit_target:
@@ -126,7 +126,7 @@ func _hit_target():
 		return
 
 	has_hit_target = true
-	print("🔥 Fire Spirit hit target!")
+	#print("🔥 Fire Spirit hit target!")
 
 	# Create hit effect
 	_create_hit_effect()
@@ -168,14 +168,14 @@ func _apply_burn_stacks_to_target():
 				}
 			)
 
-	print("🔥 Fire Spirit applied %d burn stacks using method references!" % burn_stacks_to_apply)
+	#print("🔥 Fire Spirit applied %d burn stacks using method references!" % burn_stacks_to_apply)
 
 # INSTANCE METHODS that can be called via method references
 func fire_spirit_immediate_effect():
 	"""Immediate effect when fire spirit burn is applied"""
 	if is_instance_valid(target_enemy):
 		var current_stacks = target_enemy.get_total_stack_count("burn")
-		print("🔥 Fire Spirit burn: %d total stacks on enemy" % current_stacks)
+		#print("🔥 Fire Spirit burn: %d total stacks on enemy" % current_stacks)
 
 func fire_spirit_tick_effect():
 	"""Tick effect for fire spirit burns - called every 0.5 seconds"""
@@ -221,7 +221,7 @@ func _create_fire_spirit_tick_visual(position: Vector2):
 
 func _create_trail_segment(position: Vector2):
 	"""Create a burning trail segment using reusable FireTrail scene"""
-	print("🔥 Creating trail segment at %s" % position)
+	#print("🔥 Creating trail segment at %s" % position)
 
 	# Create reusable fire trail scene
 	var fire_trail_scene = preload("res://Effects/FireTrail/fire_trail.tscn")
@@ -258,7 +258,7 @@ func _attach_to_enemy():
 		_self_destruct()
 		return
 
-	print("🔥 Fire Spirit attaching to enemy!")
+	#print("🔥 Fire Spirit attaching to enemy!")
 
 	# Fire spirit can die immediately - method references will still work
 	var tween = create_tween()
@@ -299,5 +299,5 @@ func _find_enemies_recursive(nodes: Array, enemies: Array):
 
 func _self_destruct():
 	"""Destroy the fire spirit"""
-	print("🔥 Fire Spirit self-destructing (method references will still work!)")
+	#print("🔥 Fire Spirit self-destructing (method references will still work!)")
 	queue_free()
