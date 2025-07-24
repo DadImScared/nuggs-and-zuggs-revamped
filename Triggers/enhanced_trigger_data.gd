@@ -39,14 +39,25 @@ func add_enhancement_source(param_key: String, enhancement_name: String, operati
 			"final_value": final_result,
 			"sources": []
 		}
-
 	enhancement_sources[param_key]["final_value"] = final_result
 
 	var operation_text = ""
 	match operation:
-		"multiply": operation_text = "×%.2f" % value
-		"add": operation_text = "+%.2f" % value
-		"set": operation_text = "→%.2f" % value
+		"multiply":
+			operation_text = "×%.2f" % value
+		"add":
+			operation_text = "+%.2f" % value
+		"set":
+			if value is bool:
+				operation_text = "enabled" if value else "disabled"
+			elif value is Color:
+				operation_text = "color set"
+			else:
+				operation_text = "→%s" % str(value)
+		"enable":
+			operation_text = "enabled" if value else "disabled"
+		_:
+			operation_text = str(value)
 
 	enhancement_sources[param_key]["sources"].append("%s (%s)" % [enhancement_name, operation_text])
 
@@ -60,7 +71,17 @@ func get_tooltip_text() -> String:
 
 	for param_key in enhancement_sources.keys():
 		var info = enhancement_sources[param_key]
-		tooltip += "\n🔧 %s: %s\n" % [param_key.capitalize(), info["final_value"]]
+
+		# Format the final value based on type
+		var final_display = ""
+		if info["final_value"] is bool:
+			final_display = "enabled" if info["final_value"] else "disabled"
+		elif info["final_value"] is Color:
+			final_display = "custom color"
+		else:
+			final_display = str(info["final_value"])
+
+		tooltip += "\n🔧 %s: %s\n" % [param_key.capitalize(), final_display]
 
 		for source in info["sources"]:
 			tooltip += "  • %s\n" % source

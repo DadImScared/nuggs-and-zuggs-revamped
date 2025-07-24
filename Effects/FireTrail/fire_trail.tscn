@@ -1,6 +1,9 @@
-[gd_scene format=3 uid="uid://qle5wepk5igr"]
+[gd_scene load_steps=2 format=3 uid="uid://qle5wepk5igr"]
+
+[ext_resource type="Script" uid="uid://ocgtulmtunio" path="res://Effects/FireTrail/fire_trail.gd" id="1_n1ndx"]
 
 [node name="FireTrail" type="Area2D"]
+script = ExtResource("1_n1ndx")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 

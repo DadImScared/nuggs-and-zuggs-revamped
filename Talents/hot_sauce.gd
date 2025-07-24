@@ -109,7 +109,8 @@ func create_blazing_trails_talent() -> TriggerEffectResource:
 	"""Blazing Trails talent - fire spirits leave burning trails behind them"""
 	var enhancement = TriggerEffectResource.new()
 	enhancement.trigger_name = "blazing_trails"
-	enhancement.trigger_type = TriggerEffectResource.TriggerType.ON_HIT
+	enhancement.trigger_type = TriggerEffectResource.TriggerType.PASSIVE
+
 	enhancement.enhances = ["fire_spirit"]  # Enhances fire spirit behavior
 
 	# Trail parameters - ALL in effect_parameters for consistency
