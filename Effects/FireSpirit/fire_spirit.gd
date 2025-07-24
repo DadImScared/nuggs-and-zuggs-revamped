@@ -131,8 +131,8 @@ func _hit_target():
 	# Create hit effect
 	_create_hit_effect()
 
-	# Apply burn stacks using trigger system
-	_apply_burn_stacks_to_target()
+	# NEW: Use centralized burn application - automatically gets all burn talents!
+	Effects.burn.apply_from_talent(target_enemy, source_bottle, burn_stacks_to_apply)
 
 	# Apply immediate damage
 	if target_enemy.has_method("take_damage_from_source") and source_bottle:
@@ -141,44 +141,6 @@ func _hit_target():
 
 	# Attach to enemy
 	_attach_to_enemy()
-
-func _apply_burn_stacks_to_target():
-	"""Apply burn stacks by triggering ONLY the burn system"""
-	if not target_enemy or not is_instance_valid(target_enemy):
-		return
-
-	# Instead of triggering ALL hit effects, trigger only the burn trigger specifically
-	if source_bottle:
-		# Find the burn trigger specifically
-		var burn_trigger_effect = null
-		for trigger_effect in source_bottle.trigger_effects:
-			if trigger_effect.trigger_name == "burn":
-				burn_trigger_effect = trigger_effect
-				break
-
-		if burn_trigger_effect:
-			# Process only the burn trigger with enhancements
-			var trigger_name = burn_trigger_effect.trigger_name
-			if trigger_name in TriggerActionManager.trigger_actions:
-				var action = TriggerActionManager.trigger_actions[trigger_name]
-				var enhanced_data = action.apply_enhancements(source_bottle, burn_trigger_effect)
-
-				# Add fire spirit context
-				enhanced_data.effect_parameters["hit_enemy"] = target_enemy
-				enhanced_data.effect_parameters["burn_stacks"] = burn_stacks_to_apply
-
-				# Execute only the burn trigger
-				action.execute_trigger(source_bottle, enhanced_data)
-
-				DebugControl.debug_status("🔥 Fire Spirit applied %d burn stacks via burn trigger only!" % burn_stacks_to_apply)
-			else:
-				DebugControl.debug_status("⚠️ Burn trigger not found in TriggerActionManager")
-		else:
-			DebugControl.debug_status("⚠️ Burn trigger not found on bottle")
-	else:
-		# Fallback if no bottle
-		Effects.burn.apply_to_enemy(target_enemy, source_bottle, burn_stacks_to_apply)
-		DebugControl.debug_status("🔥 Fire Spirit applied %d burn stacks via fallback!" % burn_stacks_to_apply)
 
 func _create_hit_effect():
 	"""Create visual effect when hitting target"""
@@ -228,11 +190,10 @@ func _self_destruct():
 	queue_free()
 
 func _create_trail_segment(position: Vector2):
-	"""Create a burning trail segment"""
+	"""Create a burning trail segment that also applies burn!"""
 	DebugControl.debug_status("🔥 Creating trail segment at %s" % position)
 
-	# Create trail effect (you can implement this later)
-	# For now, just create a simple visual
+	# Create trail effect with burn application
 	var trail_visual = ColorRect.new()
 	trail_visual.size = Vector2(trail_width, trail_width)
 	trail_visual.position = position - Vector2(trail_width/2, trail_width/2)
@@ -240,6 +201,9 @@ func _create_trail_segment(position: Vector2):
 
 	var scene = Engine.get_main_loop().current_scene
 	scene.add_child(trail_visual)
+
+	# TODO: Apply burn to any enemies in trail area using centralized method
+	# For enemies in trail area: Effects.burn.apply_from_talent(enemy, source_bottle, 1)
 
 	# Fade out trail
 	var tween = trail_visual.create_tween()
