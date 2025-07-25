@@ -42,6 +42,7 @@ func build_talent_pool():
 			[create_chain_ignition_talent()],
 			TalentManager.TalentTheme.EXPLOSIVE
 		),
+		SharedTalents.fossil_fuel_talent(),
 		#create_trigger_talent(
 			#"Blazing Trails",
 			#"Fire spirits leave burning trails that damage enemies for 5 seconds",

@@ -125,6 +125,7 @@ func build_talent_pool():
 			#[_create_amber_amplifier_trigger()],
 			#TalentManager.TalentTheme.DAMAGE
 		#),
+		SharedTalents.fossil_fuel_talent(),
 		create_trigger_talent(
 			"Temporal Debt Collection",
 			"Every second without fossilizing, gain +5% fossilization chance. Resets on success.",
