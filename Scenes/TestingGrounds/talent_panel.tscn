@@ -1,0 +1,72 @@
+[gd_scene load_steps=2 format=3 uid="uid://ucu3p74t3jwq"]
+
+[ext_resource type="Script" uid="uid://bw5k75ada5swb" path="res://Scenes/TestingGrounds/talent_panel.gd" id="1_p8pip"]
+
+[node name="TalentPanel" type="Panel"]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+grow_horizontal = 2
+script = ExtResource("1_p8pip")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="TitleLabel" type="Label" parent="VBox"]
+layout_mode = 2
+text = "Talents"
+
+[node name="BottleSelector" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+
+[node name="BottleLabel" type="Label" parent="VBox/BottleSelector"]
+layout_mode = 2
+text = "Select Bottle"
+
+[node name="BottleDropdown" type="OptionButton" parent="VBox/BottleSelector"]
+layout_mode = 2
+
+[node name="SauceSelector" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+
+[node name="SauceLabel" type="Label" parent="VBox/SauceSelector"]
+layout_mode = 2
+text = "Sauce Type:"
+
+[node name="SauceDropdown" type="OptionButton" parent="VBox/SauceSelector"]
+layout_mode = 2
+
+[node name="TalentList" type="VBoxContainer" parent="VBox"]
+layout_mode = 2
+
+[node name="TalentLabel" type="Label" parent="VBox/TalentList"]
+layout_mode = 2
+text = "Available Talents:"
+
+[node name="ScrollContainer" type="ScrollContainer" parent="VBox/TalentList"]
+custom_minimum_size = Vector2(46.035, 77.87)
+layout_mode = 2
+
+[node name="TalentVbox" type="VBoxContainer" parent="VBox/TalentList/ScrollContainer"]
+custom_minimum_size = Vector2(8.99, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="SelectedBottleInfo" type="VBoxContainer" parent="VBox"]
+layout_mode = 2
+
+[node name="InfoTitleLabel" type="Label" parent="VBox/SelectedBottleInfo"]
+layout_mode = 2
+text = "Selected Bottle Info:"
+
+[node name="InfoLabel" type="RichTextLabel" parent="VBox/SelectedBottleInfo"]
+layout_mode = 2
+
+[node name="ApplyButton" type="Button" parent="VBox"]
+layout_mode = 2
+
+[node name="ClearButton" type="Button" parent="VBox"]
+layout_mode = 2

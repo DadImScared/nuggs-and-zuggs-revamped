@@ -62,6 +62,7 @@ func apply_from_talent(
 		action.execute_trigger(source_bottle, enhanced_data)
 
 		DebugControl.debug_status("✨ %s.apply_from_talent: Applied %d %s stacks with talents" % [effect_name, stack_count, effect_name])
+		return
 	else:
 		DebugControl.debug_status("⚠️ %s.apply_from_talent: %s action not found in TriggerActionManager" % [effect_name, effect_name])
 		# Fallback to direct application
@@ -146,10 +147,12 @@ func _create_immediate_effect(enemy: Node2D) -> Callable:
 
 func _create_tick_effect(enemy: Node2D, source_bottle: Node) -> Callable:
 	"""Override this for effect-specific tick behavior"""
+	print("CREATING enhanced tick effect")
 	return func():
+		print("ENHANCED TICK RUNNING!")
 		if not is_instance_valid(enemy):
 			return
-
+		print("after validation tick running enhanced")
 		var total_stacks = enemy.get_total_stack_count(effect_name)
 		var damage = get_tick_damage() * total_stacks
 		var bottle_id = source_bottle.bottle_id if source_bottle and source_bottle.has_method("bottle_id") else effect_name

@@ -50,6 +50,7 @@ func process_trigger_effects(source_bottle: ImprovedBaseSauceBottle) -> void:
 		var trigger_name = trigger_effect.trigger_name
 
 		if trigger_effect.enhances.size() > 0:
+			print("trigger name ---------- ", trigger_name)
 			continue  # This is an enhancement, not a standalone trigger
 
 		if trigger_name in trigger_actions:

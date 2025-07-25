@@ -1,0 +1,71 @@
+[gd_scene load_steps=4 format=3 uid="uid://csxnd8hghuh4n"]
+
+[ext_resource type="PackedScene" uid="uid://pauhynd1wg0o" path="res://Scenes/player.tscn" id="1_2buht"]
+[ext_resource type="Script" uid="uid://hmkarw5knoy7" path="res://Scenes/TestingGrounds/testing_grounds.gd" id="1_oruub"]
+[ext_resource type="PackedScene" uid="uid://ucu3p74t3jwq" path="res://Scenes/TestingGrounds/talent_panel.tscn" id="3_r37b8"]
+
+[node name="TestingGrounds" type="Node2D"]
+script = ExtResource("1_oruub")
+
+[node name="Background" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.771437, 0.370671, 0.264729, 1)
+
+[node name="Player" parent="." instance=ExtResource("1_2buht")]
+
+[node name="DummySpawns" type="Node2D" parent="."]
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="TestingPanel" type="VBoxContainer" parent="UI"]
+offset_right = 127.0
+offset_bottom = 89.0
+
+[node name="TitleLabel" type="Label" parent="UI/TestingPanel"]
+layout_mode = 2
+text = "Testing Grounds
+"
+
+[node name="ControlsContainer" type="HBoxContainer" parent="UI/TestingPanel"]
+layout_mode = 2
+alignment = 2
+
+[node name="XPToggle" type="CheckBox" parent="UI/TestingPanel/ControlsContainer"]
+layout_mode = 2
+
+[node name="ResetButton" type="Button" parent="UI/TestingPanel/ControlsContainer"]
+layout_mode = 2
+
+[node name="DamagerSlider" type="HSlider" parent="UI/TestingPanel/ControlsContainer"]
+layout_mode = 2
+
+[node name="EffectButtons" type="HBoxContainer" parent="UI/TestingPanel"]
+layout_mode = 2
+
+[node name="FossilButton" type="Button" parent="UI/TestingPanel/EffectButtons"]
+layout_mode = 2
+
+[node name="BurnButton" type="Button" parent="UI/TestingPanel/EffectButtons"]
+layout_mode = 2
+
+[node name="InfectButton" type="Button" parent="UI/TestingPanel/EffectButtons"]
+layout_mode = 2
+
+[node name="DPSDisplay" type="VBoxContainer" parent="UI"]
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="DPSLabel" type="Label" parent="UI/DPSDisplay"]
+layout_mode = 2
+
+[node name="TotalDamageLabel" type="Label" parent="UI/DPSDisplay"]
+layout_mode = 2
+
+[node name="TimeLabel" type="Label" parent="UI/DPSDisplay"]
+layout_mode = 2
+
+[node name="TalentPanel" parent="UI" instance=ExtResource("3_r37b8")]
