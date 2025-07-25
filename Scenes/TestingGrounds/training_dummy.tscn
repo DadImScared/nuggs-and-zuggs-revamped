@@ -7,7 +7,7 @@ size = Vector2(4, 8)
 
 [sub_resource type="CanvasTexture" id="CanvasTexture_mw463"]
 
-[node name="TrainingDummy" type="CharacterBody2D"]
+[node name="TrainingDummy" type="CharacterBody2D" groups=["enemies"]]
 collision_layer = 2
 collision_mask = 2
 script = ExtResource("1_ctkdq")
