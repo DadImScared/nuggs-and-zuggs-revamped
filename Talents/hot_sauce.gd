@@ -69,6 +69,13 @@ func build_talent_pool():
 			2,
 			[create_slow_burn_talent()],
 			TalentManager.TalentTheme.DAMAGE
+		),
+		create_trigger_talent(
+			"Cambrian Explosion",
+			"Shooting a burning enemy instantly spreads 1 burn to the nearest enemy",
+			2,
+			[create_cambrian_explosion_talent()],
+			TalentManager.TalentTheme.EXPLOSIVE
 		)
 		#create_stat_talent("placeholder", "", 2, []),
 		#create_stat_talent("placeholder", "", 2, []),
@@ -178,3 +185,17 @@ func create_fossil_fuel_talent() -> TriggerEffectResource:
 	enhancement.effect_parameters["tick_damage_multiplier"] = 2.0
 	enhancement.trigger_condition["has_effects"] = ["fossilize"]
 	return enhancement
+
+func create_cambrian_explosion_talent() -> TriggerEffectResource:
+	"""Cambrian Explosion: Shooting a burning enemy instantly spreads 1 burn to nearest enemy"""
+	var trigger = TriggerEffectResource.new()
+	trigger.trigger_name = "cambrian_explosion"
+	trigger.trigger_type = TriggerEffectResource.TriggerType.ON_HIT
+	trigger.trigger_condition["has_effects"] = ["burn"]  # Only triggers on enemies with burn effect
+	trigger.trigger_condition["chance"] = 1.0  # Always triggers when conditions are met
+
+	# Cambrian explosion parameters
+	trigger.effect_parameters["spread_radius"] = 150.0  # Search radius for nearest enemy
+	trigger.effect_parameters["spread_burn_stacks"] = 1  # Always spreads 1 burn stack
+
+	return trigger
