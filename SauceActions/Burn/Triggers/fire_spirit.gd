@@ -41,13 +41,13 @@ func execute_trigger(bottle: ImprovedBaseSauceBottle, data: EnhancedTriggerData)
 	for i in range(spirit_count):
 		_spawn_fire_spirit(spawn_pos, seek_range, spirit_speed, burn_stacks,
 			spirit_damage, bottle, leaves_trail, trail_width, trail_duration,
-			trail_tick_damage, trail_tick_interval, trail_color)
+			trail_tick_damage, trail_tick_interval, trail_color, data.effect_parameters)
 
 func _spawn_fire_spirit(spawn_pos: Vector2, seek_range: float, spirit_speed: float,
 	burn_stacks: int, spirit_damage: float, source_bottle: ImprovedBaseSauceBottle,
 	leaves_trail: bool = false, trail_width: float = 60.0, trail_duration: float = 5.0,
 	trail_tick_damage: float = 8.0, trail_tick_interval: float = 0.3,
-	trail_color: Color = Color(1.0, 0.3, 0.0, 0.6)):
+	trail_color: Color = Color(1.0, 0.3, 0.0, 0.6), enhanced_params: Dictionary = {}):
 	"""Spawn a single fire spirit with smart targeting"""
 
 	# Find smart target
@@ -74,6 +74,14 @@ func _spawn_fire_spirit(spawn_pos: Vector2, seek_range: float, spirit_speed: flo
 	# Setup fire spirit with correct method and parameters
 	fire_spirit.setup_spirit(target_enemy, source_bottle, spirit_speed, burn_stacks, spirit_damage)
 
+	# NEW: Pass enhanced burn parameters from the trigger system
+	if source_bottle and TriggerActionManager.trigger_actions.has("burn"):
+		var burn_action = TriggerActionManager.trigger_actions["burn"]
+		var burn_trigger = _find_burn_trigger(source_bottle)
+		if burn_trigger:
+			var enhanced_burn_data = burn_action.apply_enhancements(source_bottle, burn_trigger)
+			fire_spirit.setup_enhanced_burn_params(enhanced_burn_data.effect_parameters)
+
 	# Enable trail behavior if Blazing Trails talent is active
 	if leaves_trail:
 		fire_spirit.setup_trail_behavior(trail_width, trail_duration, trail_tick_damage, trail_tick_interval, trail_color)
@@ -82,109 +90,91 @@ func _spawn_fire_spirit(spawn_pos: Vector2, seek_range: float, spirit_speed: flo
 	var main_scene = Engine.get_main_loop().current_scene
 	main_scene.call_deferred("add_child", fire_spirit)
 
-	DebugControl.debug_status("🔥 Fire Spirit spawned with speed: %.0f, targeting: %s" % [spirit_speed, target_enemy.name if target_enemy else "none"])
+	DebugControl.debug_status("🔥 Fire Spirit spawned with speed: %.0f, targeting: %s" % [spirit_speed, str(target_enemy)])
+
+func _find_burn_trigger(bottle: ImprovedBaseSauceBottle) -> TriggerEffectResource:
+	"""Find the burn trigger in the bottle's trigger effects"""
+	for trigger_effect in bottle.trigger_effects:
+		if trigger_effect.trigger_name == "burn":
+			return trigger_effect
+	return null
 
 func _find_smart_target(spawn_pos: Vector2, seek_range: float) -> Node2D:
-	"""Smart targeting: non-burning > not recently targeted > random"""
+	"""Find the best target using smart targeting logic"""
+	var main_scene = Engine.get_main_loop().current_scene
+	var all_enemies = main_scene.get_tree().get_nodes_in_group("enemies")
+	var valid_targets = []
 
-	var all_enemies = Engine.get_main_loop().current_scene.get_tree().get_nodes_in_group("enemies")
-	var valid_enemies = []
-	var non_burning_enemies = []
-	var fresh_enemies = []  # Not recently targeted
-
-	# Categorize all valid enemies
 	for enemy in all_enemies:
 		if not is_instance_valid(enemy):
 			continue
 
 		var distance = spawn_pos.distance_to(enemy.global_position)
-		if distance > seek_range:
-			continue
+		if distance <= seek_range:
+			valid_targets.append({"enemy": enemy, "distance": distance})
 
-		valid_enemies.append(enemy)
-
-		# Check if enemy is burning
-		var is_burning = false
-		if enemy.has_method("get_total_stack_count"):
-			is_burning = enemy.get_total_stack_count("burn") > 0
-		elif enemy.has_method("has_status_effect"):
-			is_burning = enemy.has_status_effect("burn")
-
-		if not is_burning:
-			non_burning_enemies.append(enemy)
-
-		# Check if recently targeted
-		if enemy not in recently_targeted:
-			fresh_enemies.append(enemy)
-
-	# Priority 1: Non-burning enemies that aren't recently targeted
-	var priority_targets = []
-	for enemy in non_burning_enemies:
-		if enemy in fresh_enemies:
-			priority_targets.append(enemy)
-
-	if priority_targets.size() > 0:
-		DebugControl.debug_status("🔥 Fire Spirit: Targeting non-burning fresh enemy")
-		return _get_closest_enemy(spawn_pos, priority_targets)
-
-	# Priority 2: Any non-burning enemies (even if recently targeted)
-	if non_burning_enemies.size() > 0:
-		DebugControl.debug_status("🔥 Fire Spirit: Targeting non-burning enemy (recently targeted)")
-		return _get_closest_enemy(spawn_pos, non_burning_enemies)
-
-	# Priority 3: Fresh enemies (not recently targeted, even if burning)
-	if fresh_enemies.size() > 0:
-		DebugControl.debug_status("🔥 Fire Spirit: Targeting fresh burning enemy")
-		return _get_closest_enemy(spawn_pos, fresh_enemies)
-
-	# Priority 4: Any valid enemy (random fallback)
-	if valid_enemies.size() > 0:
-		DebugControl.debug_status("🔥 Fire Spirit: Random target fallback")
-		return valid_enemies[randi() % valid_enemies.size()]
-
-	# No targets available
-	DebugControl.debug_status("🔥 Fire Spirit: No valid targets in range")
-	return null
-
-func _get_closest_enemy(spawn_pos: Vector2, enemies: Array) -> Node2D:
-	"""Get the closest enemy from a list"""
-	if enemies.is_empty():
+	if valid_targets.is_empty():
 		return null
 
-	var closest_enemy = enemies[0]
-	var closest_distance = spawn_pos.distance_to(closest_enemy.global_position)
+	# Sort by distance
+	valid_targets.sort_custom(func(a, b): return a.distance < b.distance)
 
-	for enemy in enemies:
-		var distance = spawn_pos.distance_to(enemy.global_position)
-		if distance < closest_distance:
-			closest_distance = distance
-			closest_enemy = enemy
+	# Prioritize fresh enemies (not recently targeted)
+	for target_data in valid_targets:
+		var enemy = target_data.enemy
+		if not enemy in recently_targeted:
+			# Check if enemy is not burning (prefer fresh targets)
+			if not _is_enemy_burning(enemy):
+				DebugControl.debug_status("🔥 Fire Spirit: Targeting non-burning fresh enemy")
+				return enemy
 
-	return closest_enemy
+	# If no fresh non-burning enemies, target fresh burning enemies
+	for target_data in valid_targets:
+		var enemy = target_data.enemy
+		if not enemy in recently_targeted:
+			DebugControl.debug_status("🔥 Fire Spirit: Targeting fresh burning enemy")
+			return enemy
 
-func _manage_recently_targeted_list(new_target: Node2D):
-	"""Add target to recently targeted and manage list size"""
-	if new_target:
-		recently_targeted.append(new_target)
+	# Fallback: target recently targeted enemies if needed
+	for target_data in valid_targets:
+		var enemy = target_data.enemy
+		if not _is_enemy_burning(enemy):
+			DebugControl.debug_status("🔥 Fire Spirit: Targeting non-burning enemy (recently targeted)")
+			return enemy
 
-		# Keep list reasonable size (prevent infinite growth)
-		var max_recently_targeted = 5
-		while recently_targeted.size() > max_recently_targeted:
-			recently_targeted.pop_front()
+	# Last resort: any valid target
+	if valid_targets.size() > 0:
+		DebugControl.debug_status("🔥 Fire Spirit: Random target fallback")
+		return valid_targets[0].enemy
 
-		# Clean up invalid references
-		recently_targeted = recently_targeted.filter(func(enemy): return is_instance_valid(enemy))
+	return null
+
+func _is_enemy_burning(enemy: Node2D) -> bool:
+	"""Check if enemy is currently burning"""
+	if not is_instance_valid(enemy):
+		return false
+
+	# Check for burn effect
+	if enemy.has_method("has_status_effect"):
+		return enemy.has_status_effect("burn")
+	elif enemy.has_method("get_total_stack_count"):
+		return enemy.get_total_stack_count("burn") > 0
+	elif "active_effects" in enemy:
+		return "burn" in enemy.active_effects
+
+	return false
+
+func _manage_recently_targeted_list(enemy: Node2D):
+	"""Add enemy to recently targeted list and manage list size"""
+	if not enemy in recently_targeted:
+		recently_targeted.append(enemy)
+
+	# Keep list manageable size
+	if recently_targeted.size() > 6:
+		recently_targeted.pop_front()
 
 func _clear_recently_targeted_if_needed():
-	"""Clear recently targeted if no valid targets available"""
-	var all_enemies = Engine.get_main_loop().current_scene.get_tree().get_nodes_in_group("enemies")
-	var available_targets = 0
-
-	for enemy in all_enemies:
-		if is_instance_valid(enemy) and enemy not in recently_targeted:
-			available_targets += 1
-
-	# If no fresh targets available, clear the list to allow retargeting
-	if available_targets == 0 and recently_targeted.size() > 0:
-		DebugControl.debug_status("🔥 Fire Spirit: Clearing recently targeted list (no fresh targets)")
+	"""Clear recently targeted list if it's getting too restrictive"""
+	if recently_targeted.size() > 4:
 		recently_targeted.clear()
+		DebugControl.debug_status("🔥 Fire Spirit: Cleared recently targeted list")

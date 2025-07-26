@@ -9,6 +9,9 @@ var burn_stacks_to_apply: int = 2
 var spirit_damage: float = 7.0
 var lifetime: float = 5.0
 
+# Enhanced burn parameters from trigger system
+var enhanced_burn_params: Dictionary = {}
+
 # Trail properties
 var leaves_trail: bool = false
 var trail_width: float = 60.0
@@ -80,6 +83,11 @@ func setup_spirit(target: Node2D, bottle: Node, speed: float, burn_stacks: int, 
 		var direction = (target_enemy.global_position - global_position).normalized()
 		velocity = direction * move_speed
 
+func setup_enhanced_burn_params(enhanced_params: Dictionary):
+	"""Store enhanced burn parameters from the trigger system"""
+	enhanced_burn_params = enhanced_params
+	DebugControl.debug_status("🔥 Fire Spirit: Enhanced burn params stored (%.1f damage)" % enhanced_params.get("tick_damage", 5.0))
+
 func setup_trail_behavior(width: float, duration: float, tick_damage: float, tick_interval: float, color: Color):
 	"""Setup trail leaving behavior"""
 	leaves_trail = true
@@ -131,8 +139,8 @@ func _hit_target():
 	# Create hit effect
 	_create_hit_effect()
 
-	# NEW: Use centralized burn application - automatically gets all burn talents!
-	Effects.burn.apply_from_talent(target_enemy, source_bottle, burn_stacks_to_apply)
+	# Apply burn with enhanced parameters if available
+	Effects.burn.apply_from_talent(target_enemy, source_bottle, burn_stacks_to_apply, enhanced_burn_params)
 
 	# Apply immediate damage
 	if target_enemy.has_method("take_damage_from_source") and source_bottle:
@@ -202,8 +210,8 @@ func _create_trail_segment(position: Vector2):
 	var scene = Engine.get_main_loop().current_scene
 	scene.add_child(trail_visual)
 
-	# TODO: Apply burn to any enemies in trail area using centralized method
-	# For enemies in trail area: Effects.burn.apply_from_talent(enemy, source_bottle, 1)
+	# TODO: Apply burn to any enemies in trail area using enhanced parameters
+	# For enemies in trail area: Effects.burn.apply_from_talent(enemy, source_bottle, 1, enhanced_burn_params)
 
 	# Fade out trail
 	var tween = trail_visual.create_tween()

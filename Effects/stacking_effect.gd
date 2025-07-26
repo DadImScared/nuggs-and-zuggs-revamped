@@ -15,15 +15,49 @@ func apply_from_talent(
 	enemy: Node2D,
 	source_bottle: Node,
 	stack_count: int = 1,
-	override_params: Dictionary = {}
+	enhanced_params: Dictionary = {}
 ):
-	"""Apply effect with base parameters (for Fire Spirits, Training Dummy, etc.)"""
+	"""Apply effect with base parameters or enhanced parameters"""
 	if not enemy or not is_instance_valid(enemy):
 		DebugControl.debug_status("⚠️ %s.apply_from_talent: Invalid parameters" % effect_name)
 		return
 
-	# Start with base parameters
-	var params = {
+	if enhanced_params.size() > 0:
+		# Use provided enhanced parameters directly
+		var burn_params = {
+			"duration": enhanced_params.get("duration", base_duration),
+			"tick_interval": enhanced_params.get("tick_interval", base_tick_interval),
+			"damage": enhanced_params.get("tick_damage", base_tick_damage),
+			"max_stacks": enhanced_params.get("max_stacks", base_max_stacks),
+			"stack_value": enhanced_params.get("stack_value", base_stack_value),
+			"stacks": stack_count
+		}
+
+		# Apply with enhanced parameters - no further enhancement needed
+		_apply_with_enhanced_params(enemy, source_bottle, burn_params)
+		DebugControl.debug_status("🔥 Applied %s with enhanced params: %.1f damage/tick" % [effect_name, burn_params["damage"]])
+		return
+
+	# ENHANCED: Try to fetch enhanced params from bottle (existing logic)
+	if source_bottle and source_bottle.has_method("get_enhanced_trigger_data"):
+		var enhanced_data = source_bottle.get_enhanced_trigger_data(effect_name)
+		if enhanced_data and enhanced_data.effect_parameters.size() > 0:
+			# Apply enhancements to parameters
+			var params = {
+				"duration": enhanced_data.effect_parameters.get("duration", base_duration),
+				"tick_interval": enhanced_data.effect_parameters.get("tick_interval", base_tick_interval),
+				"damage": enhanced_data.effect_parameters.get("tick_damage", base_tick_damage),
+				"max_stacks": enhanced_data.effect_parameters.get("max_stacks", base_max_stacks),
+				"stack_value": enhanced_data.effect_parameters.get("stack_value", base_stack_value),
+				"stacks": stack_count
+			}
+
+			_apply_with_enhanced_params(enemy, source_bottle, params)
+			DebugControl.debug_status("🔥 Applied %s with bottle enhancements: %.1f damage/tick" % [effect_name, params["damage"]])
+			return
+
+	# Fallback: Use base parameters without enhancements
+	var base_params = {
 		"duration": base_duration,
 		"tick_interval": base_tick_interval,
 		"damage": base_tick_damage,
@@ -32,12 +66,8 @@ func apply_from_talent(
 		"stacks": stack_count
 	}
 
-	# Apply any overrides
-	for key in override_params:
-		params[key] = override_params[key]
-
-	# Apply the effect with base/override parameters
-	_apply_with_enhanced_params(enemy, source_bottle, params)
+	_apply_with_enhanced_params(enemy, source_bottle, base_params)
+	DebugControl.debug_status("🔥 Applied %s with base params: %.1f damage/tick" % [effect_name, base_params["damage"]])
 
 func _apply_with_enhanced_params(enemy: Node2D, source_bottle: Node, params: Dictionary):
 	"""Apply the effect using enhanced parameters - no further enhancement needed"""
