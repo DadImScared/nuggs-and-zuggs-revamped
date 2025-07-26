@@ -94,6 +94,12 @@ func should_trigger_on_dot_tick(source_bottle: ImprovedBaseSauceBottle, trigger_
 	if damage_dealt < min_damage:
 		return false
 
+	var required_effects = trigger_data.trigger_condition.get("has_effects", [])
+	if required_effects.size() > 0:
+		for effect in required_effects:
+			if not affected_enemy.has_method("get_total_stack_count") or affected_enemy.get_total_stack_count(effect) == 0:
+				return false
+
 	return true  # All conditions met
 
 func should_trigger_on_hit(source_bottle: ImprovedBaseSauceBottle, trigger_data: EnhancedTriggerData, hit_enemy: Node2D, projectile: Area2D = null) -> bool:

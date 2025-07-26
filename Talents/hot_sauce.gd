@@ -76,6 +76,13 @@ func build_talent_pool():
 			2,
 			[create_cambrian_explosion_talent()],
 			TalentManager.TalentTheme.EXPLOSIVE
+		),
+		create_trigger_talent(
+			"Ember Cascade",
+			"Each burn tick has 15% chance to apply another burn stack to the same enemy",
+			2,
+			[create_ember_cascade_talent()],
+			TalentManager.TalentTheme.DAMAGE
 		)
 		#create_stat_talent("placeholder", "", 2, []),
 		#create_stat_talent("placeholder", "", 2, []),
@@ -199,3 +206,17 @@ func create_cambrian_explosion_talent() -> TriggerEffectResource:
 	trigger.effect_parameters["spread_burn_stacks"] = 1  # Always spreads 1 burn stack
 
 	return trigger
+
+func create_ember_cascade_talent() -> TriggerEffectResource:
+	"""Ember Cascade: Each burn tick has 15% chance to apply another burn stack"""
+	var enhancement = TriggerEffectResource.new()
+	enhancement.trigger_name = "ember_cascade"
+	enhancement.trigger_type = TriggerEffectResource.TriggerType.ON_DOT_TICK
+	enhancement.enhances = ["burn"]  # Enhances existing burn effects
+	enhancement.trigger_condition["dot_types"] = ["burn"]
+	enhancement.trigger_condition["chance"] = 0.15  # 15% chance per tick
+
+	# Ember cascade parameters - using standard names for enhancement compatibility
+	enhancement.effect_parameters["burn_stacks"] = 1  # Add 1 more burn stack
+
+	return enhancement

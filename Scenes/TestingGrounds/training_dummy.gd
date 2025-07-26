@@ -106,6 +106,13 @@ func take_damage_from_source(damage_amount: float, source_bottle_id: String):
 	if health <= 0:
 		_handle_death()
 
+# ADD THIS METHOD - This is what was missing!
+func _execute_dot_tick_trigger(source_bottle_id: String, dot_type: String, damage_dealt: float):
+	"""Execute DOT tick triggers when DOT effects deal damage"""
+	var source_bottle = InventoryManager.get_bottle_by_id(source_bottle_id)
+	if source_bottle:
+		TriggerActionManager.execute_dot_tick_trigger(source_bottle, self, dot_type, damage_dealt)
+
 func _track_damage(damage: float, source: String):
 	"""Track damage for DPS calculations"""
 	var current_time = Time.get_time_dict_from_system().get("unix", 0)
@@ -214,7 +221,6 @@ func apply_stacking_effect(
 	callbacks: Dictionary
 ):
 	"""Apply stacking effect - same interface as real enemies"""
-
 	if not stacking_effects.has(effect_name):
 		stacking_effects[effect_name] = []
 
@@ -255,7 +261,6 @@ func apply_stacking_effect(
 	effect_applied.emit(effect_name, stack_count)
 
 	print("🧪 %s: Applied %s (now %d stacks, duration refreshed to %.1fs)" % [dummy_name, effect_name, stack_count, duration])
-
 	return stack_count
 
 func get_total_stack_count(effect_name: String) -> int:
@@ -371,11 +376,13 @@ func _process_stacking_effects(delta: float):
 		expired_stacks.reverse()
 		for i in expired_stacks:
 			var expired_stack = stacks[i]
+
 			# Safely call visual cleanup with validation
 			if expired_stack.callbacks.has("visual_cleanup"):
 				var cleanup_callable = expired_stack.callbacks.visual_cleanup
 				if cleanup_callable and cleanup_callable.is_valid():
 					cleanup_callable.call()
+
 			stacks.remove_at(i)
 
 		# Clean up empty effect
@@ -384,7 +391,6 @@ func _process_stacking_effects(delta: float):
 			_update_stack_indicator(effect_name)  # Update to remove indicator
 
 # === STACK INDICATOR SYSTEM ===
-
 func _update_stack_indicator(effect_name: String):
 	"""Update or create stack indicator for a specific effect"""
 	var total_stacks = get_total_stack_count(effect_name)
@@ -508,7 +514,6 @@ func _get_effect_color(effect_name: String) -> Color:
 func _remove_stack_display(effect_name: String):
 	"""Remove stack indicator when stacks reach 0"""
 	var indicator_key = effect_name
-
 	if stack_indicators.has(indicator_key):
 		var display_node = stack_indicators[indicator_key]
 		display_node.queue_free()
@@ -528,7 +533,6 @@ func _reposition_stack_indicators():
 	if stack_indicators.size() > 0:
 		var total_width = (stack_indicators.size() - 1) * spacing + 45
 		var center_offset = -total_width / 2
-
 		for effect_name in stack_indicators.keys():
 			var display_node = stack_indicators[effect_name]
 			display_node.position.x += center_offset

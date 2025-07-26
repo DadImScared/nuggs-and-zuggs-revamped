@@ -169,6 +169,8 @@ func _create_tick_effect(enemy: Node2D, tick_damage: float, color: Color, source
 
 		# Apply damage - no further enhancement needed
 		enemy.take_damage_from_source(damage, bottle_id)
+		if enemy.has_method("_execute_dot_tick_trigger"):
+			enemy._execute_dot_tick_trigger(bottle_id, effect_name, damage)
 
 		DebugControl.debug_combat("🔥 %s tick: %.1f damage (%d stacks)" % [effect_name.capitalize(), damage, total_stacks])
 

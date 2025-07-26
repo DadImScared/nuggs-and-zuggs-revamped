@@ -93,7 +93,6 @@ func execute_dot_tick_trigger(source_bottle: ImprovedBaseSauceBottle, affected_e
 	for trigger_effect in source_bottle.trigger_effects:
 		if trigger_effect.trigger_type == TriggerEffectResource.TriggerType.ON_DOT_TICK:
 			var trigger_name = trigger_effect.trigger_name
-
 			if trigger_name in trigger_actions:
 				var action = trigger_actions[trigger_name]
 
