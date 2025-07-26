@@ -11,28 +11,19 @@ extends Resource
 @export var base_stack_value: float = 1.0
 @export var base_color: Color = Color.RED
 
-# Enhanced application function with generic parameter system
 func apply_from_talent(
 	enemy: Node2D,
 	source_bottle: Node,
 	stack_count: int = 1,
 	override_params: Dictionary = {}
 ):
-	"""
-	Apply this effect with all talent enhancements using generic parameter system.
-
-	Args:
-		enemy: Target to apply effect to
-		source_bottle: Source bottle (needed for talent enhancements)
-		stack_count: Number of stacks to apply
-		override_params: Optional parameters to override
-	"""
-	if not enemy or not is_instance_valid(enemy) or not source_bottle:
+	"""Apply effect with base parameters (for Fire Spirits, Training Dummy, etc.)"""
+	if not enemy or not is_instance_valid(enemy):
 		DebugControl.debug_status("⚠️ %s.apply_from_talent: Invalid parameters" % effect_name)
 		return
 
 	# Start with base parameters
-	var enhanced_params = {
+	var params = {
 		"duration": base_duration,
 		"tick_interval": base_tick_interval,
 		"damage": base_tick_damage,
@@ -41,41 +32,15 @@ func apply_from_talent(
 		"stacks": stack_count
 	}
 
-	# Apply override parameters first
+	# Apply any overrides
 	for key in override_params:
-		enhanced_params[key] = override_params[key]
+		params[key] = override_params[key]
 
-	# Apply all enhancements from the bottle's trigger effects
-	if source_bottle and source_bottle.has_method("get") and source_bottle.trigger_effects:
-		for trigger in source_bottle.trigger_effects:
-			if effect_name in trigger.enhances:
-				# Check if trigger conditions are met
-				if _evaluate_trigger_conditions(trigger, enemy):
-					# Apply parameter enhancements generically
-					for param_name in trigger.effect_parameters:
-						if param_name in enhanced_params:
-							var old_value = enhanced_params[param_name]
-							enhanced_params[param_name] += trigger.effect_parameters[param_name]
-							DebugControl.debug_status("🔥 %s enhanced %s: %.1f → %.1f (+%.1f)" % [
-								trigger.trigger_name,
-								param_name,
-								old_value,
-								enhanced_params[param_name],
-								trigger.effect_parameters[param_name]
-							])
-
-	# Apply the effect using enhanced parameters
-	_apply_with_enhanced_params(enemy, source_bottle, enhanced_params)
-
-	DebugControl.debug_status("✨ Applied %s: %d stacks, %.1f damage/tick, %.1fs duration" % [
-		effect_name,
-		enhanced_params["stacks"],
-		enhanced_params["damage"],
-		enhanced_params["duration"]
-	])
+	# Apply the effect with base/override parameters
+	_apply_with_enhanced_params(enemy, source_bottle, params)
 
 func _apply_with_enhanced_params(enemy: Node2D, source_bottle: Node, params: Dictionary):
-	"""Apply the effect using enhanced parameters"""
+	"""Apply the effect using enhanced parameters - no further enhancement needed"""
 
 	# Create effect callbacks based on enhanced parameters
 	var visual_cleanup = _create_visual_cleanup(enemy)
@@ -100,64 +65,16 @@ func _apply_with_enhanced_params(enemy: Node2D, source_bottle: Node, params: Dic
 			}
 		)
 
-func _evaluate_trigger_conditions(trigger: TriggerEffectResource, enemy: Node2D) -> bool:
-	"""Check if trigger conditions are met for this enemy"""
-
-	# Check if target has ALL required effects
-	if trigger.trigger_condition.has("has_effects"):
-		var required_effects = trigger.trigger_condition["has_effects"]
-		for effect in required_effects:
-			if not _enemy_has_effect(enemy, effect):
-				DebugControl.debug_status("🔥 %s condition failed: enemy missing %s" % [trigger.trigger_name, effect])
-				return false
-		DebugControl.debug_status("🔥 %s condition met: enemy has all required effects %s" % [trigger.trigger_name, str(required_effects)])
-		return true
-
-	# Check if target has ANY of the specified effects
-	if trigger.trigger_condition.has("has_any_effects"):
-		var possible_effects = trigger.trigger_condition["has_any_effects"]
-		for effect in possible_effects:
-			if _enemy_has_effect(enemy, effect):
-				DebugControl.debug_status("🔥 %s condition met: enemy has %s" % [trigger.trigger_name, effect])
-				return true
-		DebugControl.debug_status("🔥 %s condition failed: enemy has none of %s" % [trigger.trigger_name, str(possible_effects)])
-		return false
-
-	# Check minimum health threshold
-	if trigger.trigger_condition.has("target_health_below"):
-		var threshold = trigger.trigger_condition["target_health_below"]
-		if enemy.has_method("get_health_percentage"):
-			var health_pct = enemy.get_health_percentage()
-			var meets_condition = health_pct < threshold
-			DebugControl.debug_status("🔥 %s health condition: %.1f%% < %.1f%% = %s" % [trigger.trigger_name, health_pct * 100, threshold * 100, meets_condition])
-			return meets_condition
-		return false
-
-	# Check maximum health threshold
-	if trigger.trigger_condition.has("target_health_above"):
-		var threshold = trigger.trigger_condition["target_health_above"]
-		if enemy.has_method("get_health_percentage"):
-			var health_pct = enemy.get_health_percentage()
-			var meets_condition = health_pct > threshold
-			DebugControl.debug_status("🔥 %s health condition: %.1f%% > %.1f%% = %s" % [trigger.trigger_name, health_pct * 100, threshold * 100, meets_condition])
-			return meets_condition
-		return false
-
-	# No conditions = always applies
-	DebugControl.debug_status("🔥 %s has no conditions, always applies" % trigger.trigger_name)
-	return true
-
-func _enemy_has_effect(enemy: Node2D, effect_name: String) -> bool:
-	"""Check if enemy has a specific effect"""
-	if enemy.has_method("get_total_stack_count"):
-		return enemy.get_total_stack_count(effect_name) > 0
-	elif enemy.has_method("has_status_effect"):
-		return enemy.has_status_effect(effect_name)
-	return false
+	DebugControl.debug_status("✨ Applied %s: %d stacks, %.1f damage/tick, %.1fs duration" % [
+		effect_name,
+		params["stacks"],
+		params["damage"],
+		params["duration"]
+	])
 
 # Legacy direct application function (for non-talent usage)
 func apply_to_enemy(enemy: Node2D, source_bottle: Node, stack_count: int = 1):
-	"""Apply effect directly without talent enhancements (legacy)"""
+	"""Apply effect directly without enhancements (legacy)"""
 	if not enemy or not is_instance_valid(enemy):
 		return
 
@@ -217,14 +134,13 @@ func _create_tick_effect(enemy: Node2D, tick_damage: float, color: Color, source
 			return
 
 		var total_stacks = enemy.get_total_stack_count(effect_name)
-		var damage = tick_damage * total_stacks
+		var damage = tick_damage * total_stacks  # tick_damage is already enhanced
 		var bottle_id = source_bottle.bottle_id if source_bottle else effect_name
 
-		# Apply damage with talent enhancements
-		var final_damage = _calculate_enhanced_damage(enemy, source_bottle, damage)
-		enemy.take_damage_from_source(final_damage, bottle_id)
+		# Apply damage - no further enhancement needed
+		enemy.take_damage_from_source(damage, bottle_id)
 
-		DebugControl.debug_combat("🔥 %s tick: %.1f damage (%d stacks)" % [effect_name.capitalize(), final_damage, total_stacks])
+		DebugControl.debug_combat("🔥 %s tick: %.1f damage (%d stacks)" % [effect_name.capitalize(), damage, total_stacks])
 
 		# Create tick particle
 		var particle = ColorRect.new()
@@ -239,23 +155,3 @@ func _create_tick_effect(enemy: Node2D, tick_damage: float, color: Color, source
 		tween.parallel().tween_property(particle, "position", particle.position + Vector2(randf_range(-16, 16), -24), 0.8)
 		tween.parallel().tween_property(particle, "modulate:a", 0.0, 0.8)
 		tween.tween_callback(particle.queue_free)
-
-func _calculate_enhanced_damage(enemy: Node2D, source_bottle: Node, base_damage: float) -> float:
-	"""Calculate damage with all talent enhancements applied"""
-	var final_damage = base_damage
-
-	# Apply damage enhancements from bottle's trigger effects
-	if source_bottle and source_bottle.trigger_effects:
-		for trigger in source_bottle.trigger_effects:
-			if effect_name in trigger.enhances:
-				# Check if trigger conditions are met for damage enhancement
-				if _evaluate_trigger_conditions(trigger, enemy):
-					# Apply damage parameter enhancement
-					if trigger.effect_parameters.has("damage"):
-						var old_damage = final_damage
-						final_damage += trigger.effect_parameters["damage"]
-						DebugControl.debug_status("🔥 %s damage enhanced: %.1f → %.1f (+%.1f)" % [
-							trigger.trigger_name, old_damage, final_damage, trigger.effect_parameters["damage"]
-						])
-
-	return final_damage
