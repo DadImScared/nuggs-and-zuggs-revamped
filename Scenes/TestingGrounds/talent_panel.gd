@@ -255,7 +255,7 @@ func _on_apply_talent():
 	_update_bottle_info()
 
 	# Emit signal for testing grounds
-	talent_applied.emit(selected_bottle, selected_talent)
+	talent_applied.emit(selected_talent.talent_name, selected_bottle.sauce_data.sauce_name)
 
 	print("✅ Talent applied successfully!")
 

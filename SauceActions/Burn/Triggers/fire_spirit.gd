@@ -29,7 +29,7 @@ func execute_trigger(bottle: ImprovedBaseSauceBottle, data: EnhancedTriggerData)
 	var burn_stacks = data.effect_parameters.get("burn_stacks", 2)
 	var spirit_damage = data.effect_parameters.get("spirit_damage", 7.0)
 
-	# NEW: Trail parameters from Blazing Trails talent
+	# Trail parameters from Blazing Trails talent
 	var leaves_trail = data.effect_parameters.get("leaves_trail", false)
 	var trail_width = data.effect_parameters.get("trail_width", 60.0)
 	var trail_duration = data.effect_parameters.get("trail_duration", 5.0)
@@ -37,18 +37,125 @@ func execute_trigger(bottle: ImprovedBaseSauceBottle, data: EnhancedTriggerData)
 	var trail_tick_interval = data.effect_parameters.get("trail_tick_interval", 0.3)
 	var trail_color = data.effect_parameters.get("trail_color", Color(1.0, 0.3, 0.0, 0.6))
 
-	# Spawn fire spirits from the bottle
+	# FIX: Pre-select diverse targets for multiple spirits
+	var selected_targets = _select_diverse_targets(spawn_pos, seek_range, spirit_count)
+
+	# Spawn fire spirits with pre-selected targets
 	for i in range(spirit_count):
-		_spawn_fire_spirit(spawn_pos, seek_range, spirit_speed, burn_stacks,
+		var target_enemy = null
+		if i < selected_targets.size():
+			target_enemy = selected_targets[i]
+
+		_spawn_fire_spirit_with_target(spawn_pos, target_enemy, spirit_speed, burn_stacks,
 			spirit_damage, bottle, leaves_trail, trail_width, trail_duration,
 			trail_tick_damage, trail_tick_interval, trail_color, data.effect_parameters)
+
+func _select_diverse_targets(spawn_pos: Vector2, seek_range: float, spirit_count: int) -> Array[Node2D]:
+	"""Pre-select diverse targets to ensure spirits spread out"""
+	var main_scene = Engine.get_main_loop().current_scene
+	var all_enemies = main_scene.get_tree().get_nodes_in_group("enemies")
+	var valid_targets = []
+
+	# Collect all valid enemies within range
+	for enemy in all_enemies:
+		if not is_instance_valid(enemy):
+			continue
+
+		var distance = spawn_pos.distance_to(enemy.global_position)
+		if distance <= seek_range:
+			valid_targets.append({"enemy": enemy, "distance": distance})
+
+	if valid_targets.is_empty():
+		DebugControl.debug_status("🔥 Fire Spirit: No valid targets found for %d spirits" % spirit_count)
+		var empty_result: Array[Node2D] = []
+		return empty_result
+
+	# Sort by distance for priority
+	valid_targets.sort_custom(func(a, b): return a.distance < b.distance)
+
+	var selected: Array[Node2D] = []
+	var burning_targets: Array[Node2D] = []
+	var non_burning_targets: Array[Node2D] = []
+
+	# Separate burning vs non-burning targets
+	for target_data in valid_targets:
+		var enemy = target_data.enemy
+		if _is_enemy_burning(enemy):
+			burning_targets.append(enemy)
+		else:
+			non_burning_targets.append(enemy)
+
+	# Strategy: Prioritize non-burning targets, then burning ones
+	# But distribute spirits across different enemies
+	var available_targets: Array[Node2D] = non_burning_targets + burning_targets
+
+	# Select up to spirit_count different targets
+	for i in range(min(spirit_count, available_targets.size())):
+		var target = available_targets[i]
+		selected.append(target)
+		_manage_recently_targeted_list(target)
+
+		var target_type = "non-burning" if target in non_burning_targets else "burning"
+		DebugControl.debug_status("🔥 Fire Spirit %d: Selected %s target" % [i + 1, target_type])
+
+	# If we need more spirits than available targets, duplicate the closest ones
+	while selected.size() < spirit_count and available_targets.size() > 0:
+		var target = available_targets[selected.size() % available_targets.size()]
+		selected.append(target)
+		DebugControl.debug_status("🔥 Fire Spirit %d: Duplicate target assignment" % [selected.size()])
+
+	return selected
+
+func _spawn_fire_spirit_with_target(spawn_pos: Vector2, target_enemy: Node2D, spirit_speed: float,
+	burn_stacks: int, spirit_damage: float, source_bottle: ImprovedBaseSauceBottle,
+	leaves_trail: bool = false, trail_width: float = 60.0, trail_duration: float = 5.0,
+	trail_tick_damage: float = 8.0, trail_tick_interval: float = 0.3,
+	trail_color: Color = Color(1.0, 0.3, 0.0, 0.6), enhanced_params: Dictionary = {}):
+	"""Spawn a single fire spirit with a pre-selected target"""
+
+	if not target_enemy:
+		DebugControl.debug_status("🔥 Fire Spirit: No target provided, finding fallback")
+		target_enemy = _find_smart_target(spawn_pos, 300.0)
+
+	if not target_enemy:
+		DebugControl.debug_status("🔥 Fire Spirit: No valid targets found")
+		return
+
+	# Load fire spirit scene
+	var fire_spirit_scene = preload("res://Effects/FireSpirit/fire_spirit.tscn")
+	var fire_spirit = fire_spirit_scene.instantiate()
+
+	# Set position
+	fire_spirit.global_position = spawn_pos
+
+	# Setup fire spirit with correct method and parameters
+	fire_spirit.setup_spirit(target_enemy, source_bottle, spirit_speed, burn_stacks, spirit_damage)
+
+	# Pass enhanced burn parameters from the trigger system
+	if source_bottle and TriggerActionManager.trigger_actions.has("burn"):
+		var burn_action = TriggerActionManager.trigger_actions["burn"]
+		var burn_trigger = _find_burn_trigger(source_bottle)
+		if burn_trigger:
+			var enhanced_burn_data = burn_action.apply_enhancements(source_bottle, burn_trigger)
+			fire_spirit.setup_enhanced_burn_params(enhanced_burn_data.effect_parameters)
+
+	# Enable trail behavior if Blazing Trails talent is active
+	if leaves_trail:
+		fire_spirit.setup_trail_behavior(trail_width, trail_duration, trail_tick_damage, trail_tick_interval, trail_color)
+		DebugControl.debug_status("🔥 Fire Spirit: Trail behavior enabled (%.0fpx wide, %.1fs duration)" % [trail_width, trail_duration])
+
+	# Add to scene (deferred to avoid physics collision issues)
+	var main_scene = Engine.get_main_loop().current_scene
+	main_scene.call_deferred("add_child", fire_spirit)
+
+	DebugControl.debug_status("🔥 Fire Spirit spawned with speed: %.0f, targeting: %s" % [spirit_speed, str(target_enemy)])
 
 func _spawn_fire_spirit(spawn_pos: Vector2, seek_range: float, spirit_speed: float,
 	burn_stacks: int, spirit_damage: float, source_bottle: ImprovedBaseSauceBottle,
 	leaves_trail: bool = false, trail_width: float = 60.0, trail_duration: float = 5.0,
 	trail_tick_damage: float = 8.0, trail_tick_interval: float = 0.3,
 	trail_color: Color = Color(1.0, 0.3, 0.0, 0.6), enhanced_params: Dictionary = {}):
-	"""Spawn a single fire spirit with smart targeting"""
+	"""Legacy spawn method - kept for compatibility"""
 
 	# Find smart target
 	var target_enemy = _find_smart_target(spawn_pos, seek_range)
@@ -64,33 +171,10 @@ func _spawn_fire_spirit(spawn_pos: Vector2, seek_range: float, spirit_speed: flo
 	# Add to recently targeted list
 	_manage_recently_targeted_list(target_enemy)
 
-	# Load fire spirit scene
-	var fire_spirit_scene = preload("res://Effects/FireSpirit/fire_spirit.tscn")
-	var fire_spirit = fire_spirit_scene.instantiate()
-
-	# Set position
-	fire_spirit.global_position = spawn_pos
-
-	# Setup fire spirit with correct method and parameters
-	fire_spirit.setup_spirit(target_enemy, source_bottle, spirit_speed, burn_stacks, spirit_damage)
-
-	# NEW: Pass enhanced burn parameters from the trigger system
-	if source_bottle and TriggerActionManager.trigger_actions.has("burn"):
-		var burn_action = TriggerActionManager.trigger_actions["burn"]
-		var burn_trigger = _find_burn_trigger(source_bottle)
-		if burn_trigger:
-			var enhanced_burn_data = burn_action.apply_enhancements(source_bottle, burn_trigger)
-			fire_spirit.setup_enhanced_burn_params(enhanced_burn_data.effect_parameters)
-
-	# Enable trail behavior if Blazing Trails talent is active
-	if leaves_trail:
-		fire_spirit.setup_trail_behavior(trail_width, trail_duration, trail_tick_damage, trail_tick_interval, trail_color)
-
-	# Add to scene (deferred to avoid physics collision issues)
-	var main_scene = Engine.get_main_loop().current_scene
-	main_scene.call_deferred("add_child", fire_spirit)
-
-	DebugControl.debug_status("🔥 Fire Spirit spawned with speed: %.0f, targeting: %s" % [spirit_speed, str(target_enemy)])
+	# Use the new method with the found target
+	_spawn_fire_spirit_with_target(spawn_pos, target_enemy, spirit_speed, burn_stacks,
+		spirit_damage, source_bottle, leaves_trail, trail_width, trail_duration,
+		trail_tick_damage, trail_tick_interval, trail_color, enhanced_params)
 
 func _find_burn_trigger(bottle: ImprovedBaseSauceBottle) -> TriggerEffectResource:
 	"""Find the burn trigger in the bottle's trigger effects"""

@@ -218,27 +218,34 @@ func apply_stacking_effect(
 	if not stacking_effects.has(effect_name):
 		stacking_effects[effect_name] = []
 
-	# Add new stack
+	# Check if we're at max stacks
+	if stacking_effects[effect_name].size() >= max_stacks:
+		print("⚠️ %s at max stacks (%d/%d)" % [effect_name, stacking_effects[effect_name].size(), max_stacks])
+		return stacking_effects[effect_name].size()
+
+	# Add new stack with proper start time
 	var new_stack = {
 		"value": stack_value,
 		"source_id": source_id,
 		"duration": duration,
 		"timer": 0.0,
-		"callbacks": callbacks
+		"callbacks": callbacks,
+		"start_time": Time.get_time_dict_from_system().get("unix", 0)
 	}
 
 	stacking_effects[effect_name].append(new_stack)
 
-	# Enforce max stacks
-	while stacking_effects[effect_name].size() > max_stacks:
-		var removed_stack = stacking_effects[effect_name].pop_front()
-		# Call cleanup if stack expired
-		if removed_stack.callbacks.has("mechanical_cleanup"):
-			removed_stack.callbacks.mechanical_cleanup.call()
+	# MATCH BASE ENEMY: Reset timer for ALL stacks when new stack is added
+	for stack in stacking_effects[effect_name]:
+		stack.timer = 0.0  # Refresh duration for entire effect
+		if stack.has("tick_timer"):
+			stack.tick_timer = 0.0  # Also reset tick timers
 
 	# Execute immediate effect
 	if callbacks.has("immediate_effect"):
-		callbacks.immediate_effect.call()
+		var immediate_callable = callbacks.immediate_effect
+		if immediate_callable and immediate_callable.is_valid():
+			immediate_callable.call()
 
 	# Update stack indicator instead of text display
 	_update_stack_indicator(effect_name)
@@ -247,7 +254,9 @@ func apply_stacking_effect(
 	var stack_count = get_total_stack_count(effect_name)
 	effect_applied.emit(effect_name, stack_count)
 
-	print("🧪 %s: Applied %s (now %d stacks)" % [dummy_name, effect_name, stack_count])
+	print("🧪 %s: Applied %s (now %d stacks, duration refreshed to %.1fs)" % [dummy_name, effect_name, stack_count, duration])
+
+	return stack_count
 
 func get_total_stack_count(effect_name: String) -> int:
 	"""Get total stacks of an effect"""
@@ -276,6 +285,103 @@ func _get_contributing_bottles(effect_name: String) -> Array:
 			unique_bottles.append(stack.source_id)
 
 	return unique_bottles
+
+func reset_dummy():
+	"""Reset dummy to initial state"""
+	health = max_health
+	active_effects.clear()
+	stacking_effects.clear()
+	damage_sources.clear()
+
+	# Reset DPS tracking
+	total_damage_taken = 0.0
+	damage_start_time = 0.0
+	last_damage_time = 0.0
+
+	# Reset visuals
+	modulate = Color.WHITE
+
+	# Clear all stack indicators
+	for indicator in stack_indicators.values():
+		if is_instance_valid(indicator):
+			indicator.queue_free()
+	stack_indicators.clear()
+
+	_update_health_bar()
+	_update_effect_display()
+
+	print("🔄 %s reset to full health" % dummy_name)
+
+func apply_manual_effect(effect_name: String, stacks: int = 1):
+	"""Manually apply an effect for testing"""
+	match effect_name:
+		"burn":
+			# Apply burn using Effects system
+			for i in range(stacks):
+				Effects.burn.apply_from_talent(self, null, 1)
+		"fossilize":
+			# Apply fossilization if available
+			if Effects.has("fossilize"):
+				for i in range(stacks):
+					Effects.fossilize.apply_from_talent(self, null, 1)
+		"infect":
+			# Apply infection if available
+			if Effects.has("infect"):
+				for i in range(stacks):
+					Effects.infect.apply_from_talent(self, null, 1)
+
+	print("🧪 Manually applied %dx %s to %s" % [stacks, effect_name, dummy_name])
+
+# Process effects over time
+func _process(delta: float):
+	_process_stacking_effects(delta)
+
+func _process_stacking_effects(delta: float):
+	"""Process stacking effects with proper tick intervals - matches base enemy approach"""
+	for effect_name in stacking_effects.keys():
+		var stacks = stacking_effects[effect_name]
+		var expired_stacks = []
+
+		for i in range(stacks.size()):
+			var stack = stacks[i]
+
+			# Increment timer using delta (matches base enemy)
+			stack.timer += delta
+
+			# Handle tick effects
+			if stack.callbacks.has("tick_effect") and stack.callbacks.has("tick_interval"):
+				# Initialize tick timer if not exists
+				if not stack.has("tick_timer"):
+					stack.tick_timer = 0.0
+
+				stack.tick_timer += delta
+				var tick_interval = stack.callbacks.tick_interval
+
+				if stack.tick_timer >= tick_interval:
+					var tick_callable = stack.callbacks.tick_effect
+					if tick_callable and tick_callable.is_valid():
+						tick_callable.call()
+					stack.tick_timer = 0.0
+
+			# Check expiration using delta timer (matches base enemy)
+			if stack.timer >= stack.duration:
+				expired_stacks.append(i)
+
+		# Remove expired stacks (in reverse order)
+		expired_stacks.reverse()
+		for i in expired_stacks:
+			var expired_stack = stacks[i]
+			# Safely call visual cleanup with validation
+			if expired_stack.callbacks.has("visual_cleanup"):
+				var cleanup_callable = expired_stack.callbacks.visual_cleanup
+				if cleanup_callable and cleanup_callable.is_valid():
+					cleanup_callable.call()
+			stacks.remove_at(i)
+
+		# Clean up empty effect
+		if stacks.is_empty():
+			stacking_effects.erase(effect_name)
+			_update_stack_indicator(effect_name)  # Update to remove indicator
 
 # === STACK INDICATOR SYSTEM ===
 
@@ -435,90 +541,3 @@ func _update_effect_display():
 
 	# Clear the text display since we're using visual indicators now
 	effect_display.text = ""
-
-# Testing utility functions
-func reset_dummy():
-	"""Reset dummy to initial state"""
-	health = max_health
-	active_effects.clear()
-	stacking_effects.clear()
-	damage_sources.clear()
-
-	# Reset DPS tracking
-	total_damage_taken = 0.0
-	damage_start_time = 0.0
-	last_damage_time = 0.0
-
-	# Reset visuals
-	modulate = Color.WHITE
-
-	# Clear all stack indicators
-	for indicator in stack_indicators.values():
-		if is_instance_valid(indicator):
-			indicator.queue_free()
-	stack_indicators.clear()
-
-	_update_health_bar()
-	_update_effect_display()
-
-	print("🔄 %s reset to full health" % dummy_name)
-
-func apply_manual_effect(effect_name: String, stacks: int = 1):
-	"""Manually apply an effect for testing"""
-	match effect_name:
-		"burn":
-			# Apply burn using Effects system
-			for i in range(stacks):
-				Effects.burn.apply_from_talent(self, null, 1)
-		"fossilize":
-			# Apply fossilization if available
-			if Effects.has("fossilize"):
-				for i in range(stacks):
-					Effects.fossilize.apply_from_talent(self, null, 1)
-		"infect":
-			# Apply infection if available
-			if Effects.has("infect"):
-				for i in range(stacks):
-					Effects.infect.apply_from_talent(self, null, 1)
-
-	print("🧪 Manually applied %dx %s to %s" % [stacks, effect_name, dummy_name])
-
-# Process effects over time
-func _process(delta: float):
-	_process_stacking_effects(delta)
-
-func _process_stacking_effects(delta: float):
-	"""Process stacking effects with proper tick intervals"""
-	for effect_name in stacking_effects.keys():
-		var stacks = stacking_effects[effect_name]
-		var expired_stacks = []
-
-		for i in range(stacks.size()):
-			var stack = stacks[i]
-
-			# Handle tick effects
-			if stack.callbacks.has("tick_effect") and stack.callbacks.has("tick_interval"):
-				stack.timer += delta
-				var tick_interval = stack.callbacks.tick_interval
-
-				if stack.timer >= tick_interval:
-					stack.callbacks.tick_effect.call()
-					stack.timer = 0.0
-
-			# Check expiration (separate from tick timer)
-			var elapsed_time = Time.get_time_dict_from_system().get("unix", 0) - stack.get("start_time", 0)
-			if elapsed_time >= stack.duration:
-				expired_stacks.append(i)
-
-		# Remove expired stacks (in reverse order)
-		expired_stacks.reverse()
-		for i in expired_stacks:
-			var expired_stack = stacks[i]
-			if expired_stack.callbacks.has("visual_cleanup"):
-				expired_stack.callbacks.visual_cleanup.call()
-			stacks.remove_at(i)
-
-		# Clean up empty effect
-		if stacks.is_empty():
-			stacking_effects.erase(effect_name)
-			_update_stack_indicator(effect_name)  # Update to remove indicator
