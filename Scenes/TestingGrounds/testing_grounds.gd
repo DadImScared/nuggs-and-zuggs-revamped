@@ -19,9 +19,29 @@ var dps_update_timer: float = 0.0
 var dps_update_interval: float = 0.1  # Update 10x per second
 
 func _ready():
+	setup_testing_camera()
 	setup_testing_dummies()
 	setup_ui_controls()
 	print("🎯 Testing Grounds ready!")
+
+func setup_testing_camera():
+	"""Setup dedicated testing camera with better zoom"""
+	# Disable player camera for testing
+	var player = get_node("Player")
+	if player:
+		var player_camera = player.get_node("Camera2D")
+		if player_camera:
+			player_camera.enabled = false
+
+	# Create testing camera
+	var testing_camera = Camera2D.new()
+	testing_camera.name = "TestingCamera"
+	testing_camera.zoom = Vector2(3.0, 3.0)
+	testing_camera.enabled = true
+	add_child(testing_camera)
+	testing_camera.make_current()
+
+	print("📷 Testing camera activated (zoomed out for better view)")
 
 func setup_testing_dummies():
 	"""Create training dummies in testing formation"""
@@ -86,10 +106,11 @@ func setup_ui_controls():
 	var damage_value_label = Label.new()
 	damage_value_label.text = "1.0"
 	damage_container.add_child(damage_value_label)
-	testing_panel.add_child(damage_container)
 
 	# Store reference for updating
-	damage_slider.set_meta("value_label", damage_value_label)
+	damage_slider.value_changed.connect(func(value): damage_value_label.text = "%.1f" % value)
+
+	testing_panel.add_child(damage_container)
 
 	# Reset button
 	var reset_button = Button.new()
@@ -97,74 +118,79 @@ func setup_ui_controls():
 	reset_button.pressed.connect(_on_reset_all_dummies)
 	testing_panel.add_child(reset_button)
 
-	# DPS Reset button
-	var dps_reset_button = Button.new()
-	dps_reset_button.text = "Reset DPS Counter"
-	dps_reset_button.pressed.connect(_on_reset_dps)
-	testing_panel.add_child(dps_reset_button)
-
-	# Manual effect buttons
-	var effects_label = Label.new()
-	effects_label.text = "Apply Effects:"
-	testing_panel.add_child(effects_label)
-
-	var effects_container = HBoxContainer.new()
-
-	var fossil_button = Button.new()
-	fossil_button.text = "Fossilize All"
-	fossil_button.pressed.connect(func(): _apply_effect_to_all("fossilize"))
-	effects_container.add_child(fossil_button)
+	# Effect testing buttons
+	var effect_container = HBoxContainer.new()
 
 	var burn_button = Button.new()
-	burn_button.text = "Burn All"
-	burn_button.pressed.connect(func(): _apply_effect_to_all("burn"))
-	effects_container.add_child(burn_button)
+	burn_button.text = "Apply Burn"
+	burn_button.pressed.connect(func(): _apply_effect_to_all("burn", 3))
+	effect_container.add_child(burn_button)
+
+	var fossilize_button = Button.new()
+	fossilize_button.text = "Apply Fossilize"
+	fossilize_button.pressed.connect(func(): _apply_effect_to_all("fossilize", 2))
+	effect_container.add_child(fossilize_button)
 
 	var infect_button = Button.new()
-	infect_button.text = "Infect All"
-	infect_button.pressed.connect(func(): _apply_effect_to_all("infect"))
-	effects_container.add_child(infect_button)
+	infect_button.text = "Apply Infect"
+	infect_button.pressed.connect(func(): _apply_effect_to_all("infect", 4))
+	effect_container.add_child(infect_button)
 
-	testing_panel.add_child(effects_container)
+	testing_panel.add_child(effect_container)
 
 	# Testing scenario buttons
-	var scenarios_label = Label.new()
-	scenarios_label.text = "Test Scenarios:"
-	testing_panel.add_child(scenarios_label)
-
-	var scenarios_container = HBoxContainer.new()
+	var scenario_container = VBoxContainer.new()
+	var scenario_label = Label.new()
+	scenario_label.text = "Testing Scenarios:"
+	scenario_container.add_child(scenario_label)
 
 	var fossil_fuel_button = Button.new()
 	fossil_fuel_button.text = "Test Fossil Fuel"
-	fossil_fuel_button.pressed.connect(_test_fossil_fuel_scenario)
-	scenarios_container.add_child(fossil_fuel_button)
+	fossil_fuel_button.pressed.connect(_test_complete_fossil_fuel_scenario)
+	scenario_container.add_child(fossil_fuel_button)
 
-	var area_test_button = Button.new()
-	area_test_button.text = "Test Area Effects"
-	area_test_button.pressed.connect(_test_area_effects_scenario)
-	scenarios_container.add_child(area_test_button)
+	var area_effects_button = Button.new()
+	area_effects_button.text = "Test Area Effects"
+	area_effects_button.pressed.connect(_test_area_effects_scenario)
+	scenario_container.add_child(area_effects_button)
 
-	testing_panel.add_child(scenarios_container)
+	testing_panel.add_child(scenario_container)
 
-	# Add quick test buttons that use the talent panel
-	var quick_tests_label = Label.new()
-	quick_tests_label.text = "Quick Tests:"
-	testing_panel.add_child(quick_tests_label)
+# Event handlers
+func _on_xp_toggle(enabled: bool):
+	"""Toggle XP gain for all dummies"""
+	for dummy in all_dummies:
+		dummy.xp_enabled = enabled
+	print("🎓 XP gain %s for all dummies" % ("enabled" if enabled else "disabled"))
 
-	var quick_tests_container = HBoxContainer.new()
+func _on_damage_multiplier_changed(value: float):
+	"""Change damage multiplier for all dummies"""
+	for dummy in all_dummies:
+		dummy.damage_multiplier = value
+	print("⚔️ Damage multiplier set to %.1fx" % value)
 
-	var fossil_fuel_quick = Button.new()
-	fossil_fuel_quick.text = "Quick Fossil Fuel"
-	fossil_fuel_quick.pressed.connect(_quick_fossil_fuel_test)
-	quick_tests_container.add_child(fossil_fuel_quick)
+func _on_reset_all_dummies():
+	"""Reset all dummies to full health and clear effects"""
+	for dummy in all_dummies:
+		dummy.reset_dummy()
+	print("🔄 All dummies reset")
 
-	var fossilization_quick = Button.new()
-	fossilization_quick.text = "Quick Fossilization"
-	fossilization_quick.pressed.connect(_quick_fossilization_test)
-	quick_tests_container.add_child(fossilization_quick)
+func _apply_effect_to_all(effect_name: String, stacks: int):
+	"""Apply an effect to all dummies for testing"""
+	for dummy in all_dummies:
+		dummy.apply_manual_effect(effect_name, stacks)
+	print("🧪 Applied %dx %s to all dummies" % [stacks, effect_name])
 
-	testing_panel.add_child(quick_tests_container)
+func _on_dummy_damage_dealt(amount: float, source: String):
+	"""Handle damage dealt signal from dummies"""
+	# This gets called whenever any dummy takes damage
+	# Used for aggregate DPS tracking if needed
 
+func _on_talent_applied(talent_name: String, bottle_name: String):
+	"""Handle talent application from talent panel"""
+	print("✨ Talent applied: %s to %s" % [talent_name, bottle_name])
+
+# DPS Display Updates
 func _process(delta: float):
 	"""Update DPS display"""
 	dps_update_timer += delta
@@ -175,103 +201,48 @@ func _process(delta: float):
 
 func _update_dps_display():
 	"""Update the DPS display with current stats"""
-	var total_dps: float = 0.0
-	var total_damage: float = 0.0
-	var max_time: float = 0.0
+	if not solo_dummy or not is_instance_valid(solo_dummy):
+		return
 
-	# Aggregate stats from all dummies
-	for dummy in all_dummies:
-		var stats = dummy.get_damage_stats()
-		total_dps += stats.dps
-		total_damage += stats.total_damage
-		max_time = max(max_time, stats.elapsed_time)
+	var stats = solo_dummy.get_damage_stats()
 
-	# Update labels
 	if dps_label:
-		dps_label.text = "DPS: %.1f" % total_dps
+		dps_label.text = "DPS: %.1f" % stats.dps
+
 	if total_damage_label:
-		total_damage_label.text = "Total: %.0f" % total_damage
+		total_damage_label.text = "Total: %.0f" % stats.total_damage
+
 	if time_label:
-		time_label.text = "Time: %.1fs" % max_time
+		time_label.text = "Time: %.1fs" % stats.elapsed_time
 
-# Event handlers
-func _on_xp_toggle(enabled: bool):
-	"""Toggle XP gain for all dummies"""
-	for dummy in all_dummies:
-		dummy.xp_enabled = enabled
-	print("🎯 XP gain %s" % ("enabled" if enabled else "disabled"))
+# Talent testing functions
+func _test_fossil_fuel_talent():
+	"""Test applying Fossil Fuel talent"""
+	print("🧪 Testing Fossil Fuel talent application...")
 
-func _on_damage_multiplier_changed(value: float):
-	"""Change damage multiplier for all dummies"""
-	for dummy in all_dummies:
-		dummy.damage_multiplier = value
-
-	# Update the value label
-	var slider = get_viewport().gui_get_focus_owner()
-	if slider and slider.has_meta("value_label"):
-		var label = slider.get_meta("value_label")
-		label.text = "%.1f" % value
-
-	print("⚔️ Damage multiplier set to %.1fx" % value)
-
-func _on_reset_all_dummies():
-	"""Reset all dummies to full health"""
-	for dummy in all_dummies:
-		dummy.reset_dummy()
-	print("🔄 All dummies reset")
-
-func _on_reset_dps():
-	"""Reset DPS tracking for all dummies"""
-	for dummy in all_dummies:
-		dummy.total_damage_taken = 0.0
-		dummy.damage_start_time = 0.0
-		dummy.last_damage_time = 0.0
-		dummy.damage_sources.clear()
-	print("📊 DPS counters reset")
-
-func _on_dummy_damage_dealt(amount: float, source: String):
-	"""Handle damage dealt to any dummy"""
-	# This is called whenever any dummy takes damage
-	# DPS display is updated in _process()
-	pass
-
-func _apply_effect_to_all(effect_name: String):
-	"""Apply an effect to all dummies"""
-	for dummy in all_dummies:
-		dummy.apply_manual_effect(effect_name, 1)
-	print("🧪 Applied %s to all dummies" % effect_name)
-
-# Talent Panel Integration
-func _on_talent_applied(bottle: ImprovedBaseSauceBottle, talent: Talent):
-	"""Handle talent application from the talent panel"""
-	print("🎨 Talent '%s' applied to %s" % [talent.talent_name, bottle.sauce_data.sauce_name])
-
-	# Update any displays that show bottle info
-	_update_bottle_displays()
-
-func _update_bottle_displays():
-	"""Update any displays that show current bottle states"""
-	# Refresh talent panel bottle list
-	if talent_panel:
-		talent_panel.refresh_bottle_list()
-
-func _quick_fossil_fuel_test():
-	"""Quick test for fossil fuel functionality"""
-	if talent_panel and talent_panel.quick_test_fossil_fuel():
-		print("🔥 Fossil Fuel applied! Now test on fossilized enemies.")
-		# Apply fossilization to solo dummy for immediate testing
-		if solo_dummy:
-			solo_dummy.apply_manual_effect("fossilize", 1)
-			print("🔶 Solo dummy fossilized for testing")
+	if talent_panel and talent_panel.has_method("apply_talent_to_bottle"):
+		var success = talent_panel.apply_talent_to_bottle("Fossil Fuel", "Hot Sauce")
+		if success:
+			print("✅ Fossil Fuel applied to Hot Sauce bottle")
+			print("🔬 Now apply fossilization to dummy, then test burn damage")
+			print("💡 Should see 2x burn damage on fossilized targets")
+		else:
+			print("❌ Could not apply Fossil Fuel talent")
 	else:
-		print("❌ Could not apply Fossil Fuel (need Hot Sauce bottle)")
+		print("❌ Talent panel not available for testing")
 
-func _quick_fossilization_test():
-	"""Quick test for fossilization functionality"""
-	if talent_panel and talent_panel.quick_test_fossilization():
-		print("🔶 Fossilization talent applied! Test on dummies.")
-	else:
-		print("❌ Could not apply fossilization talent (need Apple Butter bottle)")
+func _test_fossilization_talent():
+	"""Test applying Fossilization talent"""
+	print("🧪 Testing Fossilization talent application...")
+
+	if talent_panel and talent_panel.has_method("apply_talent_to_bottle"):
+		var success = talent_panel.apply_talent_to_bottle("Fossilization", "Apple Butter")
+		if success:
+			print("✅ Fossilization applied to Apple Butter bottle")
+			print("🔬 Apple Butter projectiles should now fossilize targets on hit")
+			print("💡 Test on dummies.")
+		else:
+			print("❌ Could not apply fossilization talent (need Apple Butter bottle)")
 
 # Testing scenarios
 func _test_fossil_fuel_scenario():

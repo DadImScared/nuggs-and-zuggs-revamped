@@ -8,7 +8,7 @@ extends CharacterBody2D
 
 # Dummy properties
 var dummy_name: String = "Training Dummy"
-var max_health: float = 1000.0
+var max_health: float = 10000.0
 var health: float = 1000.0
 var base_speed: float = 0.0  # Stationary
 var move_speed: float = 0.0
@@ -24,6 +24,10 @@ var active_effects: Dictionary = {}
 var stacking_effects: Dictionary = {}
 var damage_sources: Dictionary = {}
 
+# Stack indicator system
+var stack_indicator_container: Control
+var stack_indicators: Dictionary = {}  # Track individual stack displays
+
 # DPS tracking
 var total_damage_taken: float = 0.0
 var damage_start_time: float = 0.0
@@ -35,6 +39,7 @@ signal effect_applied(effect_name: String, stacks: int)
 
 func _ready():
 	setup_dummy()
+	_setup_stack_indicator()
 	add_to_group("enemies")  # So bottles can target this
 	add_to_group("training_dummies")
 
@@ -54,6 +59,17 @@ func setup_dummy():
 		health_bar.value = health
 
 	print("🎯 %s ready for testing" % dummy_name)
+
+func _setup_stack_indicator():
+	"""Create the stack indicator UI container"""
+	# Create container for stack indicators
+	stack_indicator_container = Control.new()
+	stack_indicator_container.name = "StackIndicatorContainer"
+	add_child(stack_indicator_container)
+
+	# Position above the enemy (adjust Y offset as needed)
+	stack_indicator_container.position = Vector2(0, -60)
+	stack_indicator_container.z_index = 10  # Above other UI elements
 
 # Combat interface (matches real enemies)
 func take_damage_from_source(damage_amount: float, source_bottle_id: String):
@@ -224,7 +240,8 @@ func apply_stacking_effect(
 	if callbacks.has("immediate_effect"):
 		callbacks.immediate_effect.call()
 
-	_update_effect_display()
+	# Update stack indicator instead of text display
+	_update_stack_indicator(effect_name)
 
 	# Emit signal
 	var stack_count = get_total_stack_count(effect_name)
@@ -248,21 +265,176 @@ func get_total_stacked_value(effect_name: String) -> float:
 		total += stack.value
 	return total
 
+func _get_contributing_bottles(effect_name: String) -> Array:
+	"""Get unique bottle IDs contributing to this effect"""
+	if not stacking_effects.has(effect_name):
+		return []
+
+	var unique_bottles = []
+	for stack in stacking_effects[effect_name]:
+		if not unique_bottles.has(stack.source_id):
+			unique_bottles.append(stack.source_id)
+
+	return unique_bottles
+
+# === STACK INDICATOR SYSTEM ===
+
+func _update_stack_indicator(effect_name: String):
+	"""Update or create stack indicator for a specific effect"""
+	var total_stacks = get_total_stack_count(effect_name)
+	var contributing_bottles = len(_get_contributing_bottles(effect_name))
+
+	if total_stacks > 0:
+		_create_or_update_stack_display(effect_name, total_stacks, contributing_bottles)
+	else:
+		_remove_stack_display(effect_name)
+
+	# Reposition all indicators
+	_reposition_stack_indicators()
+
+func _create_or_update_stack_display(effect_name: String, total_stacks: int, bottle_count: int):
+	"""Create or update the visual display for a stack type"""
+	var indicator_key = effect_name
+
+	# Create new indicator if it doesn't exist
+	if not stack_indicators.has(indicator_key):
+		var stack_display = _create_stack_display_node(effect_name)
+		stack_indicator_container.add_child(stack_display)
+		stack_indicators[indicator_key] = stack_display
+
+	var display_node = stack_indicators[indicator_key]
+
+	# Update the display
+	_update_stack_display_content(display_node, effect_name, total_stacks, bottle_count)
+
+func _create_stack_display_node(effect_name: String) -> Control:
+	"""Create the visual node for a stack indicator"""
+	var container = Control.new()
+	container.name = effect_name + "_indicator"
+
+	# Background panel
+	var bg_panel = ColorRect.new()
+	bg_panel.name = "Background"
+	bg_panel.size = Vector2(45, 25)
+	bg_panel.color = _get_effect_color(effect_name)
+	bg_panel.modulate.a = 0.8
+	container.add_child(bg_panel)
+
+	# Stack count label
+	var stack_label = Label.new()
+	stack_label.name = "StackLabel"
+	stack_label.text = "0"
+	stack_label.add_theme_font_size_override("font_size", 14)
+	stack_label.add_theme_color_override("font_color", Color.WHITE)
+	stack_label.add_theme_color_override("font_shadow_color", Color.BLACK)
+	stack_label.add_theme_constant_override("shadow_offset_x", 1)
+	stack_label.add_theme_constant_override("shadow_offset_y", 1)
+	stack_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	stack_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	stack_label.size = Vector2(45, 20)
+	container.add_child(stack_label)
+
+	# Bottle count label (small, top-right)
+	var bottle_label = Label.new()
+	bottle_label.name = "BottleLabel"
+	bottle_label.text = "1"
+	bottle_label.add_theme_font_size_override("font_size", 10)
+	bottle_label.add_theme_color_override("font_color", Color.YELLOW)
+	bottle_label.add_theme_color_override("font_shadow_color", Color.BLACK)
+	bottle_label.add_theme_constant_override("shadow_offset_x", 1)
+	bottle_label.add_theme_constant_override("shadow_offset_y", 1)
+	bottle_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	bottle_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	bottle_label.position = Vector2(30, -5)
+	bottle_label.size = Vector2(15, 10)
+	container.add_child(bottle_label)
+
+	return container
+
+func _update_stack_display_content(display_node: Control, effect_name: String, total_stacks: int, bottle_count: int):
+	"""Update the content of an existing stack display"""
+	var stack_label = display_node.get_node("StackLabel")
+	var bottle_label = display_node.get_node("BottleLabel")
+	var bg_panel = display_node.get_node("Background")
+
+	# Update stack count
+	stack_label.text = str(total_stacks)
+
+	# Update bottle count
+	bottle_label.text = str(bottle_count)
+
+	# Update background intensity based on stack count
+	var base_color = _get_effect_color(effect_name)
+	var intensity = min(1.0, total_stacks / 10.0)  # Max intensity at 10 stacks
+	bg_panel.color = base_color.lerp(Color.WHITE, intensity * 0.3)
+
+	# Pulse effect for high stacks
+	if total_stacks >= 8:
+		var tween = bg_panel.create_tween()
+		tween.set_loops()
+		tween.tween_property(bg_panel, "modulate:a", 0.6, 0.5)
+		tween.tween_property(bg_panel, "modulate:a", 1.0, 0.5)
+
+func _get_effect_color(effect_name: String) -> Color:
+	"""Get color for different effect types"""
+	match effect_name:
+		"mutation_infection":
+			return Color.MAGENTA
+		"stacking_burn":
+			return Color.RED
+		"vulnerability_mark":
+			return Color.ORANGE
+		"slow_buildup":
+			return Color.BLUE
+		"damage_amplification":
+			return Color.YELLOW
+		"explosive_stacks":
+			return Color(1.0, 0.5, 0.0)  # Orange-red
+		"burn":
+			return Color.RED
+		"fossilize":
+			return Color(0.6, 0.4, 0.2)  # Brown
+		"infect":
+			return Color.GREEN
+		_:
+			return Color.WHITE
+
+func _remove_stack_display(effect_name: String):
+	"""Remove stack indicator when stacks reach 0"""
+	var indicator_key = effect_name
+
+	if stack_indicators.has(indicator_key):
+		var display_node = stack_indicators[indicator_key]
+		display_node.queue_free()
+		stack_indicators.erase(indicator_key)
+
+func _reposition_stack_indicators():
+	"""Arrange multiple stack indicators in a row"""
+	var x_offset = 0
+	var spacing = 50  # Space between indicators
+
+	for effect_name in stack_indicators.keys():
+		var display_node = stack_indicators[effect_name]
+		display_node.position.x = x_offset
+		x_offset += spacing
+
+	# Center the entire group
+	if stack_indicators.size() > 0:
+		var total_width = (stack_indicators.size() - 1) * spacing + 45
+		var center_offset = -total_width / 2
+
+		for effect_name in stack_indicators.keys():
+			var display_node = stack_indicators[effect_name]
+			display_node.position.x += center_offset
+
+# Legacy text-based display (keep for backwards compatibility)
 func _update_effect_display():
-	"""Update visual effect display"""
+	"""Update visual effect display - now just clears the text since we use indicators"""
 	if not effect_display:
 		return
 
-	var effect_text = ""
-
-	# Show stacking effects with counts
-	for effect_name in stacking_effects:
-		var stacks = stacking_effects[effect_name].size()
-		if stacks > 0:
-			var display_name = effect_name.capitalize()
-			effect_text += "%s×%d " % [display_name, stacks]
-
-	effect_display.text = effect_text.strip_edges()
+	# Clear the text display since we're using visual indicators now
+	effect_display.text = ""
 
 # Testing utility functions
 func reset_dummy():
@@ -279,6 +451,12 @@ func reset_dummy():
 
 	# Reset visuals
 	modulate = Color.WHITE
+
+	# Clear all stack indicators
+	for indicator in stack_indicators.values():
+		if is_instance_valid(indicator):
+			indicator.queue_free()
+	stack_indicators.clear()
 
 	_update_health_bar()
 	_update_effect_display()
@@ -343,4 +521,4 @@ func _process_stacking_effects(delta: float):
 		# Clean up empty effect
 		if stacks.is_empty():
 			stacking_effects.erase(effect_name)
-			_update_effect_display()
+			_update_stack_indicator(effect_name)  # Update to remove indicator
