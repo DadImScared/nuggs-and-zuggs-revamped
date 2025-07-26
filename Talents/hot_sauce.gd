@@ -42,9 +42,13 @@ func build_talent_pool():
 			[create_chain_ignition_talent()],
 			TalentManager.TalentTheme.EXPLOSIVE
 		),
-		SharedTalents.fossil_fuel_talent(),
-		SharedTalents.fossil_fuel_talent(),
-		SharedTalents.fossil_fuel_talent(),
+		create_trigger_talent(
+			"Fossil Fuel",
+			"Fossilized enemies take 2x burn damage",
+			3,
+			[create_fossil_fuel_talent()],
+			TalentManager.TalentTheme.DAMAGE
+		),
 		#create_trigger_talent(
 			#"Blazing Trails",
 			#"Fire spirits leave burning trails that damage enemies for 5 seconds",
@@ -164,3 +168,13 @@ func create_chain_ignition_talent():
 	trigger.effect_parameters["spread_burn_stacks"] = 1
 	trigger.effect_parameters["max_targets"] = 3
 	return trigger
+
+func create_fossil_fuel_talent() -> TriggerEffectResource:
+	"""Fossil Fuel: Fossilized enemies take 2x burn damage"""
+	var enhancement = TriggerEffectResource.new()
+	enhancement.trigger_name = "fossil_fuel"
+	enhancement.trigger_type = TriggerEffectResource.TriggerType.PASSIVE
+	enhancement.enhances = ["burn"]
+	enhancement.effect_parameters["tick_damage_multiplier"] = 2.0
+	enhancement.trigger_condition["has_effects"] = ["fossilize"]
+	return enhancement
