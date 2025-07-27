@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="StackingEffect" load_steps=2 format=3 uid="uid://dvbw14mnsldak"]
+
+[ext_resource type="Script" uid="uid://6hxnuxirxgdt" path="res://Effects/stacking_effect.gd" id="1_r0jb2"]
+
+[resource]
+script = ExtResource("1_r0jb2")
+effect_name = "slow"
+base_duration = 8.0
+base_tick_interval = 0.0
+base_tick_damage = 5.0
+base_max_stacks = 1
+base_stack_value = 1.0
+base_color = Color(0.320188, 0.601084, 0.942206, 1)
+metadata/_custom_type_script = "uid://6hxnuxirxgdt"
