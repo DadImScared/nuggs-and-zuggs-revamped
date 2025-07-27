@@ -33,7 +33,7 @@ var max_bounces: int = 0
 var bounces_remaining: int = 0
 var bounce_range: float = 200.0
 var bounced_enemies: Array[Node2D] = []
-
+var effects_applied_this_hit: Array[String] = []
 var effect_chance: float = -1.0
 var effect_intensity: float = -1.0
 
@@ -115,6 +115,7 @@ func _on_body_entered(body):
 
 func handle_enemy_hit(enemy: Node2D):
 	"""Enhanced hit handling with talent effects"""
+	effects_applied_this_hit.clear()
 	# Skip if already bounced off this enemy
 	if enemy in bounced_enemies:
 		return

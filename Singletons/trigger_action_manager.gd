@@ -84,6 +84,8 @@ func execute_hit_trigger(source_bottle: ImprovedBaseSauceBottle, hit_enemy: Node
 					# Execute the trigger
 					action.execute_trigger(source_bottle, enhance_trigger)
 					action.update_trigger_timing(source_bottle, enhance_trigger)
+					if projectile and "effects_applied_this_hit" in projectile:
+						projectile.effects_applied_this_hit.append(trigger_name)
 			else:
 				pass
 				#print("⚠️ No trigger action registered for hit trigger: %s" % trigger_name)

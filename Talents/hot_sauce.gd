@@ -83,6 +83,13 @@ func build_talent_pool():
 			2,
 			[create_ember_cascade_talent()],
 			TalentManager.TalentTheme.DAMAGE
+		),
+		create_trigger_talent(
+			"Thermal Shock",
+			"When burns are first applied, deal 50% of their total damage instantly - ancient heat that can't wait",
+			2,  # Level 2 talent
+			[create_thermal_shock_talent()],
+			TalentManager.TalentTheme.BURN
 		)
 		#create_stat_talent("placeholder", "", 2, []),
 		#create_stat_talent("placeholder", "", 2, []),
@@ -220,3 +227,15 @@ func create_ember_cascade_talent() -> TriggerEffectResource:
 	enhancement.effect_parameters["burn_stacks"] = 1  # Add 1 more burn stack
 
 	return enhancement
+
+func create_thermal_shock_talent():
+	"""Thermal Shock: Deal instant damage when burns are first applied"""
+	var trigger = TriggerEffectResource.new()
+	trigger.trigger_name = "thermal_shock"
+	trigger.trigger_type = TriggerEffectResource.TriggerType.ON_HIT
+	trigger.trigger_condition["chance"] = 1.0  # Always check on hit
+
+	# Thermal shock parameters
+	trigger.effect_parameters["thermal_shock_multiplier"] = 0.5  # 50% of total burn DoT
+
+	return trigger
