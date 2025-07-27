@@ -31,6 +31,9 @@ func _add_base_triggers(bottle: ImprovedBaseSauceBottle, sauce_resource: BaseSau
 		"Hot Sauce":
 			var hot_sauce_talents = HotSauceTalents.new()
 			bottle.trigger_effects.append(hot_sauce_talents.create_basic_burn())
+		"Glacier Glaze":
+			var glacier_glaze_talents = GlacierGlazeTalents.new()
+			bottle.trigger_effects.append(glacier_glaze_talents.create_basic_cold())
 		_:
 			print("ℹ️ No base triggers defined for: %s" % sauce_resource.sauce_name)
 			#print("   This sauce will have basic projectile behavior only")

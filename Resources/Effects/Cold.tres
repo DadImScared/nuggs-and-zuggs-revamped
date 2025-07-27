@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="StackingEffect" load_steps=2 format=3 uid="uid://cbkxqhva7obnr"]
+
+[ext_resource type="Script" uid="uid://6hxnuxirxgdt" path="res://Effects/stacking_effect.gd" id="1_ssox1"]
+
+[resource]
+script = ExtResource("1_ssox1")
+effect_name = "cold"
+base_duration = 5.0
+base_tick_interval = 0.0
+base_tick_damage = 0.0
+base_max_stacks = 6
+base_stack_value = 1.0
+base_color = Color(0.7, 0.9, 1, 1)
+metadata/_custom_type_script = "uid://6hxnuxirxgdt"

@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="BaseSauceResource" load_steps=2 format=3 uid="uid://cc3e4cwl8vtg5"]
+
+[ext_resource type="Script" uid="uid://cv0efftypvupm" path="res://Resources/base_sauce_resource.gd" id="1_82b1w"]
+
+[resource]
+script = ExtResource("1_82b1w")
+sauce_name = "Glacier Glaze"
+description = ""
+geological_period = ""
+damage = 25.0
+fire_rate = 0.8
+range = 200.0
+projectile_count = 1
+projectile_speed = 250.0
+pierce_count = 0
+base_radius = 120.0
+effect_chance = 0.6
+effect_intensity = 1.0
+effect_duration = 5.0
+orbit_speed = 2.0
+orbit_distance = 50.0
+sauce_color = Color(0.15745, 0.738449, 0.843199, 1)
+special_effect_type = 4
+damage_per_level = 5.0
+fire_rate_per_level = 0.1
+range_per_level = 10.0
+effect_chance_per_level = 0.02
+effect_intensity_per_level = 0.1
+radius_per_level = 2.0
+metadata/_custom_type_script = "uid://cv0efftypvupm"

@@ -51,6 +51,9 @@ func _initialize_talent_pools():
 	var apple_butter_tree = ArchaeanAppleButterTalents.new()
 	talent_pools["Archaean Apple Butter"] = apple_butter_tree.build_talent_pool()
 
+	var glacier_glaze = GlacierGlazeTalents.new()
+	talent_pools["Glacier Glaze"] = glacier_glaze.build_talent_pool()
+
 	print("🎯 Talent pools initialized:")
 	for sauce_name in talent_pools:
 		print("  %s: %d talents" % [sauce_name, talent_pools[sauce_name].size()])

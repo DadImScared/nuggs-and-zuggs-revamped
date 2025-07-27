@@ -55,7 +55,8 @@ func launch(start_pos: Vector2, direction: Vector2, sauce: BaseSauceResource, le
 	sauce_damage = source_bottle.effective_damage
 	#sauce_damage = sauce.get_current_damage(sauce_level)
 	modulate = sauce.sauce_color
-
+	$Sprite2D.modulate = Color.WHITE  # Reset to white first
+	$Sprite2D.modulate = sauce.sauce_color
 	projectile_behavior = ProjectileBehaviorFactory.create_behavior(sauce_resource)
 
 func add_on_hit_effect(effect_type: String, effect_data: Dictionary):

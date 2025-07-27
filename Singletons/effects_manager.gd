@@ -3,6 +3,7 @@ extends Node
 
 # EFFECT PRELOADS - Add new effects here when you create them
 var burn: StackingEffect = preload("res://Resources/Effects/Burn.tres")
+var cold: StackingEffect = preload("res://Resources/Effects/Cold.tres")
 # var poison: StackingEffect = preload("res://Resources/Effects/Poison.tres")
 # var freeze: StackingEffect = preload("res://Resources/Effects/Freeze.tres")
 # var slow: StackingEffect = preload("res://Resources/Effects/Slow.tres")
@@ -23,6 +24,7 @@ func _validate_effects():
 func get_available_effects():
 	var effects = []
 	if burn: effects.append("burn")
+	if cold: effects.append("cold")
 	# if poison: effects.append("poison")
 	# if freeze: effects.append("freeze")
 	# etc...

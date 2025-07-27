@@ -75,7 +75,11 @@ func _apply_with_enhanced_params(enemy: Node2D, source_bottle: Node, params: Dic
 	# Create effect callbacks based on enhanced parameters
 	var visual_cleanup = _create_visual_cleanup(enemy)
 	var immediate_effect = _create_immediate_effect(enemy, base_color, params)
-	var tick_effect = _create_tick_effect(enemy, params["damage"], base_color, source_bottle)
+	#var tick_effect = _create_tick_effect(enemy, params["damage"], base_color, source_bottle)
+	var tick_effect = null
+	print(params.get("damage"), " ---------------")
+	if params.get("damage", 0.0) > 1.0:
+		tick_effect = _create_tick_effect(enemy, params["damage"], base_color, source_bottle)
 
 	# Apply all stacks at once with stack count
 	var stacks_to_apply = params.get("stacks", 1)
@@ -158,7 +162,10 @@ func _create_immediate_effect(enemy: Node2D, color: Color, params: Dictionary) -
 			var scale = 1.0 + (stack_count * 0.05)
 			effect_overlay.scale = Vector2(scale, scale)
 
-func _create_tick_effect(enemy: Node2D, tick_damage: float, color: Color, source_bottle: Node) -> Callable:
+func _create_tick_effect(enemy: Node2D, tick_damage: float, color: Color, source_bottle: Node):
+	if tick_damage <= 0.1:
+			DebugControl.debug_combat("Just a Debuff")
+			return null
 	return func():
 		if not is_instance_valid(enemy):
 			return
