@@ -162,8 +162,8 @@ func apply_enhancements(bottle: ImprovedBaseSauceBottle, base_trigger_data: Trig
 func apply_single_enhancement_with_tracking(enhanced_data: EnhancedTriggerData, enhancement: TriggerEffectResource):
 	"""Apply enhancement with full source tracking"""
 	var params = enhancement.effect_parameters
+	params.merge(enhancement.trigger_condition)
 	var enhancement_name = enhancement.trigger_name.replace("_", " ").capitalize()
-
 	for param_key in params.keys():
 		var param_value = params[param_key]
 

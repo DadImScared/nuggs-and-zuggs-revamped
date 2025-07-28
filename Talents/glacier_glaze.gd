@@ -20,6 +20,13 @@ func build_talent_pool():
 			2,
 			[_create_ice_crystals_trigger()],
 			TalentManager.TalentTheme.DAMAGE
+		),
+		create_trigger_talent(
+			"Snowcone",
+			"always cold",
+			2,
+			[_create_snowcone_trigger()],
+			TalentManager.TalentTheme.DAMAGE
 		)
 		#create_trigger_talent(
 			#"Glacial Touch",
@@ -37,7 +44,7 @@ func create_basic_cold() -> TriggerEffectResource:
 	var trigger = TriggerEffectResource.new()
 	trigger.trigger_name = "cold"
 	trigger.trigger_type = TriggerEffectResource.TriggerType.ON_HIT
-	trigger.trigger_condition["chance"] = 0.6
+	trigger.trigger_condition["chance"] = 0.2
 
 	# Base cold parameters with stacking
 	trigger.effect_parameters["duration"] = 5.0
@@ -67,4 +74,12 @@ func _create_ice_crystals_trigger() -> TriggerEffectResource:
 	trigger.effect_parameters["spike_count"] = 3  # Number of ice spikes
 	trigger.effect_parameters["damage_multiplier"] = 0.6  # 60% of bottle damage
 	trigger.effect_parameters["spike_range"] = 40.0  # Range around hit point
+	return trigger
+
+func _create_snowcone_trigger() -> TriggerEffectResource:
+	var trigger = TriggerEffectResource.new()
+	trigger.trigger_name = "snowcone"
+	trigger.enhances = ["cold"]
+	trigger.trigger_type = TriggerEffectResource.TriggerType.ON_HIT
+	trigger.trigger_condition["chance"] = 0.9
 	return trigger
