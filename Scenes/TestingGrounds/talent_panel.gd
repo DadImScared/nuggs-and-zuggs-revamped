@@ -75,6 +75,9 @@ func setup_sauce_talents():
 	else:
 		print("❌ No Prehistoric Pesto in talent_pools")
 
+	if TalentManager.talent_pools.has("Glacier Glaze"):
+		available_talents["Glacier Glaze"] = TalentManager.talent_pools["Glacier Glaze"]
+
 	if TalentManager.talent_pools.has("Archaean Apple Butter"):
 		available_talents["Archaean Apple Butter"] = TalentManager.talent_pools["Archaean Apple Butter"]
 		print("✅ Loaded Archaean Apple Butter: %d talents" % available_talents["Archaean Apple Butter"].size())
@@ -127,6 +130,14 @@ func refresh_bottle_list():
 			bottle_selector.add_item(bottle_name)
 
 	print("🍶 Found %d bottles for talent testing" % current_bottles.size())
+
+	# AUTO-SELECT FIRST EQUIPPED BOTTLE
+	if current_bottles.size() > 0:
+		bottle_selector.selected = 0  # Select first bottle
+		_on_bottle_selected(0)        # Trigger the selection logic
+		print("✅ Auto-selected first bottle: %s" % current_bottles[0].sauce_data.sauce_name)
+	else:
+		print("❌ No bottles available to auto-select")
 
 func _on_bottle_selected(index: int):
 	"""Handle bottle selection"""

@@ -370,7 +370,7 @@ func _process_stacking_effects(delta: float):
 		if effect.has("effect_data") and effect.effect_data.has("tick_effect"):
 			var tick_effect = effect.effect_data.tick_effect
 			var tick_interval = effect.effect_data.get("tick_interval", 1.0)  # Default 1 second
-			print(tick_interval, " -----------------")
+
 			# Initialize tick timer if not exists
 			if not effect.has("tick_timer"):
 				effect.tick_timer = 0.0
@@ -378,7 +378,7 @@ func _process_stacking_effects(delta: float):
 			effect.tick_timer += delta
 
 			# Execute tick effect
-			if tick_interval > 0.0 and effect.tick_timer >= tick_interval and tick_effect and tick_effect.is_valid():
+			if tick_interval > 0 and effect.tick_timer >= tick_interval and tick_effect.is_valid():
 				tick_effect.call()
 				effect.tick_timer = 0.0  # Reset tick timer
 
@@ -454,10 +454,19 @@ func take_damage_from_source(damage_amount: float, source_bottle_id: String):
 		var bonus_damage = actual_damage * get_meta("damage_amplification")
 		actual_damage += bonus_damage
 		#print("⚡ Amplified: +%.1f bonus damage" % bonus_damage)
+	var timestamp = Time.get_time_string_from_system()
+	if "Glacier Glaze" in source_bottle_id:
+		print("🎯 PRECISE DAMAGE TRACKING:")
+		print("  Time: %s" % timestamp)
+		print("  Source: %s" % source_bottle_id)
+		print("  Damage: %.1f" % actual_damage)
+		print("  Enemy Health: %.1f → %.1f" % [health, health - actual_damage])
 
+		# Check what cold effects are active
+		print("  Active cold stacks: %d" % get_total_stack_count("cold"))
+		print("  Cold effect present: %s" % str(stacking_effects.keys()))
 	# Rest of existing damage logic...
 	health -= actual_damage
-
 	# NEW: Update generic health bar instead of old container
 	if health_bar and is_instance_valid(health_bar):
 		health_bar.update_health(health)

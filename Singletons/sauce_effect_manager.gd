@@ -86,7 +86,8 @@ func apply_effect(
 		BaseSauceResource.SpecialEffectType.POISON:
 			_apply_poison_effect(enemy, sauce_resource, sauce_level, source_bottle_id)
 		BaseSauceResource.SpecialEffectType.FREEZE:
-			_apply_freeze_effect(enemy, sauce_resource, sauce_level, source_bottle_id)
+			pass
+			#_apply_freeze_effect(enemy, sauce_resource, sauce_level, source_bottle_id)
 		BaseSauceResource.SpecialEffectType.CHAIN:
 			_apply_chain_effect(projectile, enemy, sauce_resource, sauce_level, source_bottle_id)
 		BaseSauceResource.SpecialEffectType.EXPLODE:
