@@ -13,6 +13,13 @@ func build_talent_pool():
 			1,
 			[_create_permafrost_trigger()],
 			TalentManager.TalentTheme.DAMAGE
+		),
+		create_trigger_talent(
+			"Ice Crystals",
+			"20% chance on hit to create ice spikes - Frozen moisture crystallizes into deadly projectiles",
+			2,
+			[_create_ice_crystals_trigger()],
+			TalentManager.TalentTheme.DAMAGE
 		)
 		#create_trigger_talent(
 			#"Glacial Touch",
@@ -49,4 +56,15 @@ func _create_permafrost_trigger() -> TriggerEffectResource:
 	trigger.trigger_type = TriggerEffectResource.TriggerType.PASSIVE
 	trigger.enhances = ["cold"]  # Enhances cold effects
 	trigger.effect_parameters["duration_multiplier"] = 1.5  # +50% duration
+	return trigger
+
+func _create_ice_crystals_trigger() -> TriggerEffectResource:
+	"""Creates the Ice Crystals trigger - 20% chance to spawn ice spikes on hit application"""
+	var trigger = TriggerEffectResource.new()
+	trigger.trigger_name = "ice_crystals"
+	trigger.trigger_type = TriggerEffectResource.TriggerType.ON_HIT
+	trigger.trigger_condition["chance"] = 0.2  # 20% chance
+	trigger.effect_parameters["spike_count"] = 3  # Number of ice spikes
+	trigger.effect_parameters["damage_multiplier"] = 0.6  # 60% of bottle damage
+	trigger.effect_parameters["spike_range"] = 40.0  # Range around hit point
 	return trigger

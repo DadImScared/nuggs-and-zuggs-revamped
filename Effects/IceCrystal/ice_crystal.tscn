@@ -1,0 +1,24 @@
+[gd_scene load_steps=4 format=3 uid="uid://4thvp1r67anp"]
+
+[ext_resource type="Script" uid="uid://bgi0s0j4ytvok" path="res://Effects/IceCrystal/ice_crystal.gd" id="1_pfk77"]
+
+[sub_resource type="CanvasTexture" id="CanvasTexture_3vil5"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_pfk77"]
+size = Vector2(2.5, 7.5)
+
+[node name="IceCrystal" type="Area2D"]
+modulate = Color(0.316148, 0.784281, 0.911666, 1)
+scale = Vector2(3.265, 3.265)
+script = ExtResource("1_pfk77")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(0.75, 3.25)
+scale = Vector2(2.5, 7.5)
+texture = SubResource("CanvasTexture_3vil5")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0.75, 3.25)
+shape = SubResource("RectangleShape2D_pfk77")
+
+[node name="LifetimeTimer" type="Timer" parent="."]
