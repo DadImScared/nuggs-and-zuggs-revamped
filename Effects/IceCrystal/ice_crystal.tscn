@@ -8,8 +8,6 @@
 size = Vector2(2.5, 7.5)
 
 [node name="IceCrystal" type="Area2D"]
-modulate = Color(0.316148, 0.784281, 0.911666, 1)
-scale = Vector2(3.265, 3.265)
 script = ExtResource("1_pfk77")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]

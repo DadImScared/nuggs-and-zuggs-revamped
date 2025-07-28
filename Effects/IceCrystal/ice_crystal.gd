@@ -32,33 +32,93 @@ func setup_crystal(crystal_damage: float, bottle_id: String, crystal_color: Colo
 	damage = crystal_damage
 	source_bottle_id = bottle_id
 
-	# Apply color to sprite
+	# Make the sprite look like a proper ice spike
 	if sprite:
-		sprite.modulate = crystal_color
+		sprite.modulate = Color(0.8, 0.9, 1.0, 0.9)  # Light blue ice color
+		sprite.scale = Vector2(3.0, 8.0)  # Tall ice spike shape
+
+		# Add glow effect
+		sprite.material = CanvasItemMaterial.new()
+		sprite.material.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
+
+		print("🧊 Ice crystal sprite setup: scale=%s" % sprite.scale)
+	else:
+		print("❌ No sprite found in ice crystal!")
+
+	# Reasonable crystal size
+	scale = Vector2(4.0, 4.0)
+
+	# Remove the debug circle and add ice particles instead
+	_create_ice_particles()
+
+	print("🧊 Ice crystal setup complete - proper ice spike!")
+
+func _create_ice_particles():
+	"""Create ice particle effects around the crystal"""
+	# Create small ice shards around the main spike
+	for i in range(6):
+		var shard = ColorRect.new()
+		shard.size = Vector2(2, 6)
+		shard.color = Color(0.7, 0.8, 1.0, 0.7)
+
+		# Position shards around the main spike
+		var angle = (TAU / 6) * i
+		var distance = randf_range(8, 15)
+		shard.position = Vector2.from_angle(angle) * distance
+		shard.rotation = angle + deg_to_rad(90)  # Point outward
+
+		add_child(shard)
+
+		# Subtle sparkle animation
+		var tween = shard.create_tween()
+		tween.set_loops()
+		tween.tween_property(shard, "modulate:a", 0.4, 0.5)
+		tween.tween_property(shard, "modulate:a", 0.8, 0.5)
 
 func _animate_emergence():
 	"""Animate ice crystal emerging from ground"""
 	if not sprite:
+		print("❌ No sprite for emergence animation!")
 		return
 
-	# Start small and grow
-	sprite.scale = Vector2.ZERO
+	print("🧊 Starting ice emergence animation")
+
+	# Start buried and emerge upward
+	sprite.scale = Vector2(3.0, 0.1)  # Start very flat
+	sprite.position.y = 20  # Start below ground
 
 	# Create emergence tween
 	var tween = create_tween()
 	tween.set_parallel(true)
 
-	# Scale up with slight overshoot
-	tween.tween_property(sprite, "scale", Vector2(1.2, 1.2), 0.15)
-	tween.tween_property(sprite, "scale", Vector2(1.0, 1.0), 0.1).set_delay(0.15)
+	# Grow upward like ice forming
+	tween.tween_property(sprite, "scale", Vector2(3.5, 9.0), 0.3)  # Overshoot height
+	tween.tween_property(sprite, "scale", Vector2(3.0, 8.0), 0.1).set_delay(0.3)  # Settle
 
-	# Slight rotation for dynamic feel
-	tween.tween_property(sprite, "rotation", deg_to_rad(randf_range(-10, 10)), 0.25)
+	# Emerge from ground
+	tween.tween_property(sprite, "position", Vector2(0, 0), 0.4)
 
-	# Add slight position offset for impact effect
-	var original_pos = global_position
-	global_position += Vector2(randf_range(-5, 5), randf_range(-5, 5))
-	tween.tween_property(self, "global_position", original_pos, 0.2)
+	# Slight crystal formation sound effect (visual)
+	tween.tween_callback(_create_formation_particles).set_delay(0.2)
+
+	print("🧊 Ice emergence animation started!")
+
+func _create_formation_particles():
+	"""Create particles when ice crystal forms"""
+	for i in range(8):
+		var particle = ColorRect.new()
+		particle.size = Vector2(1, 1)
+		particle.color = Color.WHITE
+		particle.position = Vector2(randf_range(-15, 15), randf_range(-10, 10))
+
+		add_child(particle)
+
+		# Sparkle and fade
+		var tween = particle.create_tween()
+		tween.parallel().tween_property(particle, "position",
+			particle.position + Vector2(randf_range(-20, 20), randf_range(-30, -10)), 0.6)
+		tween.parallel().tween_property(particle, "modulate:a", 0.0, 0.6)
+		tween.tween_callback(particle.queue_free)
 
 func _on_body_entered(body: Node2D):
 	"""Handle enemy collision with ice crystal"""

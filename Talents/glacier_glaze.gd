@@ -63,7 +63,7 @@ func _create_ice_crystals_trigger() -> TriggerEffectResource:
 	var trigger = TriggerEffectResource.new()
 	trigger.trigger_name = "ice_crystals"
 	trigger.trigger_type = TriggerEffectResource.TriggerType.ON_HIT
-	trigger.trigger_condition["chance"] = 0.2  # 20% chance
+	trigger.trigger_condition["chance"] = 0.7  # 20% chance
 	trigger.effect_parameters["spike_count"] = 3  # Number of ice spikes
 	trigger.effect_parameters["damage_multiplier"] = 0.6  # 60% of bottle damage
 	trigger.effect_parameters["spike_range"] = 40.0  # Range around hit point
