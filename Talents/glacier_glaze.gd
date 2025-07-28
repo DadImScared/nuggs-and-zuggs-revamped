@@ -27,6 +27,13 @@ func build_talent_pool():
 			2,
 			[_create_snowcone_trigger()],
 			TalentManager.TalentTheme.DAMAGE
+		),
+		create_trigger_talent(
+			"Snowball Fight",
+			"40% chance on hit to launch 2 snowballs at nearby enemies that explode for splash damage",
+			2,
+			[_create_snowball_trigger()],
+			TalentManager.TalentTheme.EXPLOSIVE
 		)
 		#create_trigger_talent(
 			#"Glacial Touch",
@@ -82,4 +89,17 @@ func _create_snowcone_trigger() -> TriggerEffectResource:
 	trigger.enhances = ["cold"]
 	trigger.trigger_type = TriggerEffectResource.TriggerType.ON_HIT
 	trigger.trigger_condition["chance"] = 0.9
+	return trigger
+
+func _create_snowball_trigger() -> TriggerEffectResource:
+	var trigger = TriggerEffectResource.new()
+	trigger.trigger_name = "snowball"
+	trigger.trigger_type = TriggerEffectResource.TriggerType.ON_HIT
+	trigger.trigger_condition["chance"] = 0.4
+	trigger.effect_parameters = {
+		"damage": 25,
+		"splash_radius": 200,
+		"splash_damage": 0.5,
+		"balls": 2
+	}
 	return trigger

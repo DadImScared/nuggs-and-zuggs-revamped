@@ -1,0 +1,48 @@
+[gd_scene load_steps=7 format=3 uid="uid://teekghwnpsbw"]
+
+[ext_resource type="Script" uid="uid://bhxout6u45hrq" path="res://Effects/Snowball/snowball.gd" id="1_3ohvo"]
+[ext_resource type="Texture2D" uid="uid://cpwc3ppnl6t85" path="res://Assets/Sprites/SnowBall/tile020.png" id="1_72ix8"]
+[ext_resource type="Texture2D" uid="uid://c1b3smfbva3ai" path="res://Assets/Sprites/SnowBall/tile019.png" id="2_3ohvo"]
+[ext_resource type="Texture2D" uid="uid://cr4p6se4h8r2h" path="res://Assets/Sprites/SnowBall/tile018.png" id="3_xbilo"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_xytr2"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_72ix8")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_3ohvo")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_xbilo")
+}],
+"loop": true,
+"name": &"spin",
+"speed": 8.0
+}]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_puhar"]
+radius = 29.4279
+
+[node name="Snowball" type="Area2D"]
+scale = Vector2(0.345, 0.345)
+script = ExtResource("1_3ohvo")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+sprite_frames = SubResource("SpriteFrames_xytr2")
+animation = &"spin"
+frame = 2
+frame_progress = 0.310896
+metadata/_edit_lock_ = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_puhar")
+metadata/_edit_lock_ = true
+
+[node name="ExplosionTimer" type="Timer" parent="."]
+wait_time = 3.0
+one_shot = true
+
+[node name="TrailParticles" type="CPUParticles2D" parent="."]
+emitting = false
