@@ -26,7 +26,9 @@ animations = [{
 radius = 29.4279
 
 [node name="Snowball" type="Area2D"]
-scale = Vector2(0.345, 0.345)
+z_index = 470
+scale = Vector2(0.265, 0.265)
+collision_mask = 2
 script = ExtResource("1_3ohvo")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]

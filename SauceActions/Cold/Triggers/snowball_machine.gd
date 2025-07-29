@@ -26,6 +26,12 @@ func execute_trigger(bottle: ImprovedBaseSauceBottle, data: EnhancedTriggerData)
 		DebugControl.debug_status("⚙️❄️ No marked enemies found for Snowball Machine")
 		return
 
+	var max_machines = 4
+	if marked_enemies.size() > max_machines:
+		# Shuffle and take only the first 4 for variety
+		marked_enemies.shuffle()
+		marked_enemies = marked_enemies.slice(0, max_machines)
+
 	DebugControl.debug_status("⚙️❄️ Snowball Machine activated! %d marked enemies firing snowballs" % marked_enemies.size())
 
 	# Fire snowballs from each marked enemy position
@@ -70,10 +76,20 @@ func _find_marked_enemies_in_range(bottle: ImprovedBaseSauceBottle, range: float
 			continue
 
 		# Check if enemy has mark from this bottle
-		if "stacking_effects" in enemy and enemy.stacking_effects.has(mark_key):
-			marked_enemies.append(enemy)
+		if "stacking_effects" in enemy:
+			# Training dummy structure: direct key lookup
+			if enemy.stacking_effects.has(mark_key):
+				marked_enemies.append(enemy)
+			# Base enemy structure: check for mark_key_bottleID pattern
+			elif _has_mark_from_bottle(enemy.stacking_effects, mark_key, bottle.bottle_id):
+				marked_enemies.append(enemy)
 
 	return marked_enemies
+
+func _has_mark_from_bottle(stacking_effects: Dictionary, mark_name: String, bottle_id: String) -> bool:
+	"""Check if enemy has a mark from a specific bottle (base enemy structure)"""
+	var mark_key_pattern = mark_name + "_" + bottle_id
+	return stacking_effects.has(mark_key_pattern)
 
 func _spawn_machine_snowball(spawn_pos: Vector2, target_pos: Vector2, damage: float,
 							  splash_radius: float, splash_damage_mult: float, source_bottle: Node, duration: float = 5.0):

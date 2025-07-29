@@ -36,7 +36,6 @@ func execute_trigger(bottle: ImprovedBaseSauceBottle, data: EnhancedTriggerData)
 
 		# Apply cold stacks using the Effects system
 		if Effects.cold:
-			print("has cold?-----------------")
 			var cold_params = {
 				"duration": 5.0,
 				"max_stacks": 6,

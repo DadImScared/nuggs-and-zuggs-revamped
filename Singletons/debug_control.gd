@@ -1,9 +1,9 @@
 extends Node
 
 # Global debug control - change these to enable/disable debug categories
-const ENABLE_COMBAT_DEBUG = true     # Damage, hits, crits
-const ENABLE_TALENT_DEBUG = true     # Talent application/removal
-const ENABLE_STATUS_DEBUG = true     # Status effects, stacks
+const ENABLE_COMBAT_DEBUG = false    # Damage, hits, crits
+const ENABLE_TALENT_DEBUG = false     # Talent application/removal
+const ENABLE_STATUS_DEBUG = false     # Status effects, stacks
 const ENABLE_UI_DEBUG = true         # UI interactions, menus
 const ENABLE_PROJECTILE_DEBUG = true # Projectile behavior
 const ENABLE_ENEMY_DEBUG = true      # Enemy behavior, death

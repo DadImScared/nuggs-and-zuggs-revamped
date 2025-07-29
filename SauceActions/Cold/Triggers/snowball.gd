@@ -16,7 +16,7 @@ func execute_trigger(bottle: ImprovedBaseSauceBottle, data: EnhancedTriggerData)
 	if not hit_enemy or not is_instance_valid(hit_enemy):
 		return
 
-	# Use bottle position as spawn point, not hit position
+	# Use bottle position as spawn point for better visibility
 	var spawn_position = bottle.global_position if bottle else hit_enemy.global_position
 
 	# Get parameters from trigger data
@@ -27,15 +27,15 @@ func execute_trigger(bottle: ImprovedBaseSauceBottle, data: EnhancedTriggerData)
 
 	DebugControl.debug_status("❄️ Snowball trigger activated! Firing %d snowballs from bottle" % num_balls)
 
-	# Find nearby enemies to target (around the hit position, not bottle)
-	var target_center = hit_enemy.global_position
-	var enemies = _find_nearby_enemies(target_center, 500.0)
+	# Find nearby enemies to target (use bottle position for on-screen targeting)
+	var target_center = bottle.global_position
+	var enemies = _find_nearby_enemies(target_center, 400.0)  # Reduced from 500 to 400 for closer enemies
 
 	if enemies.is_empty():
 		DebugControl.debug_status("❄️ No enemies found for snowball targeting")
 		return
 
-	# Spawn snowballs from bottle position (defer to avoid physics conflicts)
+	# Spawn snowballs targeting closest enemies (defer to avoid physics conflicts)
 	for i in range(num_balls):
 		call_deferred("_spawn_snowball", spawn_position, enemies, damage, splash_radius, splash_damage_multiplier, bottle)
 
@@ -58,16 +58,19 @@ func _find_nearby_enemies(center_position: Vector2, max_range: float) -> Array:
 	return enemies
 
 func _spawn_snowball(spawn_position: Vector2, available_enemies: Array, damage: float, splash_radius: float, splash_damage_multiplier: float, source_bottle: Node):
-	"""Spawn a single snowball targeting a random enemy"""
+	"""Spawn a single snowball targeting the closest available enemy"""
 
 	if available_enemies.is_empty():
 		return
 
-	# Pick a random enemy from available targets
-	var target_enemy = available_enemies[randi() % available_enemies.size()]
+	# Pick the closest enemy instead of random
+	var target_enemy = available_enemies[0]  # Array is already sorted by distance (closest first)
 
 	if not is_instance_valid(target_enemy):
 		return
+
+	# Remove the targeted enemy from the list so next snowball targets different enemy
+	available_enemies.erase(target_enemy)
 
 	# Create snowball instance
 	var snowball = SNOWBALL_SCENE.instantiate()
@@ -83,7 +86,7 @@ func _spawn_snowball(spawn_position: Vector2, available_enemies: Array, damage: 
 	# Connect explosion signal to handle splash damage (deferred)
 	snowball.call_deferred("connect", "snowball_exploded", _on_snowball_exploded.bind(source_bottle))
 
-	DebugControl.debug_status("❄️ Snowball spawned targeting enemy at %s" % target_position)
+	DebugControl.debug_status("❄️ Snowball spawned targeting closest enemy at %s" % target_position)
 
 func _on_snowball_exploded(explosion_position: Vector2, splash_radius: float, splash_damage: float, source_bottle: Node):
 	"""Handle snowball explosion and apply splash damage + cold to nearby enemies"""

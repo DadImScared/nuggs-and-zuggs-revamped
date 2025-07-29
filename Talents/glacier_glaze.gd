@@ -102,11 +102,11 @@ func _create_snowball_trigger() -> TriggerEffectResource:
 	var trigger = TriggerEffectResource.new()
 	trigger.trigger_name = "snowball"
 	trigger.trigger_type = TriggerEffectResource.TriggerType.ON_HIT
-	trigger.trigger_condition["chance"] = 0.4
+	trigger.trigger_condition["chance"] = 0.6
 	trigger.effect_parameters = {
-		"damage": 25,
-		"splash_radius": 200,
-		"splash_damage": 0.5,
+		"damage": 22,
+		"splash_radius": 100,
+		"splash_damage": 0.3,
 		"balls": 2
 	}
 	return trigger
@@ -115,11 +115,11 @@ func _create_snowball_machine_trigger() -> TriggerEffectResource:
 	var trigger = TriggerEffectResource.new()
 	trigger.trigger_name = "snowball_machine"
 	trigger.trigger_type = TriggerEffectResource.TriggerType.ON_TIMER
-	trigger.trigger_condition["cooldown"] = 1.0
+	trigger.trigger_condition["cooldown"] = 2.0
 	trigger.effect_parameters = {
-		"damage": 15,
+		"damage": 24,
 		"splash_radius": 100,
-		"splash_damage": 0.5,
+		"splash_damage": 0.4,
 		"balls": 4,
 		"duration": 5
 	}
@@ -132,7 +132,7 @@ func _create_frozen_winds() -> TriggerEffectResource:
 	trigger.trigger_condition["chance"] = 0.4
 	trigger.effect_parameters = {
 		"damage": 25,
-		"radius": 100,
+		"radius": 60,
 		"force": 20,
 		"stacks": 6
 	}
