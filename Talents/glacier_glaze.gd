@@ -41,6 +41,13 @@ func build_talent_pool():
 			2,
 			[_create_frozen_winds()],
 			TalentManager.TalentTheme.DAMAGE
+		),
+		create_trigger_talent(
+			"Frozen Legacy",
+			"Cold enemies drop frost zones on death that deal 25 damage every 0.5s for 8 seconds",
+			2,
+			[_create_frost_zone()],
+			TalentManager.TalentTheme.DAMAGE
 		)
 		#create_trigger_talent(
 			#"Glacial Touch",
@@ -135,5 +142,20 @@ func _create_frozen_winds() -> TriggerEffectResource:
 		"radius": 60,
 		"force": 20,
 		"stacks": 6
+	}
+	return trigger
+
+func _create_frost_zone() -> TriggerEffectResource:
+	"""Cold enemies drop frost zones"""
+	var trigger = TriggerEffectResource.new()
+	trigger.trigger_name = "frozone"
+	trigger.trigger_type = TriggerEffectResource.TriggerType.ON_ENEMY_DEATH
+	trigger.trigger_condition["chance"] = 1
+	trigger.trigger_condition["has_effects"] = ["cold"]
+	trigger.effect_parameters = {
+		"tick_damage": 25,
+		"radius": 80,
+		"duration": 8,
+		"tick_interval": 0.5
 	}
 	return trigger

@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://d1wp7lg5fqryv"]
+
+[ext_resource type="Script" uid="uid://doam4ga2b3jh1" path="res://Effects/FrostZone/testzone.gd" id="1_wm27f"]
+
+[node name="TestFrostZone" type="Node2D"]
+script = ExtResource("1_wm27f")
