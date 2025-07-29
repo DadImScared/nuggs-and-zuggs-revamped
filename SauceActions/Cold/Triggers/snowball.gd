@@ -128,6 +128,7 @@ func _apply_cold_to_enemy(enemy: Node, source_bottle: Node):
 	# Use the Effects system to apply cold
 	if Effects and Effects.cold:
 		Effects.cold.apply_from_talent(enemy, source_bottle, cold_stacks, enhanced_params)
+		Effects.cold.apply_mark(enemy, "mark_of_winter", source_bottle, 5)
 		DebugControl.debug_status("❄️ Applied %d cold stacks to enemy from snowball splash" % cold_stacks)
 
 func _create_splash_visual_feedback(position: Vector2, radius: float):

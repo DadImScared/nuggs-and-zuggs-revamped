@@ -34,6 +34,13 @@ func build_talent_pool():
 			2,
 			[_create_snowball_trigger()],
 			TalentManager.TalentTheme.EXPLOSIVE
+		),
+		create_trigger_talent(
+			"Snowball Machine",
+			"snowballs mark enemies and turn them into machines that shoot snowballs",
+			2,
+			[_create_snowball_machine_trigger()],
+			TalentManager.TalentTheme.DAMAGE
 		)
 		#create_trigger_talent(
 			#"Glacial Touch",
@@ -101,5 +108,19 @@ func _create_snowball_trigger() -> TriggerEffectResource:
 		"splash_radius": 200,
 		"splash_damage": 0.5,
 		"balls": 2
+	}
+	return trigger
+
+func _create_snowball_machine_trigger() -> TriggerEffectResource:
+	var trigger = TriggerEffectResource.new()
+	trigger.trigger_name = "snowball_machine"
+	trigger.trigger_type = TriggerEffectResource.TriggerType.ON_TIMER
+	trigger.trigger_condition["cooldown"] = 1.0
+	trigger.effect_parameters = {
+		"damage": 15,
+		"splash_radius": 100,
+		"splash_damage": 0.5,
+		"balls": 4,
+		"duration": 5
 	}
 	return trigger

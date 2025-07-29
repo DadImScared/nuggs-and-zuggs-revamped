@@ -403,7 +403,7 @@ func _cleanup_stack_behavior(effect_name: String, effect_data: Dictionary, sourc
 	# GENERIC: Handle visual cleanup for any stacking effect
 	if effect_data.has("effect_data") and effect_data.effect_data.has("visual_cleanup"):
 		var visual_cleanup = effect_data.effect_data.visual_cleanup
-		if visual_cleanup.is_valid():
+		if visual_cleanup and visual_cleanup.is_valid():
 			# Check if this is the LAST stack (already removed, so count should be 0)
 			if get_total_stack_count(effect_name) == 0:
 				visual_cleanup.call()
@@ -515,7 +515,7 @@ func _apply_stack_behavior(effect_name: String, effect_data: Dictionary, source_
 	# GENERIC: Call immediate effect callback if provided (this runs AFTER stack is counted)
 	if effect_data.has("effect_data") and effect_data.effect_data.has("immediate_effect"):
 		var immediate_effect = effect_data.effect_data.immediate_effect
-		if immediate_effect.is_valid():
+		if immediate_effect and immediate_effect.is_valid():
 			immediate_effect.call()
 			#print("⚡ Applied immediate effect for: %s" % effect_name)
 

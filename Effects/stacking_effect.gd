@@ -11,6 +11,65 @@ extends Resource
 @export var base_stack_value: float = 1.0
 @export var base_color: Color = Color.RED
 
+
+func apply_mark(enemy: Node2D, mark_name: String, source_bottle: Node, duration: float = 5.0, enhanced_params: Dictionary = {}):
+	"""Apply a mark for death trigger detection - handles enhancements directly"""
+	if not enemy or not is_instance_valid(enemy) or not source_bottle:
+		DebugControl.debug_status("⚠️ apply_mark: Invalid parameters")
+		return
+
+	# Mark-specific base parameters (no damage, no ticking)
+	var mark_params = {
+		"duration": duration,
+		"tick_interval": 0.0,     # Marks never tick
+		"tick_damage": 0.0,       # Marks never deal damage
+		"max_stacks": 1,          # Default 1 stack, but talents can increase
+		"stack_value": 1.0,
+	}
+
+	# Merge with any provided enhanced params
+	for key in enhanced_params:
+		mark_params[key] = enhanced_params[key]
+
+	# Get talent enhancements for the mark_name specifically
+	if source_bottle and source_bottle.has_method("get_enhanced_trigger_data"):
+		var enhanced_data = source_bottle.get_enhanced_trigger_data(mark_name)
+		if enhanced_data and enhanced_data.effect_parameters.size() > 0:
+			# Apply talent enhancements to mark parameters
+			mark_params["duration"] = enhanced_data.effect_parameters.get("duration", mark_params["duration"])
+			mark_params["max_stacks"] = enhanced_data.effect_parameters.get("max_stacks", mark_params["max_stacks"])
+			mark_params["stack_value"] = enhanced_data.effect_parameters.get("stack_value", mark_params["stack_value"])
+
+			# Apply multipliers if present
+			if enhanced_data.effect_parameters.has("duration_multiplier"):
+				mark_params["duration"] *= enhanced_data.effect_parameters["duration_multiplier"]
+
+			DebugControl.debug_status("🎯 Enhanced mark %s with talents" % mark_name)
+
+	# Apply mark directly using stacking system with the mark_name
+	if enemy.has_method("apply_stacking_effect"):
+		var mark_applied = enemy.apply_stacking_effect(
+			mark_name,                    # Use mark name, not self.effect_name
+			mark_params["stack_value"],
+			mark_params["max_stacks"],
+			source_bottle.bottle_id,
+			mark_params["duration"],
+			{
+				"tick_interval": 0.0,     # Marks never tick
+				"tick_damage": 0.0,       # Marks never deal damage
+				"tick_effect": null,      # No tick effects
+				"visual_cleanup": null,   # No visual cleanup (marks are invisible)
+				"immediate_effect": null  # No immediate visual effects
+			}
+		)
+
+		if mark_applied > 0:
+			DebugControl.debug_status("🎯 Applied %s mark: %d stacks, %.1fs duration" % [mark_name, mark_applied, mark_params["duration"]])
+		else:
+			DebugControl.debug_status("⚠️ Failed to apply %s mark (at max stacks)" % mark_name)
+	else:
+		DebugControl.debug_status("⚠️ Enemy doesn't support stacking effects for marks")
+
 func apply_from_talent(
 	enemy: Node2D,
 	source_bottle: Node,
