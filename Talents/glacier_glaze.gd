@@ -48,6 +48,12 @@ func build_talent_pool():
 			2,
 			[_create_frost_zone()],
 			TalentManager.TalentTheme.DAMAGE
+		),
+		create_trigger_talent(
+			"Ice Comet Barrage", "Drop a barrage of ice comets",
+			2,
+			[_create_ice_comet_barrage()],
+			TalentManager.TalentTheme.DAMAGE
 		)
 		#create_trigger_talent(
 			#"Glacial Touch",
@@ -157,5 +163,19 @@ func _create_frost_zone() -> TriggerEffectResource:
 		"radius": 80,
 		"duration": 8,
 		"tick_interval": 0.5
+	}
+	return trigger
+
+func _create_ice_comet_barrage() -> TriggerEffectResource:
+	var trigger = TriggerEffectResource.new()
+	trigger.trigger_name = "ice_comet_barrage"
+	trigger.trigger_type = TriggerEffectResource.TriggerType.ON_HIT
+	trigger.trigger_condition["chance"] = 0.6
+	trigger.effect_parameters = {
+		"damage": 25,
+		"radius": 80,
+		"duration": 3,
+		"tick_interval": 0.5,
+		"comet_count": 6
 	}
 	return trigger

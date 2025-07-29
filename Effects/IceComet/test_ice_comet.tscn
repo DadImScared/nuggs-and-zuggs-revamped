@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://cc3l1m4mc7khe"]
+
+[ext_resource type="Script" uid="uid://c18kvbtfklwwq" path="res://Effects/IceComet/test_ice_comet.gd" id="1_knhl0"]
+
+[node name="TestIceComet" type="Node2D"]
+script = ExtResource("1_knhl0")

@@ -1,0 +1,15 @@
+[gd_scene load_steps=3 format=3 uid="uid://bio6rghtpkbup"]
+
+[ext_resource type="Script" uid="uid://beao7uccpo8ok" path="res://Effects/IceComet/ice_comet.gd" id="1_mr0es"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_igg36"]
+
+[node name="IceComet" type="Area2D"]
+script = ExtResource("1_mr0es")
+
+[node name="CometTrail" type="CPUParticles2D" parent="."]
+
+[node name="CollisionShape" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_igg36")
+
+[node name="CometSprite" type="Sprite2D" parent="."]
