@@ -8,6 +8,7 @@
 size = Vector2(2.5, 7.5)
 
 [node name="IceCrystal" type="Area2D"]
+collision_mask = 2
 script = ExtResource("1_pfk77")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]

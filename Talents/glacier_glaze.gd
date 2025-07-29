@@ -15,13 +15,6 @@ func build_talent_pool():
 			TalentManager.TalentTheme.DAMAGE
 		),
 		create_trigger_talent(
-			"Ice Crystals",
-			"20% chance on hit to create ice spikes - Frozen moisture crystallizes into deadly projectiles",
-			2,
-			[_create_ice_crystals_trigger()],
-			TalentManager.TalentTheme.DAMAGE
-		),
-		create_trigger_talent(
 			"Snowcone",
 			"always cold",
 			2,
@@ -40,6 +33,13 @@ func build_talent_pool():
 			"snowballs mark enemies and turn them into machines that shoot snowballs",
 			2,
 			[_create_snowball_machine_trigger()],
+			TalentManager.TalentTheme.DAMAGE
+		),
+		create_trigger_talent(
+			"Frozen Winds",
+			"40% chance on hit to unleash freezing winds that damage and push back enemies in a radius",
+			2,
+			[_create_frozen_winds()],
 			TalentManager.TalentTheme.DAMAGE
 		)
 		#create_trigger_talent(
@@ -122,5 +122,18 @@ func _create_snowball_machine_trigger() -> TriggerEffectResource:
 		"splash_damage": 0.5,
 		"balls": 4,
 		"duration": 5
+	}
+	return trigger
+
+func _create_frozen_winds() -> TriggerEffectResource:
+	var trigger = TriggerEffectResource.new()
+	trigger.trigger_name = "frozen_winds"
+	trigger.trigger_type = TriggerEffectResource.TriggerType.ON_HIT
+	trigger.trigger_condition["chance"] = 0.4
+	trigger.effect_parameters = {
+		"damage": 25,
+		"radius": 100,
+		"force": 20,
+		"stacks": 6
 	}
 	return trigger

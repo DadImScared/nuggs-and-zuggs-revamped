@@ -118,15 +118,13 @@ func _get_available_talents_for_bottle(sauce_name: String, level: int, bottle: I
 
 		available.append(talent)
 
-	print("🎯 %d available talents for tier %s" % [available.size(), TalentTier.keys()[tier]])
+	#print("🎯 %d available talents for tier %s" % [available.size(), TalentTier.keys()[tier]])
 	return available
 
 func _select_smart_talents(available_talents: Array[Talent], bottle: ImprovedBaseSauceBottle, count: int) -> Array[Talent]:
 	"""Use smart selection with 40% coherence to pick talents"""
 	var selected: Array[Talent] = []
 	var bottle_themes = _analyze_bottle_themes(bottle)
-
-	print("📊 Bottle theme analysis: %s" % str(bottle_themes))
 
 	for i in range(count):
 		var talent = _pick_next_talent(available_talents, selected, bottle_themes)
@@ -143,7 +141,6 @@ func _select_smart_talents(available_talents: Array[Talent], bottle: ImprovedBas
 	var talent_names = []
 	for t in selected:
 		talent_names.append(t.talent_name)
-	print("✨ Selected talents: %s" % str(talent_names))
 	return selected
 
 func _analyze_bottle_themes(bottle: ImprovedBaseSauceBottle) -> Dictionary:
@@ -189,7 +186,6 @@ func _pick_next_talent(available: Array[Talent], already_selected: Array[Talent]
 			return t.has_theme(dominant_theme)
 		)
 		if matching_talents.size() > 0 and selected_themes[dominant_theme] < MAX_SAME_THEME:
-			print("🎯 Coherence: Picking %s theme talent" % TalentTheme.keys()[dominant_theme])
 			return matching_talents[randi() % matching_talents.size()]
 
 	# Ensure variety - never pick more than 2 of same theme (NEW: uses primary theme)
@@ -202,7 +198,6 @@ func _pick_next_talent(available: Array[Talent], already_selected: Array[Talent]
 		# Emergency fallback
 		return available[randi() % available.size()]
 
-	print("🎲 Random selection from %d valid talents" % valid_talents.size())
 	return valid_talents[randi() % valid_talents.size()]
 
 func _bottle_has_talent(bottle: ImprovedBaseSauceBottle, talent_name: String) -> bool:

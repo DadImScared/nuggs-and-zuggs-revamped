@@ -25,8 +25,6 @@ func _ready():
 	# Create emergence animation
 	_animate_emergence()
 
-	print("🧊 Ice crystal created with %.1f damage" % damage)
-
 func setup_crystal(crystal_damage: float, bottle_id: String, crystal_color: Color = Color.CYAN):
 	"""Initialize the ice crystal with damage and source"""
 	damage = crystal_damage
@@ -41,7 +39,7 @@ func setup_crystal(crystal_damage: float, bottle_id: String, crystal_color: Colo
 		sprite.material = CanvasItemMaterial.new()
 		sprite.material.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
 
-		print("🧊 Ice crystal sprite setup: scale=%s" % sprite.scale)
+		#print("🧊 Ice crystal sprite setup: scale=%s" % sprite.scale)
 	else:
 		print("❌ No sprite found in ice crystal!")
 
@@ -51,7 +49,7 @@ func setup_crystal(crystal_damage: float, bottle_id: String, crystal_color: Colo
 	# Remove the debug circle and add ice particles instead
 	_create_ice_particles()
 
-	print("🧊 Ice crystal setup complete - proper ice spike!")
+	#print("🧊 Ice crystal setup complete - proper ice spike!")
 
 func _create_ice_particles():
 	"""Create ice particle effects around the crystal"""
@@ -81,7 +79,7 @@ func _animate_emergence():
 		print("❌ No sprite for emergence animation!")
 		return
 
-	print("🧊 Starting ice emergence animation")
+	#print("🧊 Starting ice emergence animation")
 
 	# Start buried and emerge upward
 	sprite.scale = Vector2(3.0, 0.1)  # Start very flat
@@ -101,7 +99,7 @@ func _animate_emergence():
 	# Slight crystal formation sound effect (visual)
 	tween.tween_callback(_create_formation_particles).set_delay(0.2)
 
-	print("🧊 Ice emergence animation started!")
+	#print("🧊 Ice emergence animation started!")
 
 func _create_formation_particles():
 	"""Create particles when ice crystal forms"""
@@ -134,7 +132,7 @@ func _on_body_entered(body: Node2D):
 	# Deal damage to enemy
 	if body.has_method("take_damage_from_source"):
 		body.take_damage_from_source(damage, source_bottle_id)
-		print("🧊 Ice crystal hit %s for %.1f damage" % [body.name, damage])
+		#print("🧊 Ice crystal hit %s for %.1f damage" % [body.name, damage])
 
 	# Create hit effect
 	_create_hit_effect(body.global_position)
@@ -191,7 +189,7 @@ func _create_shatter_effect():
 		tween.tween_property(shard, "rotation", randf_range(-TAU, TAU), 0.4)
 		tween.tween_callback(shard.queue_free)
 
-	print("🧊 Ice crystal shattered!")
+	#print("🧊 Ice crystal shattered!")
 
 # Optional: Add physics for more dynamic crystals
 func add_physics_body():

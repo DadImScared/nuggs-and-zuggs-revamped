@@ -454,17 +454,6 @@ func take_damage_from_source(damage_amount: float, source_bottle_id: String):
 		var bonus_damage = actual_damage * get_meta("damage_amplification")
 		actual_damage += bonus_damage
 		#print("⚡ Amplified: +%.1f bonus damage" % bonus_damage)
-	var timestamp = Time.get_time_string_from_system()
-	if "Glacier Glaze" in source_bottle_id:
-		print("🎯 PRECISE DAMAGE TRACKING:")
-		print("  Time: %s" % timestamp)
-		print("  Source: %s" % source_bottle_id)
-		print("  Damage: %.1f" % actual_damage)
-		print("  Enemy Health: %.1f → %.1f" % [health, health - actual_damage])
-
-		# Check what cold effects are active
-		print("  Active cold stacks: %d" % get_total_stack_count("cold"))
-		print("  Cold effect present: %s" % str(stacking_effects.keys()))
 	# Rest of existing damage logic...
 	health -= actual_damage
 	# NEW: Update generic health bar instead of old container
