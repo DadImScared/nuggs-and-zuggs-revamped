@@ -54,6 +54,12 @@ func build_talent_pool():
 			2,
 			[_create_ice_comet_barrage()],
 			TalentManager.TalentTheme.DAMAGE
+		),
+		create_trigger_talent(
+			"Ice Comet Barrage Plus", "Extra comets for extra fun",
+			2,
+			[_create_ice_comet_barrage_plus()],
+			TalentManager.TalentTheme.DAMAGE
 		)
 		#create_trigger_talent(
 			#"Glacial Touch",
@@ -178,4 +184,17 @@ func _create_ice_comet_barrage() -> TriggerEffectResource:
 		"tick_interval": 0.5,
 		"comet_count": 6
 	}
+	return trigger
+
+func _create_ice_comet_barrage_plus() -> TriggerEffectResource:
+	var trigger = TriggerEffectResource.new()
+	trigger.trigger_name = "ice_comet_barrage_plus"
+	trigger.trigger_type = TriggerEffectResource.TriggerType.PASSIVE
+	trigger.enhances = ["ice_comet_barrage"]
+	trigger.effect_parameters = {
+		"damage": 15,
+		"duration": 5,
+		"comet_count": 12
+	}
+
 	return trigger
