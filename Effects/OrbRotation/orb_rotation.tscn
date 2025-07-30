@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://dxkvu54tq5rlb"]
+
+[ext_resource type="Script" uid="uid://dcn7bdhcdu478" path="res://Effects/OrbRotation/orb_rotation.gd" id="1_wrrsx"]
+
+[node name="OrbRotation" type="Node2D"]
+script = ExtResource("1_wrrsx")
