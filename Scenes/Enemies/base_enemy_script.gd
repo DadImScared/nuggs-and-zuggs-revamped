@@ -14,14 +14,14 @@ signal debuff_xp_earned(bottle_id: String, xp_amount: int)
 var external_velocity_override: bool = false
 var external_velocity: Vector2 = Vector2.ZERO
 
-var base_xp_reward = 2
+var base_xp_reward = 12
 var base_health = 100
 var base_damage = 10
 var base_speed = 18.0
 var max_health = 0
 
 var damage = 10
-var xp_on_kill = 5
+var xp_on_kill = 12
 var move_speed = 18.0
 var health = 100
 

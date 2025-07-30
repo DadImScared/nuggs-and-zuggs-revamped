@@ -13,13 +13,12 @@ var equipped: Array = []
 
 # Legacy resources for initial setup only
 var old_equipped: Array = [
-	preload("res://Resources/glacier_glaze.tres")
+	preload("res://Resources/glacier_glaze.tres"),
+	#preload("res://Resources/prehistoric_pesto.tres")
 	#preload("res://Resources/hot_sauce.tres"),
 	#preload("res://Resources/archaean_apple_butter.tres")
 	#preload("res://Resources/jurassic_jalapeno.tres")
 	#preload("res://Resources/sriracha.tres")
-	#preload("res://Resources/prehistoric_pesto.tres"),
-	#preload("res://Resources/prehistoric_pesto.tres")
 ]
 
 var scene_holder_node: Node2D
@@ -173,25 +172,41 @@ func get_equipped_bottles() -> Array:
 			active_bottles.append(bottle)
 	return active_bottles
 
-# XP DISTRIBUTION
+# XP DISTRIBUTION - Equal share to all equipped bottles
 func distribute_xp_by_damage(total_xp: int, damage_sources: Dictionary):
-	var total_damage = 0.0
-	for bottle_id in damage_sources:
-		total_damage += damage_sources[bottle_id]
+	var equipped_bottles = get_equipped_bottles()
 
-	if total_damage <= 0:
+	print("🎯 XP Distribution Debug:")
+	print("  Total XP: %d" % total_xp)
+	print("  Damage sources: %s" % str(damage_sources))
+	print("  Equipped bottles count: %d" % equipped_bottles.size())
+	for i in range(equipped_bottles.size()):
+		var bottle = equipped_bottles[i]
+		if bottle and bottle.sauce_data:
+			print("    %d. %s (ID: %s)" % [i+1, bottle.sauce_data.sauce_name, bottle.bottle_id])
+
+	if equipped_bottles.is_empty():
+		print("❌ No equipped bottles to distribute XP to")
 		return
 
-	# Distribute XP proportionally
-	for bottle_id in damage_sources:
-		var damage_dealt = damage_sources[bottle_id]
-		var damage_percentage = damage_dealt / total_damage
-		var xp_earned = int(total_xp * damage_percentage)
+	# Split XP equally among all equipped bottles
+	var xp_per_bottle = int(total_xp / equipped_bottles.size())
+	var remainder = total_xp % equipped_bottles.size()
 
-		# Find the bottle and give it XP
-		var bottle = get_bottle_by_id(bottle_id)
+	print("💎 Distributing %d XP equally: %d per bottle to %d bottles" % [total_xp, xp_per_bottle, equipped_bottles.size()])
+
+	for i in range(equipped_bottles.size()):
+		var bottle = equipped_bottles[i]
 		if bottle and bottle.has_method("gain_xp"):
-			bottle.gain_xp(xp_earned)
+			var final_xp = xp_per_bottle
+			# Give remainder XP to first few bottles to ensure total adds up
+			if i < remainder:
+				final_xp += 1
+
+			bottle.gain_xp(final_xp)
+			print("  ✅ %s gained %d XP" % [bottle.sauce_data.sauce_name if bottle.sauce_data else "Unknown", final_xp])
+		else:
+			print("  ❌ Bottle %d has no gain_xp method" % i)
 
 # ===================================================================
 # TALENT SYSTEM - REPLACES OLD UPGRADE SYSTEM
