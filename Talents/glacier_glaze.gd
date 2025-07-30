@@ -60,6 +60,12 @@ func build_talent_pool():
 			2,
 			[_create_ice_comet_barrage_plus()],
 			TalentManager.TalentTheme.DAMAGE
+		),
+		create_trigger_talent(
+			"Frozen comets", "ice comets",
+			2,
+			[_create_frozen_comets_trigger()],
+			TalentManager.TalentTheme.DAMAGE
 		)
 		#create_trigger_talent(
 			#"Glacial Touch",
@@ -197,4 +203,17 @@ func _create_ice_comet_barrage_plus() -> TriggerEffectResource:
 		"comet_count": 12
 	}
 
+	return trigger
+
+func _create_frozen_comets_trigger() -> TriggerEffectResource:
+	"""Makes ice comets apply cold stacks"""
+	var trigger = TriggerEffectResource.new()
+	trigger.trigger_name = "frozen_comets"
+	trigger.trigger_type = TriggerEffectResource.TriggerType.PASSIVE
+	trigger.enhances = ["ice_comet_barrage"]  # Enhances ice comet barrage
+	trigger.effect_parameters = {
+		"applies_cold": true,
+		"cold_stacks": 2,
+		"cold_duration": 4.0
+	}
 	return trigger

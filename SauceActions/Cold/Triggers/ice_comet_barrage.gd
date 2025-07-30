@@ -40,10 +40,10 @@ func _create_comet_barrage(target_position: Vector2, damage: float, radius: floa
 		print("⚠️ Ice Comet Barrage: No main scene found")
 		return
 
-	# Defer the barrage creation to avoid physics conflicts
-	call_deferred("_create_barrage_deferred", main_scene, target_position, damage, radius, comet_count, source_bottle.bottle_id)
+	# Defer the barrage creation to avoid physics conflicts - NOW PASSES BOTTLE
+	call_deferred("_create_barrage_deferred", main_scene, target_position, damage, radius, comet_count, source_bottle)
 
-func _create_barrage_deferred(main_scene: Node, target_position: Vector2, damage: float, radius: float, comet_count: int, bottle_id: String):
+func _create_barrage_deferred(main_scene: Node, target_position: Vector2, damage: float, radius: float, comet_count: int, source_bottle: ImprovedBaseSauceBottle):
 	"""Create comet barrage in a deferred call"""
 
 	print("☄️ Creating barrage of %d comets at %s" % [comet_count, target_position])
@@ -60,18 +60,18 @@ func _create_barrage_deferred(main_scene: Node, target_position: Vector2, damage
 		# Stagger the timing so comets don't all arrive at once
 		var delay = i * 0.3  # 0.3 second intervals
 
-		# Use the main scene's tree to create timer
+		# Use the main scene's tree to create timer - NOW PASSES BOTTLE
 		var timer = main_scene.get_tree().create_timer(delay)
-		timer.timeout.connect(_create_single_comet.bind(main_scene, start_pos, final_target, damage, radius, bottle_id))
+		timer.timeout.connect(_create_single_comet.bind(main_scene, start_pos, final_target, damage, radius, source_bottle))
 
-func _create_single_comet(main_scene: Node, start_pos: Vector2, target_pos: Vector2, damage: float, radius: float, bottle_id: String):
+func _create_single_comet(main_scene: Node, start_pos: Vector2, target_pos: Vector2, damage: float, radius: float, source_bottle: ImprovedBaseSauceBottle):
 	"""Create a single ice comet"""
 
 	# Create ice comet
 	var ice_comet = IceComet.new()
 
-	# Set up the comet
-	ice_comet.setup_ice_comet(start_pos, target_pos, damage, radius, bottle_id)
+	# Set up the comet with bottle reference - NOW PASSES BOTTLE
+	ice_comet.setup_ice_comet(start_pos, target_pos, damage, radius, source_bottle.bottle_id, source_bottle)
 
 	# Add to scene
 	main_scene.add_child(ice_comet)

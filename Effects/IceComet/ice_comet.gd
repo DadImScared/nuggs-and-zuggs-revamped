@@ -7,6 +7,7 @@ var target_position: Vector2
 var velocity: Vector2
 var impact_radius: float
 var source_bottle_id: String
+var source_bottle: ImprovedBaseSauceBottle  # Reference to the bottle that created this comet
 
 # Visual components (created programmatically)
 var comet_sprite: Sprite2D
@@ -41,13 +42,14 @@ func _ready():
 	body_entered.connect(_on_body_entered)
 	area_entered.connect(_on_area_entered)
 
-func setup_ice_comet(start_pos: Vector2, target_pos: Vector2, comet_damage: float, radius: float, bottle_id: String):
+func setup_ice_comet(start_pos: Vector2, target_pos: Vector2, comet_damage: float, radius: float, bottle_id: String, bottle: ImprovedBaseSauceBottle = null):
 	"""Initialize ice comet with specified parameters"""
 	global_position = start_pos
 	target_position = target_pos
 	damage = comet_damage
 	impact_radius = radius
 	source_bottle_id = bottle_id
+	source_bottle = bottle  # Store bottle reference for frozen comets talent
 
 	# Calculate proper trajectory to hit the target
 	var distance_to_target = start_pos.distance_to(target_pos)
@@ -191,17 +193,18 @@ func _on_area_entered(area: Area2D):
 
 func _impact_enemy(enemy: Node2D):
 	"""Handle direct hit on an enemy"""
-
 	# Deal direct damage
 	if enemy.has_method("take_damage_from_source"):
 		enemy.take_damage_from_source(damage, source_bottle_id)
+
+	# Check for frozen comets talent and apply cold
+	_check_and_apply_cold(enemy)
 
 	# Create impact explosion
 	_create_impact_explosion()
 
 func _impact_ground():
 	"""Handle impact with ground or timeout"""
-
 	# Create impact explosion
 	_create_impact_explosion()
 
@@ -224,7 +227,6 @@ func _deal_area_damage():
 	"""Deal damage to all enemies in impact radius"""
 	var enemies_in_area = []
 	var all_enemies = get_tree().get_nodes_in_group("enemies")
-
 	for enemy in all_enemies:
 		if is_instance_valid(enemy) and global_position.distance_to(enemy.global_position) <= impact_radius:
 			enemies_in_area.append(enemy)
@@ -233,6 +235,40 @@ func _deal_area_damage():
 			if enemy.has_method("take_damage_from_source"):
 				enemy.take_damage_from_source(damage * 0.7, source_bottle_id)  # 70% damage for area effect
 
+			# Check for frozen comets talent and apply cold
+			_check_and_apply_cold(enemy)
+
+func _check_and_apply_cold(enemy: Node2D):
+	"""Check if bottle has frozen comets talent and apply cold stacks"""
+	if not source_bottle or not enemy or not is_instance_valid(enemy):
+		return
+
+	# Check if the bottle has the frozen comets trigger effect
+	var has_frozen_comets = false
+	for trigger_effect in source_bottle.trigger_effects:
+		if trigger_effect.trigger_name == "frozen_comets":
+			has_frozen_comets = true
+
+			# Get cold parameters from talent
+			var cold_stacks = trigger_effect.effect_parameters.get("cold_stacks", 2)
+			var cold_duration = trigger_effect.effect_parameters.get("cold_duration", 4.0)
+
+			# Apply cold using the Effects system
+			if Effects and Effects.cold:
+				var cold_params = {
+					"duration": cold_duration,
+					"tick_interval": 0.0,
+					"tick_damage": 0.0,
+					"max_stacks": 6,
+					"stack_value": 1.0,
+					"slow_per_stack": 0.15,
+					"freeze_threshold": 6,
+					"cold_color": Color(0.7, 0.9, 1.0, 0.8)
+				}
+
+				Effects.cold.apply_from_talent(enemy, source_bottle, cold_stacks, cold_params)
+				DebugControl.debug_status("❄️ Frozen Comet applied %d cold stacks to enemy" % cold_stacks)
+			break
 
 func _create_explosion_visual():
 	"""Create visual explosion effect at impact point"""
