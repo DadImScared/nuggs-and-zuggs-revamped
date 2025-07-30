@@ -217,3 +217,149 @@ func _create_frozen_comets_trigger() -> TriggerEffectResource:
 		"cold_duration": 4.0
 	}
 	return trigger
+
+func _create_ice_prism_trigger() -> TriggerEffectResource:
+	var trigger = TriggerEffectResource.new()
+	trigger.trigger_name = "ice_prism"
+	trigger.trigger_type = TriggerEffectResource.TriggerType.ON_HIT
+	trigger.trigger_condition["chance"] = 0.4
+	trigger.effect_parameters = {
+		"damage": 15,
+		"main_target_damage": 0.1,
+		"apply_cold": false,
+		"beams": 3,
+		"stacks": 1
+	}
+	return trigger
+
+func _create_orb_rotation_trigger() -> TriggerEffectResource:
+	var trigger = TriggerEffectResource.new()
+	trigger.trigger_name = "orb_rotation"
+	trigger.trigger_type = TriggerEffectResource.TriggerType.PASSIVE
+	trigger.trigger_condition["cooldown"] = 2
+	trigger.effect_parameters = {
+		"damage": 15,
+		"speed": 45, # degrees per second??
+		"orbs": 3,
+		"apply_cold": false,
+		"stacks": 1,
+		"size": 45,
+		"knockback": true,
+		"knockback_force": 30 #idk what to put this as
+	}
+	return trigger
+
+func _create_more_orbs_trigger() -> TriggerEffectResource:
+	var trigger = TriggerEffectResource.new()
+	trigger.trigger_name = "more_orbs"
+	trigger.trigger_type = TriggerEffectResource.TriggerType.PASSIVE
+	trigger.enhances = ["orb_rotation"]
+	trigger.effect_parameters = {
+		"orbs": 3
+	}
+	return trigger
+
+func _create_frozen_orb() -> TriggerEffectResource:
+	var trigger = TriggerEffectResource.new()
+	trigger.trigger_name = "frozen_orb"
+	trigger.trigger_type = TriggerEffectResource.TriggerType.PASSIVE
+	trigger.enhances = ["orb_rotation"]
+	trigger.effect_parameters = {
+		"apply_cold": true
+	}
+	return trigger
+
+func _create_frozen_asteroid() -> TriggerEffectResource:
+	var trigger = TriggerEffectResource.new()
+	trigger.trigger_name = "frozen_asteroid"
+	trigger.trigger_type = TriggerEffectResource.TriggerType.PASSIVE
+	trigger.enhances = ["orb_rotation"]
+	trigger.effect_parameters = {
+		"stacks": 2,
+		"size": 60,
+		"apply_cold": true,
+		"speed": 90
+	}
+	return trigger
+
+func _create_frost_spikes() -> TriggerEffectResource:
+	"""every 3rd shot sends a trail of ice spikes at the enemy"""
+	var trigger = TriggerEffectResource.new()
+	trigger.trigger_name = "frost_spikes"
+	trigger.trigger_type = TriggerEffectResource.TriggerType.ON_SHOT_COUNT
+	trigger.trigger_condition["count"] = 5
+	trigger.effect_parameters = {
+		"stacks": 2,
+		"size": 60,
+		"apply_cold": true,
+		"speed": 45,
+	}
+	return trigger
+
+func _create_short_spikes() -> TriggerEffectResource:
+	"""every 3rd shot sends a trail of ice spikes at the enemy"""
+	var trigger = TriggerEffectResource.new()
+	trigger.trigger_name = "short_spikes"
+	trigger.trigger_type = TriggerEffectResource.TriggerType.ON_SHOT_COUNT
+	trigger.trigger_condition["count"] = 3
+	trigger.effect_parameters = {
+		"stacks": 2,
+		"size": 60,
+		"apply_cold": true,
+		"speed": 45,
+	}
+	return trigger
+
+func _create_frozen_opening() -> TriggerEffectResource:
+	"""fire rate increased for each frozen enemy on screen"""
+	var trigger = TriggerEffectResource.new()
+	trigger.trigger_name = "frozen_opening"
+	trigger.trigger_type = TriggerEffectResource.TriggerType.PASSIVE
+	trigger.effect_parameters = {
+		"fire_rate": 0.1,
+		"fire_rate_cap": 1
+	}
+	return trigger
+
+func _frost_shock() -> TriggerEffectResource:
+	"""freezing a burning enemy shatters the freeze and does damage"""
+	var trigger = TriggerEffectResource.new()
+	trigger.trigger_name = "frost_shock"
+	trigger.trigger_condition["has_effects"] = ["burn"]
+	trigger.trigger_type = TriggerEffectResource.TriggerType.PASSIVE
+	trigger.effect_parameters = {
+		"apply_cold": false,
+		"damage": 40,
+		"stacks": 1,
+		"stacks_required": 6,
+		"create_puddle": false
+	}
+	return trigger
+
+func _frost_nova() -> TriggerEffectResource:
+	"""A random enemy triggers frost nova"""
+	var trigger = TriggerEffectResource.new()
+	trigger.trigger_name = "frost_nova"
+	trigger.trigger_type = TriggerEffectResource.TriggerType.ON_TIMER
+	trigger.trigger_condition["cooldown"] = 5
+	trigger.effect_parameters = {
+		"radius": 80,
+		"damage": 40,
+		"apply_cold": true,
+		"apply_mark": true,
+		"stacks": 1
+	}
+	return trigger
+
+func _frost_golem() -> TriggerEffectResource:
+	var trigger = TriggerEffectResource.new()
+	trigger.trigger_name = "frost_golem"
+	trigger.trigger_type = TriggerEffectResource.TriggerType.ON_HIT
+	trigger.trigger_condition["chance"] = 0.3
+	trigger.effect_parameters = {
+		"duration": 8.0,
+		"damage": 25,
+		"swing_interval": 0.8,
+		"pulse_damage": 0
+	}
+	return trigger
