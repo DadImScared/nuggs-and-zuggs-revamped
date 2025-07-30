@@ -89,11 +89,17 @@ func apply_from_talent(
 			"damage": enhanced_params.get("tick_damage", base_tick_damage),
 			"max_stacks": enhanced_params.get("max_stacks", base_max_stacks),
 			"stack_value": enhanced_params.get("stack_value", base_stack_value),
-			"stacks": stack_count
+			"stacks": stack_count,
+			"immediate_effect": enhanced_params.get("immediate_effect", null)
 		}
 
 		# Apply with enhanced parameters - no further enhancement needed
 		_apply_with_enhanced_params(enemy, source_bottle, burn_params)
+
+		# Add cold visuals if this is a cold effect
+		if effect_name == "cold":
+			_update_cold_visuals(enemy)
+
 		DebugControl.debug_status("🔥 Applied %s with enhanced params: %.1f damage/tick" % [effect_name, burn_params["damage"]])
 		return
 
@@ -112,6 +118,11 @@ func apply_from_talent(
 			}
 
 			_apply_with_enhanced_params(enemy, source_bottle, params)
+
+			# Add cold visuals if this is a cold effect
+			if effect_name == "cold":
+				_update_cold_visuals(enemy)
+
 			DebugControl.debug_status("🔥 Applied %s with bottle enhancements: %.1f damage/tick" % [effect_name, params["damage"]])
 			return
 
@@ -126,6 +137,11 @@ func apply_from_talent(
 	}
 
 	_apply_with_enhanced_params(enemy, source_bottle, base_params)
+
+	# Add cold visuals if this is a cold effect
+	if effect_name == "cold":
+		_update_cold_visuals(enemy)
+
 	DebugControl.debug_status("🔥 Applied %s with base params: %.1f damage/tick" % [effect_name, base_params["damage"]])
 
 func _apply_with_enhanced_params(enemy: Node2D, source_bottle: Node, params: Dictionary):
@@ -133,7 +149,7 @@ func _apply_with_enhanced_params(enemy: Node2D, source_bottle: Node, params: Dic
 
 	# Create effect callbacks based on enhanced parameters
 	var visual_cleanup = _create_visual_cleanup(enemy)
-	var immediate_effect = _create_immediate_effect(enemy, base_color, params)
+	var immediate_effect = params.get("immediate_effect", _create_immediate_effect(enemy, base_color, params))
 	#var tick_effect = _create_tick_effect(enemy, params["damage"], base_color, source_bottle)
 	var tick_effect = null
 
@@ -183,6 +199,113 @@ func apply_to_enemy(enemy: Node2D, source_bottle: Node, stack_count: int = 1):
 
 	_apply_with_enhanced_params(enemy, source_bottle, base_params)
 
+# Cold visual effects - called whenever cold is applied
+func _update_cold_visuals(enemy: Node2D):
+	"""Update cold visuals based on current stack count"""
+	if not enemy or not is_instance_valid(enemy):
+		return
+
+	var total_stacks = enemy.get_total_stack_count("cold")
+	var sprite = _get_enemy_sprite(enemy)
+
+	# Progressive visual effects based on stack count
+	if total_stacks >= 6:
+		# FROZEN SOLID - Deep blue + ice shell
+		if sprite:
+			sprite.modulate = Color(0.6, 0.8, 1.0)
+			if sprite.has_method("set_speed_scale"):
+				sprite.speed_scale = 0
+		_create_freeze_animation(enemy)
+
+	elif total_stacks >= 4:
+		# NEARLY FROZEN - Getting blue + frost particles
+		if sprite:
+			sprite.modulate = Color(0.7, 0.85, 1.0)
+			if sprite.has_method("set_speed_scale"):
+				sprite.speed_scale = 0.2
+		_create_frost_buildup(enemy)
+
+	elif total_stacks >= 2:
+		# CHILLED - Light blue tint
+		if sprite:
+			sprite.modulate = Color(0.8, 0.9, 1.0)
+			if sprite.has_method("set_speed_scale"):
+				sprite.speed_scale = 0.5
+
+	elif total_stacks >= 1:
+		# SLIGHTLY COLD - Very light blue
+		if sprite:
+			sprite.modulate = Color(0.9, 0.95, 1.0)
+			if sprite.has_method("set_speed_scale"):
+				sprite.speed_scale = 0.8
+
+func _get_enemy_sprite(enemy: Node) -> Node:
+	"""Safely get sprite from any enemy type"""
+	var sprite_names = ["animated_sprite", "Sprite", "Sprite2D", "AnimatedSprite2D"]
+
+	for sprite_name in sprite_names:
+		var sprite = enemy.get_node_or_null(sprite_name)
+		if sprite:
+			return sprite
+
+	# Also try property access safely
+	if enemy.get("animated_sprite"):
+		return enemy.get("animated_sprite")
+
+	for child in enemy.get_children():
+		if child is Sprite2D or child is AnimatedSprite2D:
+			return child
+
+	return null
+
+func _create_freeze_animation(enemy: Node):
+	"""Create ice shell effect for fully frozen enemies"""
+	if enemy.get_node_or_null("IceEffect"):
+		return  # Already has ice effect
+
+	var ice_shell = CPUParticles2D.new()
+	ice_shell.name = "IceEffect"
+	enemy.add_child(ice_shell)
+	ice_shell.position = Vector2.ZERO
+
+	ice_shell.emitting = true
+	ice_shell.amount = 20
+	ice_shell.lifetime = 99999.0
+	ice_shell.one_shot = false
+	ice_shell.explosiveness = 0.0
+
+	ice_shell.spread = 360.0
+	ice_shell.initial_velocity_min = 8.0
+	ice_shell.initial_velocity_max = 12.0
+	ice_shell.gravity = Vector2.ZERO
+	ice_shell.scale_amount_min = 0.6
+	ice_shell.scale_amount_max = 1.0
+	ice_shell.color = Color(0.9, 0.95, 1.0, 0.7)
+
+func _create_frost_buildup(enemy: Node):
+	"""Create frost particles for nearly frozen enemies"""
+	if enemy.get_node_or_null("FrostEffect"):
+		return  # Already has frost effect
+
+	var frost_effect = CPUParticles2D.new()
+	frost_effect.name = "FrostEffect"
+	enemy.add_child(frost_effect)
+	frost_effect.position = Vector2.ZERO
+
+	frost_effect.emitting = true
+	frost_effect.amount = 8
+	frost_effect.lifetime = 1.5
+	frost_effect.one_shot = false
+	frost_effect.explosiveness = 0.3
+
+	frost_effect.spread = 360.0
+	frost_effect.initial_velocity_min = 15.0
+	frost_effect.initial_velocity_max = 25.0
+	frost_effect.gravity = Vector2(0, 30)
+	frost_effect.scale_amount_min = 0.4
+	frost_effect.scale_amount_max = 0.7
+	frost_effect.color = Color(0.8, 0.9, 1.0, 0.6)
+
 # Helper methods to create callbacks
 func _create_visual_cleanup(enemy: Node2D) -> Callable:
 	return func():
@@ -194,7 +317,6 @@ func _create_immediate_effect(enemy: Node2D, color: Color, params: Dictionary) -
 	return func():
 		if not is_instance_valid(enemy):
 			return
-
 		var overlay_name = effect_name.capitalize() + "Overlay"
 
 		# Create visual on first stack

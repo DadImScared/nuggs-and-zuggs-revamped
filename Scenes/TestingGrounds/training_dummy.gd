@@ -8,7 +8,7 @@ extends CharacterBody2D
 
 # Dummy properties
 var dummy_name: String = "Training Dummy"
-var max_health: float = 50.0
+var max_health: float = 5000.0
 var health: float = 1000.0
 var base_speed: float = 0.0  # Stationary
 var move_speed: float = 0.0
