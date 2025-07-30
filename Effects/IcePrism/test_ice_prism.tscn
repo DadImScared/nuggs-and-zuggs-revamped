@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://24qi131mkmfy"]
+
+[ext_resource type="Script" uid="uid://bhdtqdl1ppfg2" path="res://Effects/IcePrism/test_ice_prism.gd" id="1_pyjhg"]
+
+[node name="TestIcePrism" type="Node2D"]
+script = ExtResource("1_pyjhg")

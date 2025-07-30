@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://d1n6j2d8m1poa"]
+
+[ext_resource type="Script" uid="uid://405wv6y3o5t" path="res://Effects/IcePrism/ice_prism.gd" id="1_cjtna"]
+
+[node name="IcePrism" type="Node2D"]
+script = ExtResource("1_cjtna")
+
+[node name="VisualEffect" type="Node2D" parent="."]
