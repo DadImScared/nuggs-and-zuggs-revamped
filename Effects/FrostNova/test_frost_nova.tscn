@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://dnw8n7a8ysk1l"]
+
+[ext_resource type="Script" uid="uid://cbyuoo22ncayy" path="res://Effects/FrostNova/test_frost_nova.gd" id="1_0w46h"]
+
+[node name="TestFrostNova" type="Node2D"]
+script = ExtResource("1_0w46h")

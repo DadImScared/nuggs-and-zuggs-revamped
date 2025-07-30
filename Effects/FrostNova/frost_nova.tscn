@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://df673nrdrcmy8"]
+
+[ext_resource type="Script" uid="uid://bmfimpomqtv1r" path="res://Effects/FrostNova/frost_nova.gd" id="1_be07c"]
+
+[node name="FrostNova" type="Node2D"]
+script = ExtResource("1_be07c")
+
+[node name="VisualEffect" type="Node2D" parent="."]
