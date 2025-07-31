@@ -27,7 +27,7 @@ var recovery_duration = 0.06
 # Leveling system
 var current_level: int = 1
 var current_xp: int = 0
-var xp_to_next_level: int = 25
+var xp_to_next_level: int = 120
 var max_level: int = 10
 
 var bottle_id: String = ""
@@ -281,7 +281,7 @@ func gain_xp(amount: int):
 func level_up():
 	current_level += 1
 	current_xp -= xp_to_next_level
-	xp_to_next_level = int(xp_to_next_level * 1.3) # 30% more XP needed each level
+	xp_to_next_level = int(xp_to_next_level * 1.8)
 
 	# Update stats based on new level
 	update_fire_rate() # Update fire rate

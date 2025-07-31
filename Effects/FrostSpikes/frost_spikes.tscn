@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://clb74l1xd7k0g"]
+
+[ext_resource type="Script" uid="uid://vxbmt1k0vbxw" path="res://Effects/FrostSpikes/frost_spikes.gd" id="1_h8y31"]
+
+[node name="FrostSpikes" type="Node2D"]
+script = ExtResource("1_h8y31")
+
+[node name="VisualEffects" type="Node2D" parent="."]

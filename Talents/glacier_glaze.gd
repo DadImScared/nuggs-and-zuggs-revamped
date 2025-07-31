@@ -238,7 +238,7 @@ func _create_orb_rotation_trigger() -> TriggerEffectResource:
 	trigger.trigger_type = TriggerEffectResource.TriggerType.PASSIVE
 	trigger.trigger_condition["cooldown"] = 2
 	trigger.effect_parameters = {
-		"damage": 15,
+		"damage": 25,
 		"speed": 45, # degrees per second??
 		"orbs": 3,
 		"apply_cold": false,
